@@ -1,0 +1,22 @@
+# Logs and debugs
+logs
+*.log
+pnpm-debug.log*
+
+# Dependecies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment variables and local files
+.env
+.env.*
+!.env.example
+*.local
+
+# Editor directories and files
+.vscode/*
+Thumbs.db
+Desktop.ini
