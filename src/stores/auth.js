@@ -22,8 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
         throw error
       }
 
-      session.value = data.session
       user.value = data.user
+      session.value = data.session
 
       return data
     } finally {
@@ -31,17 +31,33 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function logout() {
+    isLoading.value = true
+
+    try {
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        throw error
+      }
+    } finally {
+      user.value = null
+      session.value = null
+      isLoading.value = false
+    }
+  }
+
   function initialize() {
     supabase.auth.getSession().then(({ data }) => {
-      session.value = data.session
       user.value = data.session?.user ?? null
+      session.value = data.session
     })
 
     supabase.auth.onAuthStateChange((_event, newSession) => {
-      session.value = newSession
       user.value = newSession?.user ?? null
+      session.value = newSession
     })
   }
 
-  return { user, session, isLoading, isAuthenticated, login, initialize }
+  return { user, session, isLoading, isAuthenticated, login, logout, initialize }
 })

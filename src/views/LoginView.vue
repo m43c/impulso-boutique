@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import { Eye, EyeOff } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -12,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { getAuthErrorMessage } from '@/utils/authErrors'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const showPassword = ref(false)
 const errorMessage = ref('')
@@ -46,7 +48,7 @@ const onSubmit = handleSubmit(async (credentials) => {
 
   try {
     await authStore.login(credentials)
-    console.log('Login exitoso')
+    router.push({ name: 'home' })
   } catch (error) {
     errorMessage.value = getAuthErrorMessage(error)
   }
