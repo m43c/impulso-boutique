@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { getAuthErrorMessage } from '@/utils/authErrors'
 
 const authStore = useAuthStore()
 
 const showPassword = ref(false)
+const errorMessage = ref('')
 
 const formSchema = toTypedSchema(
   z
@@ -40,11 +42,13 @@ const { handleSubmit, isSubmitting } = useForm({
 })
 
 const onSubmit = handleSubmit(async (credentials) => {
+  errorMessage.value = ''
+
   try {
     await authStore.login(credentials)
     console.log('Login exitoso')
   } catch (error) {
-    console.error('Login fallido:', error.message)
+    errorMessage.value = getAuthErrorMessage(error)
   }
 })
 </script>
@@ -60,6 +64,12 @@ const onSubmit = handleSubmit(async (credentials) => {
         <CardContent>
           <form @submit="onSubmit">
             <FieldGroup>
+              <p
+                v-if="errorMessage"
+                class="bg-destructive/10 text-destructive rounded-md p-3 text-sm"
+              >
+                {{ errorMessage }}
+              </p>
               <VeeField v-slot="{ componentField, errors }" name="email">
                 <Field :data-invalid="!!errors.length">
                   <FieldLabel for="email">Correo Electrónico</FieldLabel>
