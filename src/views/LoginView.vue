@@ -1,14 +1,16 @@
 <script setup>
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import { Eye, EyeOff } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+
+const authStore = useAuthStore()
 
 const showPassword = ref(false)
 
@@ -38,17 +40,12 @@ const { handleSubmit, isSubmitting } = useForm({
 })
 
 const onSubmit = handleSubmit(async (credentials) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: credentials.email,
-    password: credentials.password,
-  })
-
-  if (error) {
+  try {
+    await authStore.login(credentials)
+    console.log('Login exitoso')
+  } catch (error) {
     console.error('Login fallido:', error.message)
-    return
   }
-
-  console.log('Login exitoso:', data)
 })
 </script>
 
