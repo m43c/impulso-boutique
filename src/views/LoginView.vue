@@ -4,6 +4,7 @@ import { Eye, EyeOff } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -36,8 +37,18 @@ const { handleSubmit, isSubmitting } = useForm({
   },
 })
 
-const onSubmit = handleSubmit((values) => {
-  console.log('Credenciales:', values)
+const onSubmit = handleSubmit(async (credentials) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: credentials.email,
+    password: credentials.password,
+  })
+
+  if (error) {
+    console.error('Login fallido:', error.message)
+    return
+  }
+
+  console.log('Login exitoso:', data)
 })
 </script>
 
