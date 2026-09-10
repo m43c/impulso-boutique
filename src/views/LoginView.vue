@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import { Eye, EyeOff } from '@lucide/vue'
+import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -25,12 +25,9 @@ const formSchema = toTypedSchema(
         .string()
         .trim()
         .toLowerCase()
-        .min(1, 'Campo requerido')
-        .email('El correo electrónico es inválido'),
-      password: z
-        .string()
-        .min(1, 'Campo requerido')
-        .min(8, 'La contraseña debe tener al menos 8 caracteres'),
+        .min(1, 'El correo electrónico es requerido')
+        .email('Ingresa un correo electrónico válido'),
+      password: z.string().min(1, 'La contraseña es requedida'),
     })
     .strict(),
 )
@@ -59,27 +56,29 @@ const onSubmit = handleSubmit(async (credentials) => {
   <div class="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
     <div class="w-full max-w-sm">
       <Card>
-        <CardHeader class="text-center text-xl">
-          <CardTitle>Inicio de Sesión</CardTitle>
-          <CardDescription>Ingresa tu correo y contraseña para continuar</CardDescription>
+        <CardHeader class="text-xl">
+          <CardTitle>Inicia Sesión</CardTitle>
+          <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>
           <form @submit="onSubmit">
             <FieldGroup>
               <p
                 v-if="errorMessage"
+                role="alert"
                 class="bg-destructive/10 text-destructive rounded-md p-3 text-sm"
               >
                 {{ errorMessage }}
               </p>
               <VeeField v-slot="{ componentField, errors }" name="email">
                 <Field :data-invalid="!!errors.length">
-                  <FieldLabel for="email">Correo Electrónico</FieldLabel>
+                  <FieldLabel for="email">Correo electrónico</FieldLabel>
                   <Input
                     id="email"
                     v-bind="componentField"
                     type="email"
-                    placeholder="usuario@gmail.com"
+                    placeholder="correo@ejemplo.com"
+                    autocomplete="username"
                     :aria-invalid="!!errors.length"
                   />
                   <FieldError v-if="errors.length" :errors="[errors[0]]" />
@@ -94,10 +93,13 @@ const onSubmit = handleSubmit(async (credentials) => {
                       v-bind="componentField"
                       :type="showPassword ? 'text' : 'password'"
                       class="pr-10"
+                      autocomplete="current-password"
                       :aria-invalid="!!errors.length"
                     />
                     <button
                       type="button"
+                      tabindex="-1"
+                      :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                       class="text-muted-foreground hover:text-foreground absolute right-3 flex items-center"
                       @click="showPassword = !showPassword"
                     >
@@ -110,6 +112,7 @@ const onSubmit = handleSubmit(async (credentials) => {
               </VeeField>
               <Field>
                 <Button type="submit" :disabled="isSubmitting">
+                  <Loader2 v-if="isSubmitting" class="animate-spin" />
                   {{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
                 </Button>
               </Field>
