@@ -25,9 +25,9 @@ const formSchema = toTypedSchema(
         .string()
         .trim()
         .toLowerCase()
-        .min(1, 'El correo electrónico es requerido')
+        .min(1, 'Ingrese el correo electrónico')
         .email('Ingresa un correo electrónico válido'),
-      password: z.string().min(1, 'La contraseña es requedida'),
+      password: z.string().min(1, 'Ingresa la contraseña'),
     })
     .strict(),
 )
