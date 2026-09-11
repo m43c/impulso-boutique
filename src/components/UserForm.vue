@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
+const props = defineProps({ isLoading: { type: Boolean, default: false } })
 const emit = defineEmits(['submit', 'cancel'])
 
 const showPassword = ref(false)
@@ -58,13 +59,7 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
   },
 })
 
-const onSubmit = handleSubmit(async (values) => {
-  await new Promise((resolve) => setTimeout(resolve, 3000))
-
-  emit('submit', { ...values })
-  resetForm()
-  showPassword.value = false
-})
+const onSubmit = handleSubmit(async (values) => emit('submit', { ...values }))
 
 function handleCancel() {
   resetForm()
@@ -154,8 +149,8 @@ function handleCancel() {
     </FieldGroup>
     <div class="flex flex-col gap-2 pt-4">
       <Button type="submit" :disabled="isSubmitting">
-        <Loader2 v-if="isSubmitting" class="animate-spin" />
-        {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+        <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
+        {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}
       </Button>
       <Button type="button" variant="outline" @click="handleCancel">Cancelar</Button>
     </div>

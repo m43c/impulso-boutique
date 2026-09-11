@@ -12,13 +12,27 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import UserForm from '@/components/UserForm.vue'
+import { useUsersStore } from '@/stores/users'
+
+const usersStore = useUsersStore()
 
 const isSheetOpen = ref(false)
 const isDesktop = useMediaQuery('(min-width: 640px)')
 
-function handleSubmit(formData) {
-  console.log('Usuario creado:', formData)
-  isSheetOpen.value = false
+async function handleSubmit(formData) {
+  try {
+    const createdUser = await usersStore.createUser({
+      email: formData.email,
+      password: formData.password,
+      full_name: formData.fullName,
+      role: formData.role,
+    })
+
+    console.log('Usuario creado:', createdUser)
+    isSheetOpen.value = false
+  } catch (error) {
+    console.error('Error al crear al usuario:', error)
+  }
 }
 
 function handleCancel() {
@@ -55,7 +69,11 @@ function handleCancel() {
           <SheetTitle>Crear usuario</SheetTitle>
           <SheetDescription>Completa la información del nuevo usuario</SheetDescription>
         </SheetHeader>
-        <UserForm @submit="handleSubmit" @cancel="handleCancel" />
+        <UserForm
+          :is-loading="usersStore.isCreating"
+          @submit="handleSubmit"
+          @cancel="handleCancel"
+        />
       </SheetContent>
     </Sheet>
   </div>

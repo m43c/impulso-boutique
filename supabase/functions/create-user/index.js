@@ -14,7 +14,10 @@ export default {
     }
 
     if (profile.role !== 'admin' || !profile.is_active) {
-      return Response.json({ error: 'Usuario no autorizado' }, { status: 403 })
+      return Response.json(
+        { error: 'No tienes permisos para realizar esta acción' },
+        { status: 403 },
+      )
     }
 
     const { email, password, full_name, role } = await req.json()
@@ -49,7 +52,7 @@ export default {
         console.error('Error al revertir la creación del usuario:', deleteUserError)
       }
 
-      return Response.json({ error: 'No se pudo crear el perfil del usuario' }, { status: 500 })
+      return Response.json({ error: 'No se pudo completar la creación usuario' }, { status: 500 })
     }
 
     return Response.json(
