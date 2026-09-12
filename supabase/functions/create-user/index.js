@@ -15,7 +15,9 @@ export default {
 
     if (profile.role !== 'admin' || !profile.is_active) {
       return Response.json(
-        { error: 'No tienes permisos para realizar esta acción' },
+        {
+          error: 'No tienes permisos para realizar esta acción',
+        },
         { status: 403 },
       )
     }
@@ -32,7 +34,12 @@ export default {
 
     if (createUserError) {
       console.error('Error al crear usuario:', createUserError)
-      return Response.json({ error: createUserError.message }, { status: 400 })
+      return Response.json(
+        {
+          error: createUserError.message,
+        },
+        { status: 400 },
+      )
     }
 
     const { error: createProfileError } = await ctx.supabaseAdmin.from('profiles').insert({
@@ -52,7 +59,12 @@ export default {
         console.error('Error al revertir la creación del usuario:', deleteUserError)
       }
 
-      return Response.json({ error: 'No se pudo completar la creación usuario' }, { status: 500 })
+      return Response.json(
+        {
+          error: 'No se pudo completar la creación usuario',
+        },
+        { status: 500 },
+      )
     }
 
     return Response.json(
