@@ -1,15 +1,18 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useUsersStore } from '@/stores/users'
 import { Loader2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const usersStore = useUsersStore()
 
 async function handleLogout() {
   try {
     await authStore.logout()
+    usersStore.clear()
   } catch (error) {
     console.error('Error al cerrar sesión:', error.message)
   } finally {

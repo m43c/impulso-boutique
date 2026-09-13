@@ -17,7 +17,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
-const props = defineProps({ isLoading: { type: Boolean, default: false } })
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+})
 const emit = defineEmits(['submit', 'cancel'])
 
 const showPassword = ref(false)
@@ -70,7 +75,9 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col px-4" @submit="onSubmit">
+    <!-- Form fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
+      <!-- Full name -->
       <VeeField v-slot="{ componentField, errors }" name="fullName">
         <Field :data-invalid="!!errors.length">
           <FieldLabel for="fullName">Nombre completo</FieldLabel>
@@ -84,6 +91,7 @@ function handleCancel() {
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </Field>
       </VeeField>
+      <!-- email -->
       <VeeField v-slot="{ componentField, errors }" name="email">
         <Field :data-invalid="!!errors.length">
           <FieldLabel for="email">Correo electrónico</FieldLabel>
@@ -98,6 +106,7 @@ function handleCancel() {
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </Field>
       </VeeField>
+      <!-- Password -->
       <VeeField v-slot="{ componentField, errors }" name="password">
         <Field :data-invalid="!!errors.length">
           <FieldLabel for="password">Contraseña</FieldLabel>
@@ -124,6 +133,7 @@ function handleCancel() {
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </Field>
       </VeeField>
+      <!-- Role -->
       <VeeField v-slot="{ componentField, errors }" name="role">
         <FieldSet :data-invalid="!!errors.length">
           <FieldLegend variant="label" :class="errors.length ? 'text-destructive' : ''">
@@ -147,6 +157,7 @@ function handleCancel() {
         </FieldSet>
       </VeeField>
     </FieldGroup>
+    <!-- Actions -->
     <div class="flex flex-col gap-2 pt-4">
       <Button type="submit" :disabled="isSubmitting">
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />

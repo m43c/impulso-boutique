@@ -62,6 +62,7 @@ const onSubmit = handleSubmit(async (credentials) => {
         </CardHeader>
         <CardContent>
           <form @submit="onSubmit">
+            <!-- Form fields -->
             <FieldGroup>
               <p
                 v-if="errorMessage"
@@ -70,6 +71,7 @@ const onSubmit = handleSubmit(async (credentials) => {
               >
                 {{ errorMessage }}
               </p>
+              <!-- Email -->
               <VeeField v-slot="{ componentField, errors }" name="email">
                 <Field :data-invalid="!!errors.length">
                   <FieldLabel for="email">Correo electrónico</FieldLabel>
@@ -84,6 +86,7 @@ const onSubmit = handleSubmit(async (credentials) => {
                   <FieldError v-if="errors.length" :errors="[errors[0]]" />
                 </Field>
               </VeeField>
+              <!-- Password -->
               <VeeField v-slot="{ componentField, errors }" name="password">
                 <Field :data-invalid="!!errors.length">
                   <FieldLabel for="password">Contraseña</FieldLabel>
@@ -110,6 +113,7 @@ const onSubmit = handleSubmit(async (credentials) => {
                   <FieldError v-if="errors.length" :errors="[errors[0]]" />
                 </Field>
               </VeeField>
+              <!-- Submit -->
               <Field>
                 <Button type="submit" :disabled="isSubmitting">
                   <Loader2 v-if="isSubmitting" class="animate-spin" />

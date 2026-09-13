@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useUsersStore } from '@/stores/users'
 import { useMediaQuery } from '@vueuse/core'
 import { UserPlus } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -11,13 +12,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import UserForm from '@/components/UserForm.vue'
-import { useUsersStore } from '@/stores/users'
+import UserForm from '@/components/users/UserForm.vue'
+import UsersList from '@/components/users/UsersList.vue'
 
 const usersStore = useUsersStore()
 
+const isDesktop = useMediaQuery('(min-width: 768px)')
+
 const isSheetOpen = ref(false)
-const isDesktop = useMediaQuery('(min-width: 640px)')
+
+onMounted(() => {
+  usersStore.fetchUsers().catch((error) => {
+    console.error('Error al cargar usuarios:', error)
+  })
+})
 
 async function handleSubmit(formData) {
   try {
@@ -29,6 +37,7 @@ async function handleSubmit(formData) {
     })
 
     console.log('Usuario creado:', createdUser)
+    usersStore.fetchUsers()
     isSheetOpen.value = false
   } catch (error) {
     console.error('Error al crear al usuario:', error)
@@ -38,12 +47,22 @@ async function handleSubmit(formData) {
 function handleCancel() {
   isSheetOpen.value = false
 }
+
+function handleAddUser() {
+  isSheetOpen.value = true
+}
 </script>
 
 <template>
-  <div class="flex justify-end px-4 pt-2">
+  <div class="flex flex-col gap-4 px-6 py-4">
     <Sheet v-model:open="isSheetOpen">
-      <SheetTrigger as-child class="sm:hidden">
+      <UsersList
+        :users="usersStore.users"
+        :is-loading="usersStore.isFetching"
+        @add-user="handleAddUser"
+      />
+      <!--Mobile -->
+      <SheetTrigger as-child class="md:hidden">
         <Button
           size="icon"
           class="fixed right-4 bottom-4 z-50 h-10 w-10 rounded-full"
@@ -52,14 +71,6 @@ function handleCancel() {
           <UserPlus />
         </Button>
       </SheetTrigger>
-      <div class="hidden sm:flex sm:justify-end">
-        <SheetTrigger as-child>
-          <Button class="gap-2">
-            <UserPlus class="h-4 w-4" />
-            Agregar usuario
-          </Button>
-        </SheetTrigger>
-      </div>
       <SheetContent
         :side="isDesktop ? 'right' : 'bottom'"
         class="w-full py-4 sm:max-w-md"
