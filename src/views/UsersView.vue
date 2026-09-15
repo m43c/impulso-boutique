@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { useMediaQuery } from '@vueuse/core'
 import { UserPlus } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -29,10 +30,13 @@ const isSelf = computed(() => !!editingUser.value && editingUser.value.id === au
 onMounted(() => {
   usersStore.fetchUsers().catch((error) => {
     console.error('Error al cargar usuarios:', error)
+    toast.error('No se puedo cargar los usuarios')
   })
 })
 
 async function handleSubmit(formData) {
+  const isEditing = !!editingUser.value
+
   try {
     if (editingUser.value) {
       const payload = {
@@ -47,8 +51,8 @@ async function handleSubmit(formData) {
         payload.password = formData.password
       }
 
-      const updatedUser = await usersStore.updateUser(payload)
-      console.log('Usuario actualizado:', updatedUser)
+      await usersStore.updateUser(payload)
+      toast.success('Usuario actualizado correctamente')
     } else {
       const createdUser = await usersStore.createUser({
         email: formData.email,
@@ -56,7 +60,7 @@ async function handleSubmit(formData) {
         full_name: formData.fullName,
         role: formData.role,
       })
-      console.log('Usuario creado:', createdUser)
+      toast.success('Usuario creado correctamente')
     }
 
     usersStore.fetchUsers()
@@ -64,6 +68,7 @@ async function handleSubmit(formData) {
     editingUser.value = null
   } catch (error) {
     console.error('Error al guardar al usuario:', error)
+    toast.error(isEditing ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario')
   }
 }
 
