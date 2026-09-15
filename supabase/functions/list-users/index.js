@@ -29,7 +29,7 @@ export default {
 
     const { data: profiles, error: listProfilesError } = await ctx.supabaseAdmin
       .from('profiles')
-      .select('id, full_name, role, is_active, created_at')
+      .select('id, full_name, role, is_active, created_at, updated_at')
       .order('created_at', { ascending: false })
 
     if (listProfilesError) {
@@ -58,6 +58,7 @@ export default {
             role: p.role,
             is_active: p.is_active,
             created_at: p.created_at,
+            updated_at: p.updated_at,
             email: authUser.user.email,
           }
         }),

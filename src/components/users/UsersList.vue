@@ -7,6 +7,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Pencil,
   Search,
   UserPlus,
 } from '@lucide/vue'
@@ -25,7 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatRole } from '@/utils/roles'
-import { formatDate } from '@/utils/date'
+import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { columns } from './columns'
 import { features } from './features'
 
@@ -40,7 +41,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-user'])
+const emit = defineEmits(['add-user', 'edit-user'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -78,6 +79,9 @@ const table = useTable({
       pageSize: isDesktop.value ? 10 : 5,
     },
   },
+  meta: {
+    onEdit: (user) => emit('edit-user', user),
+  },
 })
 
 function sortIcon(column) {
@@ -102,7 +106,7 @@ function sortIcon(column) {
   <div class="flex flex-col gap-4">
     <!-- Toolbar -->
     <div class="flex items-center justify-between gap-3">
-      <div class="relative w-full max-w-sm">
+      <div class="relative w-full">
         <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
         <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
       </div>
@@ -145,23 +149,29 @@ function sortIcon(column) {
             <TableRow v-for="row in 10" :key="`skeleton-${row}`">
               <TableCell
                 v-for="column in columns"
-                :key="column.accessorKey"
+                :key="column.accessorKey || column.id"
                 :class="column.meta?.cellClass || ''"
               >
-                <template v-if="column.accessorKey === 'is_active'">
+                <template v-if="column.accessorKey === 'email'">
+                  <Skeleton class="h-4 w-44" />
+                </template>
+                <template v-else-if="column.accessorKey === 'full_name'">
+                  <Skeleton class="h-4 w-32" />
+                </template>
+                <template v-else-if="column.accessorKey === 'role'">
+                  <Skeleton class="h-4 w-20" />
+                </template>
+                <template v-else-if="column.accessorKey === 'is_active'">
                   <Skeleton class="mx-auto h-5 w-16 rounded-full" />
                 </template>
                 <template v-else-if="column.accessorKey === 'created_at'">
                   <Skeleton class="mx-auto h-4 w-24" />
                 </template>
-                <template v-else-if="column.accessorKey === 'full_name'">
-                  <Skeleton class="h-4 w-32" />
+                <template v-else-if="column.accessorKey === 'updated_at'">
+                  <Skeleton class="mx-auto h-4 w-24" />
                 </template>
-                <template v-else-if="column.accessorKey === 'email'">
-                  <Skeleton class="h-4 w-44" />
-                </template>
-                <template v-else-if="column.accessorKey === 'role'">
-                  <Skeleton class="h-4 w-20" />
+                <template v-else-if="column.id === 'actions'">
+                  <Skeleton class="mx-auto h-8 w-8 rounded-full" />
                 </template>
                 <Skeleton v-else class="h-4 w-24" />
               </TableCell>
@@ -196,13 +206,19 @@ function sortIcon(column) {
       <template v-if="isLoading">
         <Card v-for="card in 5" :key="`skeleton-card-${card}`">
           <CardContent class="flex flex-col gap-2">
-            <Skeleton class="h-5 w-36" />
+            <div class="flex justify-between">
+              <Skeleton class="h-5 w-36" />
+              <Skeleton class="h-6 w-6 rounded-full" />
+            </div>
             <Skeleton class="h-4 w-48" />
             <div class="flex items-center justify-between">
               <Skeleton class="h-4 w-20" />
               <Skeleton class="h-5 w-16 rounded-full" />
             </div>
-            <Skeleton class="h-3 w-24" />
+            <div class="flex flex-col gap-0.5 pt-2">
+              <Skeleton class="h-3 w-24" />
+              <Skeleton class="h-3 w-24" />
+            </div>
           </CardContent>
         </Card>
       </template>
@@ -216,7 +232,18 @@ function sortIcon(column) {
       <!-- Data -->
       <Card v-for="row in table.getRowModel().rows" v-else :key="row.id">
         <CardContent class="flex flex-col gap-1">
-          <p class="font-medium">{{ row.original.full_name }}</p>
+          <div class="flex justify-between">
+            <p class="truncate font-medium">{{ row.original.full_name }}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8 shrink-0 rounded-full"
+              :aria-label="`Editar a ${row.original.full_name}`"
+              @click="emit('edit-user', row.original)"
+            >
+              <Pencil />
+            </Button>
+          </div>
           <p class="text-muted-foreground text-sm">{{ row.original.email }}</p>
           <div class="flex items-center justify-between text-sm">
             <span>{{ formatRole(row.original.role) }}</span>
@@ -224,7 +251,17 @@ function sortIcon(column) {
               {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
             </Badge>
           </div>
-          <p class="text-muted-foreground text-xs">{{ formatDate(row.original.created_at) }}</p>
+          <div class="flex flex-col gap-0.5 pt-2">
+            <p
+              class="text-muted-foreground text-xs"
+              :title="formatDateTime(row.original.updated_at)"
+            >
+              Actualizado: {{ formatRelativeDate(row.original.updated_at) }}
+            </p>
+            <p class="text-muted-foreground text-xs">
+              Creado: {{ formatDate(row.original.created_at) }}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

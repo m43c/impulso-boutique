@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -16,8 +16,17 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Switch } from '@/components/ui/switch'
 
 const props = defineProps({
+  user: {
+    type: Object,
+    default: null,
+  },
+  isSelf: {
+    type: Boolean,
+    default: false,
+  },
   isLoading: {
     type: Boolean,
     default: false,
@@ -26,55 +35,83 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'cancel'])
 
 const showPassword = ref(false)
+const isEditMode = computed(() => !!props.user)
 
-const formSchema = toTypedSchema(
-  z
-    .object({
-      fullName: z
-        .string()
-        .trim()
-        .min(1, 'Ingresa el nombre completo')
-        .min(5, 'El nombre completo debe tener al menos 5 caracteres')
-        .regex(
-          /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/,
-          'El nombre completo solo puede contener letras, espacios, apóstrofes y guiones',
-        )
-        .refine((value) => value.includes(' '), 'Ingresa nombre y apellido'),
-      email: z
-        .string()
-        .trim()
-        .toLowerCase()
-        .min(1, 'Ingresa el correo electrónico')
-        .email('Ingresa un correo electrónico válido'),
-      password: z.string().min(1, 'Ingresa la contraseña'),
-      role: z.enum(['admin', 'advisor', 'cashier'], {
-        errorMap: () => ({ message: 'Selecciona un rol' }),
-      }),
-    })
-    .strict(),
+const formSchema = computed(() =>
+  toTypedSchema(
+    z
+      .object({
+        fullName: z
+          .string()
+          .trim()
+          .min(1, 'Ingresa el nombre completo')
+          .min(5, 'El nombre completo debe tener al menos 5 caracteres')
+          .regex(
+            /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/,
+            'El nombre completo solo puede contener letras, espacios, apóstrofes y guiones',
+          )
+          .refine((value) => value.includes(' '), 'Ingresa nombre y apellido'),
+        email: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .min(1, 'Ingresa el correo electrónico')
+          .email('Ingresa un correo electrónico válido'),
+        password: isEditMode.value ? z.string() : z.string().min(1, 'Ingresa la contraseña'),
+        role: z.enum(['admin', 'advisor', 'cashier'], {
+          errorMap: () => ({ message: 'Selecciona un rol' }),
+        }),
+        isActive: z.boolean(),
+      })
+      .strict(),
+  ),
 )
 
 const { handleSubmit, isSubmitting, resetForm } = useForm({
   validationSchema: formSchema,
-  initialValues: {
-    fullName: '',
-    email: '',
-    password: '',
-    role: '',
-  },
 })
 
-const onSubmit = handleSubmit(async (values) => emit('submit', { ...values }))
+function populateForm(user) {
+  resetForm({
+    values: user
+      ? {
+          fullName: user.full_name,
+          email: user.email,
+          password: '',
+          role: user.role,
+          isActive: user.is_active,
+        }
+      : {
+          fullName: '',
+          email: '',
+          password: '',
+          role: '',
+          isActive: true,
+        },
+  })
+  showPassword.value = false
+}
+
+watch(() => props.user, populateForm, { immediate: true })
+
+const onSubmit = handleSubmit(async (values) => {
+  const payload = { ...values }
+
+  if (isEditMode.value && !payload.password) {
+    delete payload.password
+  }
+
+  emit('submit', payload)
+})
 
 function handleCancel() {
-  resetForm()
-  showPassword.value = false
+  populateForm(props.user)
   emit('cancel')
 }
 </script>
 
 <template>
-  <form class="flex min-h-0 flex-1 flex-col px-4" @submit="onSubmit">
+  <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
     <!-- Form fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Full name -->
@@ -109,7 +146,9 @@ function handleCancel() {
       <!-- Password -->
       <VeeField v-slot="{ componentField, errors }" name="password">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="password">Contraseña</FieldLabel>
+          <FieldLabel for="password">
+            {{ isEditMode ? 'Nueva contraseña (opcional)' : 'Contraseña' }}
+          </FieldLabel>
           <div class="relative flex items-center">
             <Input
               id="password"
@@ -139,26 +178,46 @@ function handleCancel() {
           <FieldLegend variant="label" :class="errors.length ? 'text-destructive' : ''">
             Rol
           </FieldLegend>
-          <RadioGroup v-bind="componentField" :aria-invalid="!!errors.length">
+          <RadioGroup v-bind="componentField" :disabled="isSelf" :aria-invalid="!!errors.length">
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="admin" value="admin" :aria-invalid="!!errors.length" />
-              <Label for="admin" class="cursor-pointer">Administrador</Label>
+              <Label for="admin" class="cursor-pointer font-normal">Administrador</Label>
             </div>
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="advisor" value="advisor" :aria-invalid="!!errors.length" />
-              <Label for="advisor" class="cursor-pointer">Vendedor</Label>
+              <Label for="advisor" class="cursor-pointer font-normal">Vendedor</Label>
             </div>
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="cashier" value="cashier" :aria-invalid="!!errors.length" />
-              <Label for="cashier" class="cursor-pointer">Cajero</Label>
+              <Label for="cashier" class="cursor-pointer font-normal">Cajero</Label>
             </div>
           </RadioGroup>
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </FieldSet>
       </VeeField>
+      <!-- Status -->
+      <VeeField v-if="isEditMode" v-slot="{ value, handleChange }" name="isActive">
+        <div class="flex flex-col gap-2">
+          <Label for="isActive" class="cursor-pointer">Estado</Label>
+          <div class="flex items-center gap-2">
+            <Switch
+              id="isActive"
+              :model-value="value"
+              :disabled="isSelf"
+              @update:model-value="handleChange"
+            />
+            <p class="text-sm">
+              {{ value ? 'Activo' : 'Inactivo' }}
+            </p>
+          </div>
+          <p v-if="isSelf" class="text-muted-foreground text-sm">
+            No puedes desactivar tu propia cuenta
+          </p>
+        </div>
+      </VeeField>
     </FieldGroup>
     <!-- Actions -->
-    <div class="flex flex-col gap-2 pt-4">
+    <div class="flex flex-col gap-2 pt-6">
       <Button type="submit" :disabled="isSubmitting">
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
         {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}

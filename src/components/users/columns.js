@@ -1,6 +1,8 @@
 import { h } from 'vue'
+import { Pencil } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
-import { formatDate } from '@/utils/date'
+import { Button } from '@/components/ui/button'
+import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatRole } from '@/utils/roles'
 
 export const columns = [
@@ -41,5 +43,36 @@ export const columns = [
       cellClass: 'text-center',
     },
     cell: (info) => formatDate(info.getValue()),
+  },
+  {
+    accessorKey: 'updated_at',
+    header: 'Última actualización',
+    meta: {
+      headerClass: 'justify-center',
+      cellClass: 'text-center',
+    },
+    cell: (info) =>
+      h('span', { title: formatDateTime(info.getValue()) }, formatRelativeDate(info.getValue())),
+  },
+  {
+    id: 'actions',
+    header: '',
+    enableSorting: false,
+    meta: {
+      headerClass: 'justify-center',
+      cellClass: 'text-center',
+    },
+    cell: (info) =>
+      h(
+        Button,
+        {
+          variant: 'ghost',
+          size: 'icon',
+          'aria-label': `Editar a ${info.row.original.full_name}`,
+          class: 'h-8 w-8 rounded-full',
+          onClick: () => info.table.options.meta?.onEdit?.(info.row.original),
+        },
+        () => h(Pencil),
+      ),
   },
 ]

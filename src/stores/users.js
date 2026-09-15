@@ -4,15 +4,18 @@ import { supabase } from '@/lib/supabase'
 
 export const useUsersStore = defineStore('users', () => {
   const isCreating = ref(false)
+  const isUpdating = ref(false)
   const isFetching = ref(false)
 
   const users = ref([])
 
-  async function createUser(userData) {
+  async function createUser(payload) {
     isCreating.value = true
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-user', { body: userData })
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: payload,
+      })
 
       if (error) {
         throw error
@@ -21,6 +24,24 @@ export const useUsersStore = defineStore('users', () => {
       return data
     } finally {
       isCreating.value = false
+    }
+  }
+
+  async function updateUser(payload) {
+    isUpdating.value = true
+
+    try {
+      const { data, error } = await supabase.functions.invoke('update-user', {
+        body: payload,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } finally {
+      isUpdating.value = false
     }
   }
 
@@ -48,5 +69,14 @@ export const useUsersStore = defineStore('users', () => {
     users.value = []
   }
 
-  return { isCreating, isFetching, users, createUser, fetchUsers, clear }
+  return {
+    isCreating,
+    isUpdating,
+    isFetching,
+    users,
+    createUser,
+    updateUser,
+    fetchUsers,
+    clear,
+  }
 })
