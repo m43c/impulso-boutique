@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sheet'
 import UserForm from '@/components/users/UserForm.vue'
 import UsersList from '@/components/users/UsersList.vue'
+import { getEdgeFunctionErrorMessage } from '@/utils/edgeFunctionErrors'
 
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
@@ -24,18 +25,27 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const isSheetOpen = ref(false)
 const editingUser = ref(null)
+const fetchError = ref(null)
+const formError = ref(null)
 
 const isSelf = computed(() => !!editingUser.value && editingUser.value.id === authStore.user?.id)
 
-onMounted(() => {
-  usersStore.fetchUsers().catch((error) => {
+async function loadUsers() {
+  fetchError.value = null
+
+  try {
+    await usersStore.fetchUsers()
+  } catch (error) {
     console.error('Error al cargar usuarios:', error)
-    toast.error('No se puedo cargar los usuarios')
-  })
-})
+    fetchError.value = 'No se puedieron cargar los usuarios'
+  }
+}
+
+onMounted(() => loadUsers())
 
 async function handleSubmit(formData) {
   const isEditing = !!editingUser.value
+  formError.value = null
 
   try {
     if (editingUser.value) {
@@ -54,7 +64,7 @@ async function handleSubmit(formData) {
       await usersStore.updateUser(payload)
       toast.success('Usuario actualizado correctamente')
     } else {
-      const createdUser = await usersStore.createUser({
+      await usersStore.createUser({
         email: formData.email,
         password: formData.password,
         full_name: formData.fullName,
@@ -68,37 +78,48 @@ async function handleSubmit(formData) {
     editingUser.value = null
   } catch (error) {
     console.error('Error al guardar al usuario:', error)
-    toast.error(isEditing ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario')
+
+    const fallback = isEditing ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario'
+    const message = await getEdgeFunctionErrorMessage(error, fallback)
+    console.log(message)
+
+    formError.value = message
+    toast.error(message)
   }
 }
 
 function handleCancel() {
   isSheetOpen.value = false
   editingUser.value = null
+  formError.value = null
 }
 
 function handleAddUser() {
   editingUser.value = null
+  formError.value = null
   isSheetOpen.value = true
 }
 
 function handleEditUser(user) {
   editingUser.value = user
+  formError.value = null
   isSheetOpen.value = true
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 px-6 py-4">
+  <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 py-4">
     <Sheet v-model:open="isSheetOpen">
       <UsersList
         :users="usersStore.users"
         :is-loading="usersStore.isFetching"
+        :error="fetchError"
         @add-user="handleAddUser"
         @edit-user="handleEditUser"
+        @retry="loadUsers"
       />
       <!--Mobile -->
-      <SheetTrigger as-child class="md:hidden">
+      <SheetTrigger v-if="!fetchError" as-child class="md:hidden">
         <Button
           size="icon"
           class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full"
@@ -127,6 +148,7 @@ function handleEditUser(user) {
           :user="editingUser"
           :is-self="isSelf"
           :is-loading="usersStore.isCreating || usersStore.isUpdating"
+          :error-message="formError"
           @submit="handleSubmit"
           @cancel="handleCancel"
         />

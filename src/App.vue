@@ -17,7 +17,7 @@ onMounted(() => {
 <template>
   <RouterView />
   <Toaster
-    :position="isDesktop ? 'bottom-right' : 'top-center'"
+    :position="isDesktop ? 'top-right' : 'top-center'"
     theme="dark"
     rich-colors
     style="--width: 300px"

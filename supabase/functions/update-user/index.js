@@ -1,4 +1,19 @@
 import { withSupabase } from 'npm:@supabase/server@^1'
+import { isAuthApiError } from 'npm:@supabase/supabase-js@^2'
+
+const authErrorMessages = {
+  weak_password: 'La contraseña debe tener al menos 6 caracteres',
+  validation_failed: 'Los datos ingresados no son válidos',
+}
+const fallbackMessage = 'No se pudo completar la operación'
+
+function getAdminAuthErrorMessage(error) {
+  if (!error || !isAuthApiError(error)) {
+    return fallbackMessage
+  }
+
+  return authErrorMessages[error.code] ?? fallbackMessage
+}
 
 export default {
   fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
@@ -21,7 +36,7 @@ export default {
     if (profile.role !== 'admin' || !profile.is_active) {
       return Response.json(
         {
-          error: 'Usuario no autorizado',
+          error: 'No tienes permisos para realizar esta acción',
         },
         { status: 403 },
       )
@@ -41,6 +56,30 @@ export default {
     const authUpdates = {}
 
     if (email !== undefined) {
+      const { data: existingUsers, error: listUsersError } =
+        await ctx.supabaseAdmin.auth.admin.listUsers()
+
+      if (listUsersError) {
+        console.error('Error al verificar el correo electrónico:', listUsersError)
+        return Response.json(
+          {
+            error: 'No se pudo verificar el correo electrónico',
+          },
+          { status: 500 },
+        )
+      }
+
+      const emailTaken = existingUsers.users.some(
+        (u) => u.id !== user_id && u.email?.toLowerCase() === email.toLowerCase(),
+      )
+
+      if (emailTaken) {
+        return Response.json(
+          { error: 'Ya existe una cuenta con este correo electrónico' },
+          { status: 400 },
+        )
+      }
+
       authUpdates.email = email
     }
 
@@ -61,7 +100,7 @@ export default {
 
         return Response.json(
           {
-            error: authUpdateError.message,
+            error: getAdminAuthErrorMessage(authUpdateError),
           },
           { status: 400 },
         )
@@ -91,7 +130,7 @@ export default {
 
     return Response.json(
       {
-        message: 'Usuario actualizado correctamente: ',
+        message: 'Usuario actualizado correctamente:',
         user: updatedUser,
       },
       { status: 200 },

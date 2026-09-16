@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const props = defineProps({
   user: {
@@ -30,6 +31,10 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false,
+  },
+  errorMessage: {
+    type: String,
+    default: null,
   },
 })
 const emit = defineEmits(['submit', 'cancel'])
@@ -57,7 +62,12 @@ const formSchema = computed(() =>
           .toLowerCase()
           .min(1, 'Ingresa el correo electrónico')
           .email('Ingresa un correo electrónico válido'),
-        password: isEditMode.value ? z.string() : z.string().min(1, 'Ingresa la contraseña'),
+        password: isEditMode.value
+          ? z.union([
+              z.literal(''),
+              z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+            ])
+          : z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
         role: z.enum(['admin', 'advisor', 'cashier'], {
           errorMap: () => ({ message: 'Selecciona un rol' }),
         }),
@@ -112,6 +122,10 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
+    <!-- Errors -->
+    <Alert v-if="errorMessage" variant="destructive" class="mb-4">
+      <AlertDescription>{{ errorMessage }}</AlertDescription>
+    </Alert>
     <!-- Form fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Full name -->

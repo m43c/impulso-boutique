@@ -1,4 +1,21 @@
 import { withSupabase } from 'npm:@supabase/server@^1'
+import { isAuthApiError } from 'npm:@supabase/supabase-js@^2'
+
+const authErrorMessages = {
+  email_exists: 'Ya existe un usuario registrado con este correo electrónico',
+  email_address_invalid: 'El correo electrónico no es válido',
+  weak_password: 'La contraseña debe tener al menos 6 caracteres',
+  validation_failed: 'Los datos ingresados no son válidos',
+}
+const fallbackMessage = 'No se pudo completar la operación'
+
+function getAdminAuthErrorMessage(error) {
+  if (!error || !isAuthApiError(error)) {
+    return fallbackMessage
+  }
+
+  return authErrorMessages[error.code] ?? fallbackMessage
+}
 
 export default {
   fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
@@ -36,7 +53,7 @@ export default {
       console.error('Error al crear usuario:', createUserError)
       return Response.json(
         {
-          error: createUserError.message,
+          error: getAdminAuthErrorMessage(createUserError),
         },
         { status: 400 },
       )

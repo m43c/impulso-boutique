@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { Pencil } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatRole } from '@/utils/roles'
 
@@ -51,8 +52,16 @@ export const columns = [
       headerClass: 'justify-center',
       cellClass: 'text-center',
     },
-    cell: (info) =>
-      h('span', { title: formatDateTime(info.getValue()) }, formatRelativeDate(info.getValue())),
+    cell: (info) => {
+      const val = info.getValue()
+
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h('button', { type: 'button', class: 'cursor-default' }, formatRelativeDate(val)),
+        ),
+        h(TooltipContent, () => h('p', formatDateTime(val))),
+      ])
+    },
   },
   {
     id: 'actions',

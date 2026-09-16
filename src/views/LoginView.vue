@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { getAuthErrorMessage } from '@/utils/authErrors'
 
 const authStore = useAuthStore()
@@ -63,14 +64,11 @@ const onSubmit = handleSubmit(async (credentials) => {
         <CardContent>
           <form @submit="onSubmit">
             <!-- Form fields -->
-            <FieldGroup>
-              <p
-                v-if="errorMessage"
-                role="alert"
-                class="bg-destructive/10 text-destructive rounded-md p-3 text-sm"
-              >
-                {{ errorMessage }}
-              </p>
+            <FieldGroup class="gap-4">
+              <!-- Errors -->
+              <Alert v-if="errorMessage" variant="destructive">
+                <AlertDescription>{{ errorMessage }}</AlertDescription>
+              </Alert>
               <!-- Email -->
               <VeeField v-slot="{ componentField, errors }" name="email">
                 <Field :data-invalid="!!errors.length">
@@ -114,7 +112,7 @@ const onSubmit = handleSubmit(async (credentials) => {
                 </Field>
               </VeeField>
               <!-- Submit -->
-              <Field>
+              <Field class="mt-2">
                 <Button type="submit" :disabled="isSubmitting">
                   <Loader2 v-if="isSubmitting" class="animate-spin" />
                   {{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}

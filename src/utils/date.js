@@ -26,8 +26,15 @@ export function formatDateTime(isoString) {
 
 const relativeFormatter = new Intl.RelativeTimeFormat('es-BO', { numeric: 'auto' })
 
-export function formatRelativeDate(isoString) {
-  const diffInSeconds = (new Date(isoString).getTime() - Date.now()) / 1000
+export function formatRelativeDate(isoString, maxDaysForRelative = 7) {
+  const date = new Date(isoString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((date.getTime() - now.getTime()) / 1000)
+  const diffInDays = Math.abs(Math.floor(diffInSeconds / 86400))
+
+  if (diffInDays > maxDaysForRelative) {
+    return formatDate(isoString)
+  }
 
   if (Math.abs(diffInSeconds) < 60) {
     return 'justo ahora'
