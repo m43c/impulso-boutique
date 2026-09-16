@@ -1,9 +1,6 @@
 <script setup>
-import { useMediaQuery } from '@vueuse/core'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar.vue'
-
-const isDesktop = useMediaQuery('(min-width: 768px)')
 </script>
 
 <template>
