@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
-import { EllipsisVertical, Home, LogOut, Store, Users } from '@lucide/vue'
+import { EllipsisVertical, Home, LogOut, Store, User, Users } from '@lucide/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -11,6 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import {
   Sidebar,
@@ -36,20 +37,6 @@ const items = [
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const nameParts = computed(() => authStore.profile?.full_name?.trim().split(/\s+/) ?? [])
-
-const initials = computed(() => {
-  const parts = nameParts.value
-
-  if (!parts.length) {
-    return '??'
-  }
-
-  const first = parts[0][0]
-  const paternal = parts.length > 1 ? (parts.at(-2)?.[0] ?? parts.at(-1)[0]) : ''
-
-  return (first + paternal).toUpperCase()
-})
-
 const displayName = computed(() => {
   const parts = nameParts.value
 
@@ -110,7 +97,7 @@ async function handleLogout() {
           <div class="flex items-center gap-2 p-2 px-2">
             <Avatar class="size-8 shrink-0">
               <AvatarFallback class="bg-sidebar-border text-sidebar-primary-foreground text-xs">
-                {{ initials }}
+                {{ authStore.initials }}
               </AvatarFallback>
             </Avatar>
             <div class="flex flex-1 flex-col overflow-hidden">
@@ -130,7 +117,19 @@ async function handleLogout() {
                   <EllipsisVertical />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent :side="isDesktop ? 'right' : 'top'" align="end" class="w-56">
+              <DropdownMenuContent
+                :side="isDesktop ? 'right' : 'top'"
+                :side-offset="isDesktop ? 4 : 12"
+                align="end"
+                class="w-56"
+              >
+                <DropdownMenuItem as-child>
+                  <RouterLink to="/profile">
+                    <User />
+                    <span>Ver Perfil</span>
+                  </RouterLink>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem :disabled="authStore.isLoading" @click="handleLogout">
                   <LogOut />
                   <span>Cerrar sesión</span>

@@ -108,7 +108,7 @@ function handleEditUser(user) {
 </script>
 
 <template>
-  <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 py-4">
+  <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
     <Sheet v-model:open="isSheetOpen">
       <UsersList
         :users="usersStore.users"

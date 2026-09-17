@@ -13,6 +13,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!session.value)
   const role = computed(() => profile.value?.role ?? null)
+  const initials = computed(() => {
+    const parts = profile.value?.full_name?.trim().split(/\s+/) ?? []
+
+    if (!parts.length) {
+      return '??'
+    }
+
+    const first = parts[0][0]
+    const paternal = parts.length > 1 ? (parts.at(-2)?.[0] ?? parts.at(-1)[0]) : ''
+
+    return (first + paternal).toUpperCase()
+  })
 
   async function fetchProfile(userId) {
     if (userId === lastFetchedUserId) {
@@ -110,6 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoadingProfile,
     isAuthenticated,
     role,
+    initials,
     login,
     logout,
     initialize,
