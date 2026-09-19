@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const props = defineProps({
   user: {
@@ -211,7 +211,7 @@ function handleCancel() {
       </VeeField>
       <!-- Status -->
       <VeeField v-if="isEditMode" v-slot="{ value, handleChange }" name="isActive">
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-3">
           <Label for="isActive" class="cursor-pointer">Estado</Label>
           <div class="flex items-center gap-2">
             <Switch

@@ -10,7 +10,7 @@ const route = useRoute()
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset class="flex min-h-0 flex-col">
-      <header class="flex items-center px-6 py-4">
+      <header class="flex items-center px-4 py-4">
         <SidebarTrigger />
         <h1 class="pl-2 text-lg font-semibold">{{ route.meta.title }}</h1>
       </header>

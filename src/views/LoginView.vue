@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { toast } from 'vue-sonner'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -15,6 +16,7 @@ import { getAuthErrorMessage } from '@/utils/authErrors'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const showPassword = ref(false)
 const errorMessage = ref('')
@@ -46,8 +48,21 @@ const onSubmit = handleSubmit(async (credentials) => {
 
   try {
     await authStore.login(credentials)
-    router.push({ name: 'home' })
+
+    const redirect =
+      typeof route.query.redirect === 'string' &&
+      route.query.redirect.startsWith('/') &&
+      !route.query.redirect.startsWith('//')
+        ? route.query.redirect
+        : null
+
+    await router.replace(redirect ?? { name: 'home' })
   } catch (error) {
+    if (error?.code === 'ACCOUNT_INACTIVE') {
+      toast.error('Tu cuenta está inactiva. Contacta al administrador')
+      return
+    }
+
     errorMessage.value = getAuthErrorMessage(error)
   }
 })

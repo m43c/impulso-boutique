@@ -31,7 +31,7 @@ const usersStore = useUsersStore()
 
 const items = [
   { title: 'Inicio', url: '/home', icon: Home },
-  { title: 'Usuarios', url: '/users', icon: Users },
+  { title: 'Usuarios', url: '/users', icon: Users, roles: ['admin'] },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -50,6 +50,9 @@ const displayName = computed(() => {
 
   return `${parts[0]} ${parts.at(-2)}`
 })
+const visibleItems = computed(() =>
+  items.filter((item) => !item.roles || item.roles.includes(authStore.role)),
+)
 
 async function handleLogout() {
   try {
@@ -79,7 +82,7 @@ async function handleLogout() {
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
-            <SidebarMenuItem v-for="item in items" :key="item.title">
+            <SidebarMenuItem v-for="item in visibleItems" :key="item.title">
               <SidebarMenuButton as-child>
                 <RouterLink :to="item.url">
                   <component :is="item.icon" />

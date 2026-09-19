@@ -9,11 +9,11 @@ import { formatRole } from '@/utils/roles'
 export const columns = [
   {
     accessorKey: 'full_name',
-    header: 'Nombre',
+    header: 'Nombre completo',
   },
   {
     accessorKey: 'email',
-    header: 'Correo',
+    header: 'Correo electrónico',
   },
   {
     accessorKey: 'role',
