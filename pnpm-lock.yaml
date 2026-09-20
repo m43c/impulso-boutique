@@ -17,6 +17,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(jiti@2.7.0))
+      '@tanstack/vue-table':
+        specifier: ^9.2.4
+        version: 9.2.4(vue@3.5.42)
       '@vee-validate/zod':
         specifier: ^4.15.1
         version: 4.15.1(vue@3.5.42)(zod@3.25.76)
@@ -50,6 +53,9 @@ importers:
       vue-router:
         specifier: ^5.3.0
         version: 5.3.0(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(vue@3.5.42))(rolldown@1.2.6)(vite@8.2.2(jiti@2.7.0))(vue@3.5.42)
+      vue-sonner:
+        specifier: ^2.0.9
+        version: 2.0.9
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -359,8 +365,21 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
+  '@tanstack/store@0.11.1':
+    resolution: {integrity: sha512-mzTOBhypOuDJAy/D8n2MfUZ1HFkXnmSETviRyhqEC8LUE7/IZQExOTxMANj3KjTofYTkFNpBY67qaVrT41YccA==}
+
+  '@tanstack/table-core@9.2.4':
+    resolution: {integrity: sha512-GwdDyGGr6UXAtubF14yAwcXvdaogqfsQgIk89Suebjxob/Rjq2xvfmXsjDF1rQmKmhHsJm9TOY7myxv3i6geJw==}
+    engines: {node: '>=20'}
+
   '@tanstack/virtual-core@3.17.8':
     resolution: {integrity: sha512-BfEvehNpOT75r5Ksc5xW6NZuXujTfb7nlSEyVu4XHG3gdxNg1KqXruWbDewXOUaUYIo4oRbSfkjIajz4MAT8tA==}
+
+  '@tanstack/vue-table@9.2.4':
+    resolution: {integrity: sha512-GSD6ZkeQvADs6u9KUyhUuiD+qYgA+Lt6hTBDSEadCBIbC8q2SaoHzseLwgDKVUnRClTIMj9+NwCEF+Gp3P7ChQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      vue: '>=3.2'
 
   '@tanstack/vue-virtual@3.13.36':
     resolution: {integrity: sha512-gKpExv4RbB9luVG+SucTXoqPZv/gzu/Yvz6BNO+8kpNxJ2x+I/ulryzl5W9BRciahZGp5Tls3Dp5XP1ztVGbMw==}
@@ -993,6 +1012,20 @@ packages:
       vite:
         optional: true
 
+  vue-sonner@2.0.9:
+    resolution: {integrity: sha512-i6BokNlNDL93fpzNxN/LZSn6D6MzlO+i3qXt6iVZne3x1k7R46d5HlFB4P8tYydhgqOrRbIZEsnRd3kG7qGXyw==}
+    peerDependencies:
+      '@nuxt/kit': ^4.0.3
+      '@nuxt/schema': ^4.0.3
+      nuxt: ^4.0.3
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      '@nuxt/schema':
+        optional: true
+      nuxt:
+        optional: true
+
   vue@3.5.42:
     resolution: {integrity: sha512-4RyHQTbQvOPs3MfvUO1Sg0YRrKNnA0mAVtvpd12Tg1fKDN7OHBUl1IqSn8zGJjK9nI3NkNp8cgTpVrSZC5TTcA==}
     peerDependencies:
@@ -1226,7 +1259,19 @@ snapshots:
       tailwindcss: 4.3.3
       vite: 8.2.2(jiti@2.7.0)
 
+  '@tanstack/store@0.11.1': {}
+
+  '@tanstack/table-core@9.2.4':
+    dependencies:
+      '@tanstack/store': 0.11.1
+
   '@tanstack/virtual-core@3.17.8': {}
+
+  '@tanstack/vue-table@9.2.4(vue@3.5.42)':
+    dependencies:
+      '@tanstack/store': 0.11.1
+      '@tanstack/table-core': 9.2.4
+      vue: 3.5.42
 
   '@tanstack/vue-virtual@3.13.36(vue@3.5.42)':
     dependencies:
@@ -1732,6 +1777,8 @@ snapshots:
       - rollup
       - unloader
       - webpack
+
+  vue-sonner@2.0.9: {}
 
   vue@3.5.42:
     dependencies:

@@ -1,12 +1,17 @@
 <script setup>
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import 'vue-sonner/style.css'
+import { useMediaQuery } from '@vueuse/core'
+import { Toaster } from '@/components/ui/sonner'
 
-const authStore = useAuthStore()
-
-onMounted(() => authStore.initialize())
+const isDesktop = useMediaQuery('(min-width: 768px)')
 </script>
 
 <template>
   <RouterView />
+  <Toaster
+    :position="isDesktop ? 'top-right' : 'top-center'"
+    theme="dark"
+    rich-colors
+    style="--width: 300px"
+  />
 </template>
