@@ -136,7 +136,7 @@ function sortIcon(column) {
             Agregar usuario
           </Button>
         </div>
-        <!-- Desktop -->
+        <!-- Desktop view -->
         <div v-if="isDesktop" class="rounded-md border">
           <Table>
             <TableHeader>
@@ -198,7 +198,7 @@ function sortIcon(column) {
                   </TableCell>
                 </TableRow>
               </template>
-              <!-- Data -->
+              <!-- User data -->
               <template v-else-if="table.getRowModel().rows?.length">
                 <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
                   <TableCell
@@ -210,7 +210,7 @@ function sortIcon(column) {
                   </TableCell>
                 </TableRow>
               </template>
-              <!-- Empty -->
+              <!-- Empty state -->
               <template v-else>
                 <TableRow>
                   <TableCell
@@ -224,7 +224,7 @@ function sortIcon(column) {
             </TableBody>
           </Table>
         </div>
-        <!-- Mobile -->
+        <!-- Mobile view -->
         <div v-else class="flex flex-col gap-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
@@ -246,14 +246,14 @@ function sortIcon(column) {
               </CardContent>
             </Card>
           </template>
-          <!-- Empty -->
+          <!-- Empty state -->
           <p
             v-else-if="!table.getRowModel().rows?.length"
             class="text-muted-foreground py-8 text-center text-sm"
           >
             No se encontraron usuarios
           </p>
-          <!-- Data -->
+          <!-- User data -->
           <Card v-for="row in table.getRowModel().rows" v-else :key="row.id">
             <CardContent class="flex flex-col gap-1">
               <div class="flex justify-between">

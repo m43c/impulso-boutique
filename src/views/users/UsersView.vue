@@ -110,6 +110,7 @@ function handleEditUser(user) {
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
     <Sheet v-model:open="isSheetOpen">
+      <!-- Users list -->
       <UsersList
         :users="usersStore.users"
         :is-loading="usersStore.isFetching"
@@ -118,7 +119,7 @@ function handleEditUser(user) {
         @edit-user="handleEditUser"
         @retry="loadUsers"
       />
-      <!--Mobile -->
+      <!-- Add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">
         <Button
           size="icon"
@@ -129,11 +130,13 @@ function handleEditUser(user) {
           <UserPlus class="size-5" />
         </Button>
       </SheetTrigger>
+      <!-- User form -->
       <SheetContent
         :side="isDesktop ? 'right' : 'bottom'"
         class="w-full p-6 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
+        <!-- Title and description -->
         <SheetHeader class="p-0 pb-2">
           <SheetTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</SheetTitle>
           <SheetDescription>
@@ -144,6 +147,7 @@ function handleEditUser(user) {
             }}
           </SheetDescription>
         </SheetHeader>
+        <!-- Form -->
         <UserForm
           :user="editingUser"
           :is-self="isSelf"

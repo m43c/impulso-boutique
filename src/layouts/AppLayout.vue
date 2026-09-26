@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 
 const route = useRoute()
 </script>

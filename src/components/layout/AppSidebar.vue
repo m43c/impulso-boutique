@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
-import { EllipsisVertical, Home, LogOut, Store, User, Users } from '@lucide/vue'
+import { EllipsisVertical, Home, Package, LogOut, Store, User, Users } from '@lucide/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -32,6 +32,7 @@ const usersStore = useUsersStore()
 const items = [
   { title: 'Inicio', url: '/home', icon: Home },
   { title: 'Usuarios', url: '/users', icon: Users, roles: ['admin'] },
+  { title: 'Productos', url: '/products', icon: Package, roles: ['admin'] },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
