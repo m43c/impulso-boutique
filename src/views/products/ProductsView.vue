@@ -20,6 +20,11 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const isSheetOpen = ref(false)
 
+function getFakeImageUrl(seed) {
+  const safeSeed = encodeURIComponent(seed || Date.now().toString())
+  return `https://picsum.photos/seed/${safeSeed}/600/600`
+}
+
 async function handleSubmit(formData) {
   try {
     const payload = {
@@ -29,8 +34,8 @@ async function handleSubmit(formData) {
       color: formData.color,
       size: formData.size,
       price: formData.price,
+      image_url: getFakeImageUrl(formData.name),
       min_stock: formData.minStock,
-      image_url: 'https://impulso-boutique/products/image',
     }
 
     await productsStore.createProduct(payload)
