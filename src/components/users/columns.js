@@ -10,14 +10,23 @@ export const columns = [
   {
     accessorKey: 'full_name',
     header: 'Nombre completo',
+    meta: {
+      skeletonClass: 'h-4 w-32',
+    },
   },
   {
     accessorKey: 'email',
     header: 'Correo electrónico',
+    meta: {
+      skeletonClass: 'h-4 w-44',
+    },
   },
   {
     accessorKey: 'role',
     header: 'Rol',
+    meta: {
+      skeletonClass: 'h-4 w-20',
+    },
     cell: (info) => formatRole(info.getValue()),
   },
   {
@@ -25,6 +34,7 @@ export const columns = [
     header: 'Estado',
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
       cellClass: 'text-center',
     },
     cell: (info) =>
@@ -41,6 +51,7 @@ export const columns = [
     header: 'Fecha de creación',
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
     },
     cell: (info) => formatDate(info.getValue()),
@@ -50,6 +61,7 @@ export const columns = [
     header: 'Última actualización',
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
     },
     cell: (info) => {
@@ -69,6 +81,7 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
       cellClass: 'text-center',
     },
     cell: (info) =>
