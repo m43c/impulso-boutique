@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatRole } from '@/utils/roles'
-import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
+import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { columns } from './columns'
 import { features } from './features'
 import UserCardSkeleton from './UserCardSkeleton.vue'
@@ -219,24 +219,28 @@ function sortIcon(column) {
             No se encontraron usuarios
           </p>
           <!-- User data -->
-          <Card v-for="row in table.getRowModel().rows" v-else :key="row.id">
-            <CardContent class="flex flex-col gap-1">
+          <Card v-for="row in table.getRowModel().rows" v-else :key="row.id" class="py-0">
+            <CardContent class="flex flex-col gap-3 p-4">
               <div class="flex justify-between">
-                <!-- Full name -->
-                <p class="truncate font-medium">{{ row.original.full_name}}</p>
+                <div class="flex min-w-0 flex-col">
+                  <!-- Full name -->
+                  <p class="truncate font-medium">{{ row.original.full_name }}</p>
+                  <!-- Email -->
+                  <p class="text-muted-foreground truncate text-sm">
+                    {{ row.original.email }}
+                  </p>
+                </div>
                 <!-- Edit user button -->
                 <Button
                   variant="ghost"
                   size="icon"
-                  class="h-8 w-8 ml-3 shrink-0 rounded-full"
+                  class="ml-3 h-8 w-8 shrink-0 rounded-full"
                   :aria-label="`Editar a ${row.original.full_name}`"
                   @click="emit('edit-user', row.original)"
                 >
                   <Pencil />
                 </Button>
               </div>
-              <!-- Email -->
-              <p class="text-muted-foreground text-sm">{{ row.original.email }}</p>
               <div class="flex items-center justify-between text-sm">
                 <!-- Role -->
                 <span>{{ formatRole(row.original.role) }}</span>
@@ -245,21 +249,20 @@ function sortIcon(column) {
                   {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
                 </Badge>
               </div>
-              <div class="flex flex-col gap-0.5 pt-2">
-                <!-- Update at -->
-                <div class="text-muted-foreground flex items-center gap-1 text-xs">
-                  <span>Actualizado:</span>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <button type="button" class="cursor-default">
-                        {{ formatRelativeDate(row.original.updated_at) }}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{{ formatDateTime(row.original.updated_at) }}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+              <!-- Creation/update date -->
+              <div class="text-muted-foreground flex items-center gap-1 text-xs">
+                <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
+                <span v-else>Actualizado:</span>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <button type="button" class="cursor-default">
+                      {{ formatRelativeDate(row.original.updated_at) }}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ formatDateTime(row.original.updated_at) }}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </CardContent>
           </Card>
