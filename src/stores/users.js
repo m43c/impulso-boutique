@@ -45,6 +45,13 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  async function deactivateUser(userId) {
+    return updateUser({
+      user_id: userId,
+      is_active: false,
+    })
+  }
+
   async function fetchUsers() {
     isFetching.value = true
 
@@ -76,6 +83,7 @@ export const useUsersStore = defineStore('users', () => {
     users,
     createUser,
     updateUser,
+    deactivateUser,
     fetchUsers,
     clear,
   }

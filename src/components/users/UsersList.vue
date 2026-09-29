@@ -58,7 +58,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-user', 'edit-user', 'retry'])
+const emit = defineEmits(['add-user', 'edit-user', 'deactivate-user', 'retry'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -98,6 +98,7 @@ const table = useTable({
   },
   meta: {
     onEdit: (user) => emit('edit-user', user),
+    onDeactivate: (user) => emit('deactivate-user', user),
   },
 })
 
@@ -262,7 +263,7 @@ function sortIcon(column) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       class="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                      @click="console.log('Desactivar:', row.original)"
+                      @click="emit('deactivate-user', row.original)"
                     >
                       <UserX class="text-destructive mr-2 h-4 w-4" />
                       <span>Desactivar</span>

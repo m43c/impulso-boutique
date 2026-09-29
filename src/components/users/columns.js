@@ -157,7 +157,7 @@ export const columns = [
               'aria-label': `Desactivar a ${user.full_name}`,
               class:
                 'text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer',
-              onClick: () => console.log('Desactivar:', user),
+              onClick: () => info.table.options.meta?.onDeactivate?.(user),
             },
             () => [
               h(UserX, {

@@ -81,9 +81,20 @@ async function handleSubmit(formData) {
 
     const fallback = isEditing ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario'
     const message = await getEdgeFunctionErrorMessage(error, fallback)
-    console.log(message)
 
     formError.value = message
+    toast.error(message)
+  }
+}
+
+async function handleDeactivateUser(user) {
+  try {
+    await usersStore.deactivateUser(user.id)
+    toast.success('Usuario desactivado correctamente')
+    usersStore.fetchUsers()
+  } catch (error) {
+    console.error('Error al desactivar usuario:', error)
+    const message = await getEdgeFunctionErrorMessage(error, 'No se pudo desactivar el usuario')
     toast.error(message)
   }
 }
@@ -117,6 +128,7 @@ function handleEditUser(user) {
         :error="fetchError"
         @add-user="handleAddUser"
         @edit-user="handleEditUser"
+        @deactivate-user="handleDeactivateUser"
         @retry="loadUsers"
       />
       <!-- Add user button -->
