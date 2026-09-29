@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 
 export const useProductsStore = defineStore('products', () => {
   const isCreating = ref(false)
+  const isFetching = ref(false)
+
   const products = ref([])
 
   async function createProduct(payload) {
@@ -22,14 +24,39 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchProducts() {
+    isFetching.value = true
+
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select()
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      products.value = data
+      return data
+    } catch (error) {
+      products.value = []
+      throw error
+    } finally {
+      isFetching.value = false
+    }
+  }
+
   function clear() {
     products.value = []
   }
 
   return {
     isCreating,
+    isFetching,
     products,
     createProduct,
+    fetchProducts,
     clear,
   }
 })

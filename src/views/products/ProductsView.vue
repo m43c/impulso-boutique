@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { useMediaQuery } from '@vueuse/core'
 import { PackagePlus } from '@lucide/vue'
@@ -11,14 +11,29 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
 import ProductForm from '@/components/products/ProductForm.vue'
+import ProductsList from '@/components/products/ProductsList.vue'
 
 const productsStore = useProductsStore()
+
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const isSheetOpen = ref(false)
+const fetchError = ref(null)
+
+async function loadProducts() {
+  fetchError.value = null
+
+  try {
+    await productsStore.fetchProducts()
+  } catch (error) {
+    console.error('Error al cargar productos:', error)
+    fetchError.value = 'No se pudieron cargar los productos'
+  }
+}
+
+onMounted(() => loadProducts())
 
 function getFakeImageUrl(seed) {
   const safeSeed = encodeURIComponent(seed || Date.now().toString())
@@ -40,8 +55,8 @@ async function handleSubmit(formData) {
 
     await productsStore.createProduct(payload)
     toast.success('Producto creado correctamente')
-    console.log({ ...formData })
 
+    productsStore.fetchProducts()
     isSheetOpen.value = false
   } catch (error) {
     console.error('Error al guardar el producto:', error)
@@ -61,37 +76,34 @@ function handleAddProduct() {
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
     <Sheet v-model:open="isSheetOpen">
-      <div class="flex flex-1 justify-end">
-        <SheetTrigger as-child class="hidden md:inline-flex">
-          <Button @click="handleAddProduct">
-            <PackagePlus class="size-4" />
-            Agregar producto
-          </Button>
-        </SheetTrigger>
-      </div>
-      <!-- Add user button -->
-      <SheetTrigger as-child class="md:hidden">
-        <Button
-          size="icon"
-          class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full"
-          aria-label="Agregar producto"
-          @click="handleAddProduct"
-        >
-          <PackagePlus class="size-5" />
-        </Button>
-      </SheetTrigger>
+      <!-- Products list -->
+      <ProductsList
+        :products="productsStore.products"
+        :is-loading="productsStore.isFetching"
+        :error="fetchError"
+        @add-product="handleAddProduct"
+        @retry="loadProducts"
+      />
+      <!-- Mobile add product button -->
+      <Button
+        v-if="!fetchError"
+        size="icon"
+        class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
+        aria-label="Agregar producto"
+        @click="handleAddProduct"
+      >
+        <PackagePlus class="size-5" />
+      </Button>
       <!-- Product form -->
       <SheetContent
         :side="isDesktop ? 'right' : 'bottom'"
         class="w-full p-6 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
-        <!-- Title and description -->
         <SheetHeader class="p-0 pb-2">
           <SheetTitle>Crear producto</SheetTitle>
           <SheetDescription>Completa la información del nuevo producto</SheetDescription>
         </SheetHeader>
-        <!-- Form -->
         <ProductForm
           :is-loading="productsStore.isCreating"
           @submit="handleSubmit"
