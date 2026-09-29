@@ -8,15 +8,21 @@ import { Skeleton } from '@/components/ui/skeleton'
     <CardContent class="flex flex-col gap-3 p-4">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1">
+          <!-- Full name -->
           <Skeleton class="h-5 w-48" />
+          <!-- Email -->
           <Skeleton class="h-4 w-36" />
         </div>
+        <!-- Actions menu -->
         <Skeleton class="h-6 w-6 rounded-full" />
       </div>
       <div class="flex items-center justify-between">
+        <!-- Role -->
         <Skeleton class="h-4 w-20" />
+        <!-- Status -->
         <Skeleton class="h-5 w-16 rounded-full" />
       </div>
+      <!-- Date -->
       <Skeleton class="h-3 w-30" />
     </CardContent>
   </Card>

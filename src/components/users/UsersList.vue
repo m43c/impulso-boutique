@@ -8,10 +8,12 @@ import {
   CircleAlert,
   ChevronLeft,
   ChevronRight,
+  EllipsisVertical,
   Loader2,
   Pencil,
   Search,
   UserPlus,
+  UserX,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Card, CardContent } from '@/components/ui/card'
@@ -28,6 +30,13 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { formatRole } from '@/utils/roles'
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { columns } from './columns'
@@ -224,32 +233,60 @@ function sortIcon(column) {
               <div class="flex justify-between">
                 <div class="flex min-w-0 flex-col">
                   <!-- Full name -->
-                  <p class="truncate font-medium">{{ row.original.full_name }}</p>
+                  <p class="font-mediums truncate">{{ row.original.full_name }}</p>
                   <!-- Email -->
                   <p class="text-muted-foreground truncate text-sm">
                     {{ row.original.email }}
                   </p>
                 </div>
-                <!-- Edit user button -->
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="ml-3 h-8 w-8 shrink-0 rounded-full"
-                  :aria-label="`Editar a ${row.original.full_name}`"
-                  @click="emit('edit-user', row.original)"
-                >
-                  <Pencil />
-                </Button>
+                <!-- Actions menu -->
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="-mt-1 -mr-2 h-8 w-8 shrink-0 rounded-full"
+                      :aria-label="`Opciones para ${row.original.full_name}`"
+                    >
+                      <EllipsisVertical class="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      class="cursor-pointer"
+                      @click="emit('edit-user', row.original)"
+                    >
+                      <Pencil class="mr-2 h-4 w-4" />
+                      <span>Editar</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      class="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                      @click="console.log('Desactivar:', row.original)"
+                    >
+                      <UserX class="text-destructive mr-2 h-4 w-4" />
+                      <span>Desactivar</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <!-- Role -->
                 <span>{{ formatRole(row.original.role) }}</span>
                 <!-- Status -->
-                <Badge :variant="row.original.is_active ? 'success' : 'destructive'">
+                <Badge
+                  variant="outline"
+                  class="py-1 text-[11px]"
+                  :class="
+                    row.original.is_active
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                      : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
+                  "
+                >
                   {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
                 </Badge>
               </div>
-              <!-- Creation/update date -->
+              <!-- Date -->
               <div class="text-muted-foreground flex items-center gap-1 text-xs">
                 <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
                 <span v-else>Actualizado:</span>
