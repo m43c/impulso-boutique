@@ -44,6 +44,7 @@ import { formatCurrency } from '@/utils/currency'
 import { columns } from '@/components/products/columns'
 import { features } from '@/components/products/features'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
+import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 
 const props = defineProps({
   products: {
@@ -66,12 +67,11 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const search = ref('')
 
-watch(search, () => {
-  table.setPageIndex(0)
-})
-
 function normalizeText(text) {
-  if (!text) return ''
+  if (!text) {
+    return ''
+  }
+
   return text
     .toString()
     .normalize('NFD')
@@ -88,7 +88,14 @@ const filteredProducts = computed(() => {
 
   return props.products.filter((product) => {
     const statusLabel = product.is_active ? 'vigente' : 'retirado'
-    const rawHaystack = [product.name, product.category, product.brand, product.color, product.size]
+    const rawHaystack = [
+      product.name,
+      product.description,
+      product.category,
+      product.brand,
+      product.color,
+      product.size,
+    ]
       .join(' ')
       .toLowerCase()
 
@@ -98,6 +105,41 @@ const filteredProducts = computed(() => {
     return haystack.includes(term) || normalizedStatus.startsWith(term)
   })
 })
+
+const sortOptions = [
+  {
+    label: 'Nombre: A-Z',
+    columnId: 'name',
+    desc: false,
+  },
+  {
+    label: 'Nombre: Z-A',
+    columnId: 'name',
+    desc: true,
+    separator: true,
+  },
+  {
+    label: 'Precio: más bajo',
+    columnId: 'price',
+    desc: false,
+  },
+  {
+    label: 'Precio: más alto',
+    columnId: 'price',
+    desc: true,
+    separator: true,
+  },
+  {
+    label: 'Más recientes',
+    columnId: 'updated_at',
+    desc: true,
+  },
+  {
+    label: 'Más antiguos',
+    columnId: 'updated_at',
+    desc: false,
+  },
+]
 
 const table = useTable({
   features,
@@ -115,6 +157,10 @@ const table = useTable({
   meta: {
     onViewDetails: (product) => emit('view-details', product),
   },
+})
+
+watch(search, () => {
+  table.setPageIndex(0)
 })
 
 function sortIcon(column) {
@@ -156,8 +202,10 @@ function sortIcon(column) {
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input v-model="search" placeholder="Buscar product..." class="pl-9" />
+            <Input v-model="search" placeholder="Buscar producto..." class="pl-9" />
           </div>
+          <!-- Sorting button (mobile) -->
+          <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add product button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-product')">
             <PackagePlus class="h-4 w-4" />
