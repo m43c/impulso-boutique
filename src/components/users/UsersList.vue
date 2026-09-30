@@ -58,7 +58,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-user', 'edit-user', 'deactivate-user', 'retry'])
+const emit = defineEmits(['add-user', 'retry', 'edit-user', 'deactivate-user'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 

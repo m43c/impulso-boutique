@@ -235,7 +235,7 @@ export const columns = [
             {
               'aria-label': `Ver detalles de ${product.name}`,
               class: 'cursor-pointer',
-              onClick: () => console.log('Ver detalles:', product),
+              onClick: () => info.table.options.meta?.onViewDetails?.(product),
             },
             () => [
               h(Eye, {

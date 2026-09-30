@@ -127,9 +127,9 @@ function handleEditUser(user) {
         :is-loading="usersStore.isFetching"
         :error="fetchError"
         @add-user="handleAddUser"
+        @retry="loadUsers"
         @edit-user="handleEditUser"
         @deactivate-user="handleDeactivateUser"
-        @retry="loadUsers"
       />
       <!-- Add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">

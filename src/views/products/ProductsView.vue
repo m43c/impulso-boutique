@@ -14,13 +14,16 @@ import {
 } from '@/components/ui/sheet'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsList from '@/components/products/ProductsList.vue'
+import ProductDetails from '@/components/products/ProductDetails.vue'
 
 const productsStore = useProductsStore()
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const isSheetOpen = ref(false)
+const isDetailsOpen = ref(false)
 const fetchError = ref(null)
+const detailsProduct = ref(null)
 
 async function loadProducts() {
   fetchError.value = null
@@ -72,6 +75,11 @@ function handleCancel() {
 function handleAddProduct() {
   isSheetOpen.value = true
 }
+
+function handleViewDetails(product) {
+  detailsProduct.value = product
+  isDetailsOpen.value = true
+}
 </script>
 
 <template>
@@ -84,7 +92,10 @@ function handleAddProduct() {
         :error="fetchError"
         @add-product="handleAddProduct"
         @retry="loadProducts"
+        @view-details="handleViewDetails"
       />
+      <!-- Product details -->
+      <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />
       <!-- Mobile add product button -->
       <Button
         v-if="!fetchError"

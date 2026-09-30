@@ -39,7 +39,7 @@ import {
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
 import { columns } from '@/components/products/columns'
-import { features } from '@/components/products/feactures'
+import { features } from '@/components/products/features'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
 
 const props = defineProps({
@@ -57,7 +57,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-product', 'retry'])
+const emit = defineEmits(['add-product', 'retry', 'view-details'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -73,6 +73,9 @@ const table = useTable({
       pageIndex: 0,
       pageSize: isDesktop.value ? 10 : 5,
     },
+  },
+  meta: {
+    onViewDetails: (product) => emit('view-details', product),
   },
 })
 
@@ -220,7 +223,7 @@ function sortIcon(column) {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       class="cursor-pointer"
-                      @click="console.log('Ver detalles:', row.original)"
+                      @click="emit('view-details', row.original)"
                     >
                       <Eye class="mr-2 h-4 w-4" />
                       <span>Ver detalles</span>
@@ -299,14 +302,8 @@ function sortIcon(column) {
                 </div>
               </div>
               <!-- Description -->
-              <p
-                v-if="row.original.description"
-                class="text-muted-foreground line-clamp-2 pb-1 text-xs leading-relaxed"
-              >
-                {{
-                  row.original.description ||
-                  'Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, itaque laudantium fugit est necessitatibus.'
-                }}
+              <p class="text-muted-foreground line-clamp-2 pb-1 text-xs leading-relaxed">
+                {{ row.original.description || 'Sin descripción' }}
               </p>
               <div class="flex flex-col gap-1 border-t pt-1">
                 <div class="flex items-center justify-between">
