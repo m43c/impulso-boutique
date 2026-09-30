@@ -42,6 +42,7 @@ import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { columns } from './columns'
 import { features } from './features'
 import UserCardSkeleton from './UserCardSkeleton.vue'
+import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 
 const props = defineProps({
   users: {
@@ -93,6 +94,41 @@ const filteredUsers = computed(() => {
     return haystack.includes(term) || normalizedStatus.startsWith(term)
   })
 })
+
+const sortOptions = [
+  {
+    label: 'Nombre: A-Z',
+    columnId: 'full_name',
+    desc: false,
+  },
+  {
+    label: 'Nombre: Z-A',
+    columnId: 'full_name',
+    desc: true,
+    separator: true,
+  },
+  {
+    label: 'Correo: A-Z',
+    columnId: 'email',
+    desc: false,
+  },
+  {
+    label: 'Correo: Z-A',
+    columnId: 'email',
+    desc: true,
+    separator: true,
+  },
+  {
+    label: 'Fecha: más recientes',
+    columnId: 'updated_at',
+    desc: true,
+  },
+  {
+    label: 'Fecha: más antiguos',
+    columnId: 'updated_at',
+    desc: false,
+  },
+]
 
 const table = useTable({
   features,
@@ -158,6 +194,8 @@ function sortIcon(column) {
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
           </div>
+          <!-- Sorting button (mobile) -->
+          <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add user button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
             <UserPlus class="h-4 w-4" />

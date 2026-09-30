@@ -130,12 +130,12 @@ const sortOptions = [
     separator: true,
   },
   {
-    label: 'Más recientes',
+    label: 'Fecha: más recientes',
     columnId: 'updated_at',
     desc: true,
   },
   {
-    label: 'Más antiguos',
+    label: 'Fecha: más antiguos',
     columnId: 'updated_at',
     desc: false,
   },
