@@ -199,7 +199,7 @@ function sortIcon(column) {
           </p>
           <!-- Product data -->
           <Card v-for="row in table.getRowModel().rows" v-else :key="row.id" class="py-0">
-            <CardContent class="flex flex-col gap-2 p-4">
+            <CardContent class="flex flex-col gap-1 p-4">
               <div class="items-star flex justify-between gap-2">
                 <!-- Name -->
                 <p class="truncate text-base leading-tight font-medium">
@@ -243,7 +243,10 @@ function sortIcon(column) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div class="flex items-stretch gap-3 pb-2">
+              <div
+                class="flex items-stretch gap-3"
+                :class="row.original.description ? 'pb-1' : 'pb-2'"
+              >
                 <!-- Image -->
                 <img
                   v-if="row.original.image_url"
@@ -295,7 +298,17 @@ function sortIcon(column) {
                   </div>
                 </div>
               </div>
-              <div class="flex flex-col gap-1 border-t pt-2">
+              <!-- Description -->
+              <p
+                v-if="row.original.description"
+                class="text-muted-foreground line-clamp-2 pb-1 text-xs leading-relaxed"
+              >
+                {{
+                  row.original.description ||
+                  'Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi, itaque laudantium fugit est necessitatibus.'
+                }}
+              </p>
+              <div class="flex flex-col gap-1 border-t pt-1">
                 <div class="flex items-center justify-between">
                   <!-- Price -->
                   <span class="text-base font-semibold">

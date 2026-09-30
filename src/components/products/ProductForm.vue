@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import ProductImageUploader from '@/components/products/ProductImageUploader.vue'
 
 const props = defineProps({
@@ -27,6 +28,11 @@ const formSchema = toTypedSchema(
       .trim()
       .min(1, 'Ingresa el nombre del producto')
       .max(200, 'El nombre no puede superar 200 caracteres'),
+    description: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa la descripción del producto')
+      .max(200, 'La descripción no puede superar 200 caracteres'),
     category: z
       .string()
       .trim()
@@ -69,6 +75,7 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
   initialValues: {
     image: null,
     name: '',
+    description: '',
     category: '',
     brand: '',
     color: '',
@@ -108,6 +115,19 @@ function handleCancel() {
             v-bind="componentField"
             type="text"
             placeholder="Camisa manga larga"
+            :aria-invalid="!!errors.length"
+          />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+        </Field>
+      </VeeField>
+      <!-- Description -->
+      <VeeField v-slot="{ componentField, errors }" name="description">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="description">Descripción</FieldLabel>
+          <Textarea
+            id="description"
+            v-bind="componentField"
+            placeholder="Camisa de manga larga, algodón 100%, corte slim fit..."
             :aria-invalid="!!errors.length"
           />
           <FieldError v-if="errors.length" :errors="[errors[0]]" />

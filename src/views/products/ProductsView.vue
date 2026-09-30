@@ -44,6 +44,7 @@ async function handleSubmit(formData) {
   try {
     const payload = {
       name: formData.name,
+      description: formData.description,
       category: formData.category,
       brand: formData.brand,
       color: formData.color,
