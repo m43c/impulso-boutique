@@ -64,12 +64,20 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const search = ref('')
 
-watch(search, () => {
-  table.setPageIndex(0)
-})
+function normalizeText(text) {
+  if (!text) {
+    return ''
+  }
+
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
 
 const filteredUsers = computed(() => {
-  const term = search.value.trim().toLowerCase()
+  const term = normalizeText(search.value.trim())
 
   if (!term) {
     return props.users
@@ -77,9 +85,12 @@ const filteredUsers = computed(() => {
 
   return props.users.filter((user) => {
     const statusLabel = user.is_active ? 'activo' : 'inactivo'
-    const haystack = [user.full_name, user.email, formatRole(user.role)].join(' ').toLowerCase()
+    const rawHaystack = [user.full_name, user.email, formatRole(user.role)].join(' ').toLowerCase()
 
-    return haystack.includes(term) || statusLabel.startsWith(term)
+    const haystack = normalizeText(rawHaystack)
+    const normalizedStatus = normalizeText(statusLabel)
+
+    return haystack.includes(term) || normalizedStatus.startsWith(term)
   })
 })
 
@@ -100,6 +111,10 @@ const table = useTable({
     onEdit: (user) => emit('edit-user', user),
     onDeactivate: (user) => emit('deactivate-user', user),
   },
+})
+
+watch(search, () => {
+  table.setPageIndex(0)
 })
 
 function sortIcon(column) {
