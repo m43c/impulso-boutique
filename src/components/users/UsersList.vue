@@ -143,6 +143,7 @@ function sortIcon(column) {
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
           </div>
+          <!-- Add user button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
             <UserPlus class="h-4 w-4" />
             Agregar usuario

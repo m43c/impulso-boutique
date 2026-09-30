@@ -1,4 +1,5 @@
 <script setup>
+import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -14,9 +15,11 @@ import {
   PackagePlus,
   PackageX,
   Pencil,
+  Search,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -61,10 +64,45 @@ const emit = defineEmits(['add-product', 'retry', 'view-details'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
+const search = ref('')
+
+watch(search, () => {
+  table.setPageIndex(0)
+})
+
+function normalizeText(text) {
+  if (!text) return ''
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+const filteredProducts = computed(() => {
+  const term = normalizeText(search.value.trim())
+
+  if (!term) {
+    return props.products
+  }
+
+  return props.products.filter((product) => {
+    const statusLabel = product.is_active ? 'vigente' : 'retirado'
+    const rawHaystack = [product.name, product.category, product.brand, product.color, product.size]
+      .join(' ')
+      .toLowerCase()
+
+    const haystack = normalizeText(rawHaystack)
+    const normalizedStatus = normalizeText(statusLabel)
+
+    return haystack.includes(term) || normalizedStatus.startsWith(term)
+  })
+})
+
 const table = useTable({
   features,
   get data() {
-    return props.products
+    return filteredProducts.value
   },
   columns,
   enableMultiSort: false,
@@ -114,7 +152,13 @@ function sortIcon(column) {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex items-center justify-end gap-3">
+        <div class="flex items-center justify-between gap-3">
+          <!-- Search -->
+          <div class="relative w-full">
+            <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+            <Input v-model="search" placeholder="Buscar product..." class="pl-9" />
+          </div>
+          <!-- Add product button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-product')">
             <PackagePlus class="h-4 w-4" />
             Agregar producto
