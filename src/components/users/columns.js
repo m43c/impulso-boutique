@@ -29,20 +29,22 @@ export const columns = [
     },
   },
   {
-    accessorKey: 'role',
+    accessorFn: (row) => formatRole(row.role),
+    id: 'role',
     header: 'Rol',
     meta: {
       skeletonClass: 'h-4 w-20',
     },
-    cell: (info) => formatRole(info.getValue()),
+    cell: (info) => info.getValue(),
   },
   {
     accessorKey: 'is_active',
     header: 'Estado',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
     cell: (info) => {
       const isActive = info.getValue()
@@ -62,20 +64,22 @@ export const columns = [
   {
     accessorKey: 'created_at',
     header: 'Creación',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => formatDate(info.getValue()),
   },
   {
     accessorKey: 'updated_at',
     header: 'Actualización',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => {
       const val = info.getValue()
@@ -106,8 +110,8 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
     },
     cell: (info) => {
       const user = info.row.original

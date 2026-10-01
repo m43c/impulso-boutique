@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -63,38 +63,6 @@ const emit = defineEmits(['add-user', 'retry', 'edit-user', 'deactivate-user'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
-const search = ref('')
-
-function normalizeText(text) {
-  if (!text) {
-    return ''
-  }
-
-  return text
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
-const filteredUsers = computed(() => {
-  const term = normalizeText(search.value.trim())
-
-  if (!term) {
-    return props.users
-  }
-
-  return props.users.filter((user) => {
-    const statusLabel = user.is_active ? 'activo' : 'inactivo'
-    const rawHaystack = [user.full_name, user.email, formatRole(user.role)].join(' ').toLowerCase()
-
-    const haystack = normalizeText(rawHaystack)
-    const normalizedStatus = normalizeText(statusLabel)
-
-    return haystack.includes(term) || normalizedStatus.startsWith(term)
-  })
-})
-
 const sortOptions = [
   {
     label: 'Nombre: A-Z',
@@ -133,7 +101,7 @@ const sortOptions = [
 const table = useTable({
   features,
   get data() {
-    return filteredUsers.value
+    return props.users
   },
   columns,
   enableMultiSort: false,
@@ -149,8 +117,12 @@ const table = useTable({
   },
 })
 
-watch(search, () => {
-  table.setPageIndex(0)
+const search = computed({
+  get: () => table.atoms.globalFilter.get() ?? '',
+  set: (value) => {
+    table.setGlobalFilter(value)
+    table.setPageIndex(0)
+  },
 })
 
 function sortIcon(column) {
