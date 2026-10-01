@@ -74,8 +74,8 @@ export const columns = [
     accessorKey: 'category',
     header: 'Categoría',
     meta: {
-      skeletonClass: 'h-4 w-20',
       cellClass: 'max-w-24 truncate',
+      skeletonClass: 'h-4 w-20',
     },
     cell: (info) =>
       h(
@@ -90,8 +90,8 @@ export const columns = [
     accessorKey: 'brand',
     header: 'Marca',
     meta: {
-      skeletonClass: 'h-4 w-20',
       cellClass: 'max-w-24 truncate',
+      skeletonClass: 'h-4 w-20',
     },
     cell: (info) =>
       h(
@@ -106,8 +106,8 @@ export const columns = [
     accessorKey: 'color',
     header: 'Color',
     meta: {
-      cellClass: 'truncate',
       skeletonClass: 'h-4 w-20',
+      cellClass: 'truncate',
     },
     cell: (info) => info.getValue() || '—',
   },
@@ -116,28 +116,30 @@ export const columns = [
     header: 'Talla',
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-5 w-5',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-5 w-5',
     },
     cell: (info) => info.getValue() || '—',
   },
   {
     accessorKey: 'price',
     header: 'Precio',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-end',
-      skeletonClass: 'ml-auto h-5 w-12',
       cellClass: 'text-end',
+      skeletonClass: 'ml-auto h-5 w-12',
     },
     cell: (info) => formatCurrency(info.getValue()),
   },
   {
     accessorKey: 'is_active',
     header: 'Estado',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-text',
-      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
       cellClass: 'text-text',
+      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
     cell: (info) => {
       const isActive = info.getValue()
@@ -157,20 +159,22 @@ export const columns = [
   {
     accessorKey: 'created_at',
     header: 'Creación',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => formatDate(info.getValue()),
   },
   {
     accessorKey: 'updated_at',
     header: 'Actualización',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-4 w-24',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => {
       const val = info.getValue()
@@ -201,8 +205,8 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
     },
     cell: (info) => {
       const product = info.row.original

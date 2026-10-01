@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -65,47 +65,6 @@ const emit = defineEmits(['add-product', 'retry', 'view-details'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
-const search = ref('')
-
-function normalizeText(text) {
-  if (!text) {
-    return ''
-  }
-
-  return text
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
-const filteredProducts = computed(() => {
-  const term = normalizeText(search.value.trim())
-
-  if (!term) {
-    return props.products
-  }
-
-  return props.products.filter((product) => {
-    const statusLabel = product.is_active ? 'vigente' : 'retirado'
-    const rawHaystack = [
-      product.name,
-      product.description,
-      product.category,
-      product.brand,
-      product.color,
-      product.size,
-    ]
-      .join(' ')
-      .toLowerCase()
-
-    const haystack = normalizeText(rawHaystack)
-    const normalizedStatus = normalizeText(statusLabel)
-
-    return haystack.includes(term) || normalizedStatus.startsWith(term)
-  })
-})
-
 const sortOptions = [
   {
     label: 'Nombre: A-Z',
@@ -144,10 +103,11 @@ const sortOptions = [
 const table = useTable({
   features,
   get data() {
-    return filteredProducts.value
+    return props.products
   },
   columns,
   enableMultiSort: false,
+  globalFilterFn: 'includesStringNormalized',
   initialState: {
     pagination: {
       pageIndex: 0,
@@ -159,8 +119,12 @@ const table = useTable({
   },
 })
 
-watch(search, () => {
-  table.setPageIndex(0)
+const search = computed({
+  get: () => table.atoms.globalFilter.get() ?? '',
+  set: (value) => {
+    table.setGlobalFilter(value)
+    table.setPageIndex(0)
+  },
 })
 
 function sortIcon(column) {
