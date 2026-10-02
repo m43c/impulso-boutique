@@ -1,4 +1,5 @@
 import { h } from 'vue'
+import { filterFn_arrHas } from '@tanstack/vue-table'
 import { EllipsisVertical, Eye, ImageOff, PackageX, Pencil } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
+import { normalizeText } from '@/utils/text'
 
 export const columns = [
   {
@@ -71,8 +73,10 @@ export const columns = [
     },
   },
   {
-    accessorKey: 'category',
+    accessorFn: (row) => normalizeText(row.category),
+    id: 'category',
     header: 'Categoría',
+    filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'max-w-24 truncate',
       skeletonClass: 'h-4 w-20',
@@ -81,14 +85,16 @@ export const columns = [
       h(
         'span',
         {
-          title: info.getValue(),
+          title: info.row.original.category,
         },
-        info.getValue(),
+        info.row.original.category,
       ),
   },
   {
-    accessorKey: 'brand',
+    accessorFn: (row) => normalizeText(row.brand),
+    id: 'brand',
     header: 'Marca',
+    filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'max-w-24 truncate',
       skeletonClass: 'h-4 w-20',
@@ -97,29 +103,33 @@ export const columns = [
       h(
         'span',
         {
-          title: info.getValue(),
+          title: info.row.original.brand,
         },
-        info.getValue() || '—',
+        info.row.original.brand || 'Sin marca',
       ),
   },
   {
-    accessorKey: 'color',
+    accessorFn: (row) => normalizeText(row.color),
+    id: 'color',
     header: 'Color',
+    filterFn: filterFn_arrHas,
     meta: {
-      skeletonClass: 'h-4 w-20',
       cellClass: 'truncate',
+      skeletonClass: 'h-4 w-20',
     },
-    cell: (info) => info.getValue() || '—',
+    cell: (info) => info.row.original.color || 'Sin color',
   },
   {
-    accessorKey: 'size',
+    accessorFn: (row) => normalizeText(row.size),
+    id: 'size',
     header: 'Talla',
+    filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
       skeletonClass: 'mx-auto h-5 w-5',
     },
-    cell: (info) => info.getValue() || '—',
+    cell: (info) => info.row.original.size || 'Sin talla',
   },
   {
     accessorKey: 'price',

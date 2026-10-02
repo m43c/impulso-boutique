@@ -73,7 +73,7 @@ const props = defineProps({
           </div>
           <div>
             <p class="text-muted-foreground text-xs">Precio</p>
-            <p class="font-semibold text-emerald-400">{{ formatCurrency(product.price) }}</p>
+            <p class="font-semibold">{{ formatCurrency(product.price) }}</p>
           </div>
           <!-- Min stock -->
           <div>

@@ -1,5 +1,8 @@
 import {
+  columnFacetingFeature,
+  columnFilteringFeature,
   constructFilterFn,
+  createFacetedUniqueValues,
   createFilteredRowModel,
   createPaginatedRowModel,
   createSortedRowModel,
@@ -23,9 +26,12 @@ export const features = tableFeatures({
   rowPaginationFeature,
   rowSortingFeature,
   globalFilteringFeature,
+  columnFilteringFeature,
+  columnFacetingFeature,
   paginatedRowModel: createPaginatedRowModel(),
   sortedRowModel: createSortedRowModel(),
   filteredRowModel: createFilteredRowModel(),
+  facetedUniqueValues: createFacetedUniqueValues(),
   sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
   filterFns: { includesStringNormalized: filterFn_includesStringNormalized },
 })

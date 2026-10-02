@@ -45,6 +45,7 @@ import { columns } from '@/components/products/columns'
 import { features } from '@/components/products/features'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
+import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 
 const props = defineProps({
   products: {
@@ -97,6 +98,30 @@ const sortOptions = [
     label: 'Fecha: más antiguos',
     columnId: 'updated_at',
     desc: false,
+  },
+]
+
+const filterableColumns = [
+  {
+    columnId: 'category',
+    label: 'Categoría',
+    useOriginalCasing: true,
+  },
+  {
+    columnId: 'brand',
+    label: 'Marca',
+    useOriginalCasing: true,
+    emptyLabel: 'Sin marca',
+  },
+  {
+    columnId: 'color',
+    label: 'Color',
+    useOriginalCasing: true,
+  },
+  {
+    columnId: 'size',
+    label: 'Talla',
+    useOriginalCasing: true,
   },
 ]
 
@@ -168,6 +193,8 @@ function sortIcon(column) {
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar producto..." class="pl-9" />
           </div>
+          <!-- Filters -->
+          <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
           <!-- Sorting button (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add product button -->
@@ -323,22 +350,26 @@ function sortIcon(column) {
                   <!-- Brand -->
                   <div class="flex items-baseline gap-1 truncate">
                     <span class="text-muted-foreground">Marca:</span>
-                    <span class="truncate font-medium">{{ row.original.brand || '—' }}</span>
+                    <span class="truncate font-medium">
+                      {{ row.original.brand || 'Sin marca' }}
+                    </span>
                   </div>
                   <!-- Size -->
                   <div class="flex items-baseline gap-1 truncate">
                     <span class="text-muted-foreground">Talla:</span>
-                    <span class="truncate font-medium">{{ row.original.size || '—' }}</span>
+                    <span class="truncate font-medium">{{ row.original.size || 'Sin talla' }}</span>
                   </div>
                   <!-- Color -->
                   <div class="flex items-baseline gap-1 truncate">
                     <span class="text-muted-foreground">Color:</span>
-                    <span class="truncate font-medium">{{ row.original.color || '—' }}</span>
+                    <span class="truncate font-medium">
+                      {{ row.original.color || 'Sin color' }}
+                    </span>
                   </div>
                   <!-- Category -->
                   <div class="flex items-baseline gap-1 truncate">
                     <span class="text-muted-foreground">Categoría:</span>
-                    <span class="truncate font-medium">{{ row.original.category || '—' }}</span>
+                    <span class="truncate font-medium">{{ row.original.category }}</span>
                   </div>
                   <!-- Status -->
                   <div class="flex items-center gap-1.5 pt-0.5">
