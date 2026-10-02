@@ -1,4 +1,5 @@
 import { h } from 'vue'
+import { filterFn_arrHas } from '@tanstack/vue-table'
 import { EllipsisVertical, Pencil, UserX } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,22 +33,26 @@ export const columns = [
     accessorFn: (row) => formatRole(row.role),
     id: 'role',
     header: 'Rol',
+    filterFn: filterFn_arrHas,
     meta: {
       skeletonClass: 'h-4 w-20',
     },
     cell: (info) => info.getValue(),
   },
   {
-    accessorKey: 'is_active',
+    accessorFn: (row) => (row.is_active ? 'Activo' : 'Inactivo'),
+    id: 'is_active',
     header: 'Estado',
     enableGlobalFilter: false,
+    filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
       skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
     cell: (info) => {
-      const isActive = info.getValue()
+      const isActive = info.row.original.is_active
+      const label = info.getValue()
 
       return h(
         Badge,
@@ -57,7 +62,7 @@ export const columns = [
             ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
             : 'border-rose-500/30 text-rose-400 bg-rose-500/10',
         },
-        () => (isActive ? 'Activo' : 'Inactivo'),
+        () => label,
       )
     },
   },

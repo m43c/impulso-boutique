@@ -43,6 +43,7 @@ import { columns } from './columns'
 import { features } from './features'
 import UserCardSkeleton from './UserCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
+import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 
 const props = defineProps({
   users: {
@@ -95,6 +96,18 @@ const sortOptions = [
     label: 'Fecha: más antiguos',
     columnId: 'updated_at',
     desc: false,
+  },
+]
+
+const filterableColumns = [
+  {
+    columnId: 'role',
+    label: 'Rol',
+    getOptionLabel: formatRole,
+  },
+  {
+    columnId: 'is_active',
+    label: 'Estado',
   },
 ]
 
@@ -166,6 +179,8 @@ function sortIcon(column) {
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
           </div>
+          <!-- Filters -->
+          <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
           <!-- Sorting button (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add user button -->
