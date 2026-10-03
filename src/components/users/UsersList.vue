@@ -12,6 +12,7 @@ import {
   Loader2,
   Pencil,
   Search,
+  UserCheck,
   UserPlus,
   UserX,
 } from '@lucide/vue'
@@ -58,9 +59,13 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  currentUserId: {
+    type: String,
+    default: null,
+  },
 })
 
-const emit = defineEmits(['add-user', 'retry', 'edit-user', 'deactivate-user'])
+const emit = defineEmits(['add-user', 'retry', 'edit-user', 'toggle-status'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -126,7 +131,8 @@ const table = useTable({
   },
   meta: {
     onEdit: (user) => emit('edit-user', user),
-    onDeactivate: (user) => emit('deactivate-user', user),
+    onToggleStatus: (user) => emit('toggle-status', user),
+    currentUserId: props.currentUserId,
   },
 })
 
@@ -294,6 +300,7 @@ function sortIcon(column) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <!-- Edit user -->
                     <DropdownMenuItem
                       class="cursor-pointer"
                       @click="emit('edit-user', row.original)"
@@ -302,12 +309,26 @@ function sortIcon(column) {
                       <span>Editar</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <!-- Toggle status -->
                     <DropdownMenuItem
-                      class="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                      @click="emit('deactivate-user', row.original)"
+                      class="cursor-pointer"
+                      :class="[
+                        row.original.is_active
+                          ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                          : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500',
+                        row.original.id === currentUserId ? 'pointer-events-none opacity-50' : '',
+                      ]"
+                      :disabled="row.original.id === currentUserId"
+                      @click="
+                        row.original.id !== currentUserId && emit('toggle-status', row.original)
+                      "
                     >
-                      <UserX class="text-destructive mr-2 h-4 w-4" />
-                      <span>Desactivar</span>
+                      <component
+                        :is="row.original.is_active ? UserX : UserCheck"
+                        class="mr-2 h-4 w-4"
+                        :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
+                      />
+                      <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

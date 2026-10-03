@@ -45,10 +45,10 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  async function deactivateUser(userId) {
+  async function toggleUserStatus(userId, isActive) {
     return updateUser({
       user_id: userId,
-      is_active: false,
+      is_active: isActive,
     })
   }
 
@@ -83,7 +83,7 @@ export const useUsersStore = defineStore('users', () => {
     users,
     createUser,
     updateUser,
-    deactivateUser,
+    toggleUserStatus,
     fetchUsers,
     clear,
   }

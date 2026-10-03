@@ -29,6 +29,7 @@ const fetchError = ref(null)
 const formError = ref(null)
 
 const isSelf = computed(() => !!editingUser.value && editingUser.value.id === authStore.user?.id)
+const currentUserId = computed(() => authStore.user?.id)
 
 async function loadUsers() {
   fetchError.value = null
@@ -87,14 +88,21 @@ async function handleSubmit(formData) {
   }
 }
 
-async function handleDeactivateUser(user) {
+async function handleToggleStatus(user) {
+  if (user.id === authStore.user?.id) {
+    toast.error('No puedes desactivar tu propia cuenta')
+    return
+  }
+
+  const isDeactivating = user.is_active
+
   try {
-    await usersStore.deactivateUser(user.id)
-    toast.success('Usuario desactivado correctamente')
+    await usersStore.toggleUserStatus(user.id, !isDeactivating)
+    toast.success(`Usuario ${isDeactivating ? 'desactivado' : 'activado'} correctamente`)
     usersStore.fetchUsers()
   } catch (error) {
-    console.error('Error al desactivar usuario:', error)
-    const message = await getEdgeFunctionErrorMessage(error, 'No se pudo desactivar el usuario')
+    console.error(`Error al ${actionText} usuario:`, error)
+    const message = await getEdgeFunctionErrorMessage(error, `No se pudo ${actionText} el usuario`)
     toast.error(message)
   }
 }
@@ -126,10 +134,11 @@ function handleEditUser(user) {
         :users="usersStore.users"
         :is-loading="usersStore.isFetching"
         :error="fetchError"
+        :current-user-id="currentUserId"
         @add-user="handleAddUser"
         @retry="loadUsers"
         @edit-user="handleEditUser"
-        @deactivate-user="handleDeactivateUser"
+        @toggle-status="handleToggleStatus"
       />
       <!-- Add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">

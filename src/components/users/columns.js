@@ -1,6 +1,6 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import { EllipsisVertical, Pencil, UserX } from '@lucide/vue'
+import { EllipsisVertical, Pencil, UserCheck, UserX } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -120,6 +120,9 @@ export const columns = [
     },
     cell: (info) => {
       const user = info.row.original
+      const isActive = user.is_active
+      const currentUserId = info.table.options.meta?.currentUserId
+      const isSelf = user.id === currentUserId
 
       return h(DropdownMenu, () => [
         h(
@@ -158,21 +161,35 @@ export const columns = [
               h('span', 'Editar'),
             ],
           ),
-          // Deactivate user
+          // Toggle status
           h(DropdownMenuSeparator),
           h(
             DropdownMenuItem,
             {
-              'aria-label': `Desactivar a ${user.full_name}`,
-              class:
-                'text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer',
-              onClick: () => info.table.options.meta?.onDeactivate?.(user),
+              'aria-label': isActive
+                ? `Desactivar a ${user.full_name}`
+                : `Activar a ${user.full_name}`,
+              disabled: isSelf,
+              class: [
+                'cursor-pointer',
+                isActive
+                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+                isSelf ? 'pointer-events-none opacity-50' : '',
+              ],
+              onClick: () => {
+                if (isSelf) {
+                  return
+                }
+
+                info.table.options.meta?.onToggleStatus?.(user)
+              },
             },
             () => [
-              h(UserX, {
-                class: 'mr-2 h-4 w-4 text-destructive',
+              h(isActive ? UserX : UserCheck, {
+                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
               }),
-              h('span', 'Desactivar'),
+              h('span', isActive ? 'Desactivar' : 'Activar'),
             ],
           ),
         ]),
