@@ -60,7 +60,6 @@ const formSchema = toTypedSchema(
       .regex(/^\d+(\.\d{1,2})?$/, 'Ingresa un precio válido (máx. 2 decimales)')
       .transform(Number)
       .refine((value) => value > 0, 'El precio debe ser mayor a 0'),
-
     minStock: z
       .string()
       .trim()

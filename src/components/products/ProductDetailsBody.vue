@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
+import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
 
 const props = defineProps({
   product: {
@@ -18,9 +19,10 @@ const props = defineProps({
     <div class="flex flex-col gap-4 md:grid md:grid-cols-12 md:gap-5">
       <div class="flex justify-center md:col-span-5 md:h-full">
         <img
-          v-if="product.image_url"
-          :src="product.image_url"
+          v-if="product.image_public_id"
+          :src="buildImageUrl(product.image_public_id, IMAGE_SIZES.detail)"
           :alt="product.name"
+          decoding="async"
           class="h-48 w-48 rounded-lg object-cover md:h-full md:w-full"
         />
         <div

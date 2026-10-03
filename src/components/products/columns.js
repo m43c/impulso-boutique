@@ -14,6 +14,7 @@ import {
 import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
 import { normalizeText } from '@/utils/text'
+import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
 
 export const columns = [
   {
@@ -25,12 +26,14 @@ export const columns = [
     cell: (info) => {
       const product = info.row.original
       const name = info.getValue()
-      const imageUrl = product.image_url
+      const imagePublicId = product.image_public_id
 
-      const imageNode = imageUrl
+      const imageNode = imagePublicId
         ? h('img', {
-            src: imageUrl,
+            src: buildImageUrl(imagePublicId, IMAGE_SIZES.thumb),
             alt: name,
+            loading: 'lazy',
+            decoding: 'async',
             class: 'h-10 w-10 shrink-0 rounded-md object-cover',
           })
         : h(

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { supabase } from '@/lib/supabase'
+import { uploadImage } from '@/services/cloudinary'
 
 export const useProductsStore = defineStore('products', () => {
   const isCreating = ref(false)
@@ -8,11 +9,25 @@ export const useProductsStore = defineStore('products', () => {
 
   const products = ref([])
 
-  async function createProduct(payload) {
+  async function createProduct(payload, imageFile) {
     isCreating.value = true
 
     try {
-      const { data, error } = await supabase.from('products').insert(payload).select().single()
+      let publicId = null
+
+      if (imageFile) {
+        const result = await uploadImage(imageFile)
+        publicId = result.public_id
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert({
+          ...payload,
+          image_public_id: publicId,
+        })
+        .select()
+        .single()
 
       if (error) {
         throw error

@@ -46,6 +46,7 @@ import { features } from '@/components/products/features'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
 
 const props = defineProps({
   products: {
@@ -335,9 +336,11 @@ function sortIcon(column) {
               >
                 <!-- Image -->
                 <img
-                  v-if="row.original.image_url"
-                  :src="row.original.image_url"
+                  v-if="row.original.image_public_id"
+                  :src="buildImageUrl(row.original.image_public_id, IMAGE_SIZES.card)"
                   :alt="row.original.name"
+                  loading="lazy"
+                  decoding="async"
                   class="h-28 w-28 shrink-0 rounded-md object-cover"
                 />
                 <div

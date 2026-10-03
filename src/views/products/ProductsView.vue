@@ -38,11 +38,6 @@ async function loadProducts() {
 
 onMounted(() => loadProducts())
 
-function getFakeImageUrl(seed) {
-  const safeSeed = encodeURIComponent(seed || Date.now().toString())
-  return `https://picsum.photos/seed/${safeSeed}/600/600`
-}
-
 async function handleSubmit(formData) {
   try {
     const payload = {
@@ -53,11 +48,10 @@ async function handleSubmit(formData) {
       color: formData.color,
       size: formData.size,
       price: formData.price,
-      image_url: getFakeImageUrl(formData.name),
       min_stock: formData.minStock,
     }
 
-    await productsStore.createProduct(payload)
+    await productsStore.createProduct(payload, formData.image)
     toast.success('Producto creado correctamente')
 
     productsStore.fetchProducts()

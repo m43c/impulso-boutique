@@ -32,7 +32,7 @@ const usersStore = useUsersStore()
 const items = [
   { title: 'Inicio', url: '/home', icon: Home },
   { title: 'Usuarios', url: '/users', icon: Users, roles: ['admin'] },
-  { title: 'Productos', url: '/products', icon: Package, roles: ['admin'] },
+  { title: 'Productos', url: '/products', icon: Package, roles: ['admin', 'advisor', 'cashier'] },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
