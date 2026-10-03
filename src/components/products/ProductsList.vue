@@ -12,6 +12,7 @@ import {
   Eye,
   ImageOff,
   Loader2,
+  PackageCheck,
   PackagePlus,
   PackageX,
   Pencil,
@@ -63,7 +64,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-product', 'retry', 'view-details'])
+const emit = defineEmits(['add-product', 'retry', 'view-details', 'toggle-status'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -142,6 +143,7 @@ const table = useTable({
   },
   meta: {
     onViewDetails: (product) => emit('view-details', product),
+    onToggleStatus: (product) => emit('toggle-status', product),
   },
 })
 
@@ -305,6 +307,7 @@ function sortIcon(column) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <!-- Show details -->
                     <DropdownMenuItem
                       class="cursor-pointer"
                       @click="emit('view-details', row.original)"
@@ -312,6 +315,7 @@ function sortIcon(column) {
                       <Eye class="mr-2 h-4 w-4" />
                       <span>Ver detalles</span>
                     </DropdownMenuItem>
+                    <!-- Edit product -->
                     <DropdownMenuItem
                       class="cursor-pointer"
                       @click="console.log('Editar:', row.original)"
@@ -320,12 +324,22 @@ function sortIcon(column) {
                       <span>Editar</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <!-- Toggle status -->
                     <DropdownMenuItem
-                      class="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                      @click="console.log('Desactivar:', row.original)"
+                      class="cursor-pointer"
+                      :class="
+                        row.original.is_active
+                          ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                          : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500'
+                      "
+                      @click="emit('toggle-status', row.original)"
                     >
-                      <PackageX class="text-destructive mr-2 h-4 w-4" />
-                      <span>Retirar</span>
+                      <component
+                        :is="row.original.is_active ? PackageX : PackageCheck"
+                        class="mr-2 h-4 w-4"
+                        :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
+                      />
+                      <span>{{ row.original.is_active ? 'Retirar' : 'Reponer' }}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

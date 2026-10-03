@@ -74,6 +74,13 @@ function handleViewDetails(product) {
   detailsProduct.value = product
   isDetailsOpen.value = true
 }
+
+function handleToggleStatus(product) {
+  const isRetiring = product.is_active
+  const actionName = isRetiring ? 'Retirar' : 'Reponer'
+
+  console.log(`${actionName}:`, product)
+}
 </script>
 
 <template>
@@ -87,6 +94,7 @@ function handleViewDetails(product) {
         @add-product="handleAddProduct"
         @retry="loadProducts"
         @view-details="handleViewDetails"
+        @toggle-status="handleToggleStatus"
       />
       <!-- Product details -->
       <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />

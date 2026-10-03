@@ -1,6 +1,14 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import { EllipsisVertical, Eye, ImageOff, PackageX, Pencil } from '@lucide/vue'
+import {
+  EllipsisVertical,
+  Eye,
+  ImageOff,
+  PackageCheck,
+  PackagePlus,
+  PackageX,
+  Pencil,
+} from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -223,6 +231,7 @@ export const columns = [
     },
     cell: (info) => {
       const product = info.row.original
+      const isActive = product.is_active
 
       return h(DropdownMenu, () => [
         h(
@@ -276,21 +285,25 @@ export const columns = [
               h('span', 'Editar'),
             ],
           ),
-          // Delete product
+          // Toggle status
           h(DropdownMenuSeparator),
           h(
             DropdownMenuItem,
             {
-              'aria-label': `Retirar ${product.name}`,
-              class:
-                'text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer',
-              onClick: () => console.log('Desactivar:', product),
+              'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
+              class: [
+                'cursor-pointer',
+                isActive
+                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+              ],
+              onClick: () => info.table.options.meta?.onToggleStatus?.(product),
             },
             () => [
-              h(PackageX, {
-                class: 'mr-2 h-4 w-4 text-destructive',
+              h(isActive ? PackageX : PackageCheck, {
+                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
               }),
-              h('span', 'Retirar '),
+              h('span', isActive ? 'Retirar' : 'Reponer'),
             ],
           ),
         ]),
