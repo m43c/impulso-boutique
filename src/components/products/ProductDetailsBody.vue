@@ -12,6 +12,7 @@ const props = defineProps({
     required: true,
   },
 })
+
 </script>
 
 <template>
@@ -34,7 +35,7 @@ const props = defineProps({
       </div>
       <div class="flex flex-col gap-3 md:col-span-7">
         <!-- Name + status -->
-        <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start justify-between gap-1">
           <h3 class="text-lg leading-tight font-semibold">{{ product.name }}</h3>
           <Badge
             variant="outline"

@@ -8,11 +8,16 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import ProductImageUploader from '@/components/products/ProductImageUploader.vue'
+import CreatableCombobox from '@/components/common/CreatableCombobox.vue'
 
 const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false,
+  },
+  options: {
+    type: Object,
+    default: () => ({ categories: [], brands: [], colors: [], sizes: [] }),
   },
 })
 const emit = defineEmits(['submit', 'cancel'])
@@ -134,28 +139,34 @@ function handleCancel() {
       </VeeField>
       <!-- Category + brand -->
       <div class="grid grid-cols-2 gap-4">
-        <VeeField v-slot="{ componentField, errors }" name="category">
+        <VeeField v-slot="{ value, handleChange, errors }" name="category">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="category">Categoría</FieldLabel>
-            <Input
+            <CreatableCombobox
               id="category"
-              v-bind="componentField"
-              type="text"
-              placeholder="Camisas"
-              :aria-invalid="!!errors.length"
+              :model-value="value"
+              :options="options.categories"
+              placeholder="Selecciona"
+              search-placeholder="Buscar o crear categoría..."
+              :invalid="!!errors.length"
+              @update:model-value="handleChange"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>
-        <VeeField v-slot="{ componentField, errors }" name="brand">
+        <VeeField v-slot="{ value, handleChange, errors }" name="brand">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="brand">Marca</FieldLabel>
-            <Input
+            <CreatableCombobox
               id="brand"
-              v-bind="componentField"
-              type="text"
-              placeholder="Nike"
-              :aria-invalid="!!errors.length"
+              :model-value="value"
+              :options="options.brands"
+              placeholder="Sin marca"
+              search-placeholder="Buscar o crear marca..."
+              clearable
+              clear-label="Sin marca"
+              :invalid="!!errors.length"
+              @update:model-value="handleChange"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
@@ -163,28 +174,36 @@ function handleCancel() {
       </div>
       <!-- Color + size -->
       <div class="grid grid-cols-2 gap-4">
-        <VeeField v-slot="{ componentField, errors }" name="color">
+        <VeeField v-slot="{ value, handleChange, errors }" name="color">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="color">Color</FieldLabel>
-            <Input
+            <CreatableCombobox
               id="color"
-              v-bind="componentField"
-              type="text"
-              placeholder="Azul Marino"
-              :aria-invalid="!!errors.length"
+              :model-value="value"
+              :options="options.colors"
+              placeholder="Sin color"
+              search-placeholder="Buscar o crear color..."
+              clearable
+              clear-label="Sin color"
+              :invalid="!!errors.length"
+              @update:model-value="handleChange"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>
-        <VeeField v-slot="{ componentField, errors }" name="size">
+        <VeeField v-slot="{ value, handleChange, errors }" name="size">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="size">Talla</FieldLabel>
-            <Input
+            <CreatableCombobox
               id="size"
-              v-bind="componentField"
-              type="text"
-              placeholder="M"
-              :aria-invalid="!!errors.length"
+              :model-value="value"
+              :options="options.sizes"
+              placeholder="Sin talla"
+              search-placeholder="Buscar o crear talla..."
+              clearable
+              clear-label="Sin talla"
+              :invalid="!!errors.length"
+              @update:model-value="handleChange"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>

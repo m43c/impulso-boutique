@@ -16,5 +16,5 @@ export function toTitleCase(value) {
     return ''
   }
 
-  return value.replace(/\b\p{L}/gu, (char) => char.toUpperCase())
+  return value.replace(/(^|[^\p{L}\p{N}'])(\p{L})/gu, (char) => char.toUpperCase())
 }

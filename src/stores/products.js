@@ -8,6 +8,12 @@ export const useProductsStore = defineStore('products', () => {
   const isFetching = ref(false)
 
   const products = ref([])
+  const options = ref({
+    categories: [],
+    brands: [],
+    colors: [],
+    sizes: [],
+  })
 
   async function createProduct(payload, imageFile) {
     isCreating.value = true
@@ -62,16 +68,41 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchOptions() {
+    const { data, error } = await supabase.rpc('get_product_options')
+
+    if (error) {
+      throw error
+    }
+
+    options.value = {
+      categories: data?.categories ?? [],
+      brands: data?.brands ?? [],
+      colors: data?.colors ?? [],
+      sizes: data?.sizes ?? [],
+    }
+
+    return options.value
+  }
+
   function clear() {
     products.value = []
+    options.value = {
+      categories: [],
+      brands: [],
+      colors: [],
+      sizes: [],
+    }
   }
 
   return {
     isCreating,
     isFetching,
     products,
+    options,
     createProduct,
     fetchProducts,
+    fetchOptions,
     clear,
   }
 })

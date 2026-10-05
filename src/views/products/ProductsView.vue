@@ -68,6 +68,10 @@ function handleCancel() {
 
 function handleAddProduct() {
   isSheetOpen.value = true
+
+  productsStore.fetchOptions().catch((error) => {
+    console.error('Error al cargar las sugerencias:', error)
+  })
 }
 
 function handleViewDetails(product) {
@@ -120,6 +124,7 @@ function handleToggleStatus(product) {
         </SheetHeader>
         <ProductForm
           :is-loading="productsStore.isCreating"
+          :options="productsStore.options"
           @submit="handleSubmit"
           @cancel="handleCancel"
         />
