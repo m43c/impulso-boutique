@@ -45,6 +45,7 @@ import { features } from './features'
 import UserCardSkeleton from './UserCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 const props = defineProps({
   users: {
@@ -52,6 +53,10 @@ const props = defineProps({
     default: () => [],
   },
   isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isUpdatingStatus: {
     type: Boolean,
     default: false,
   },
@@ -196,7 +201,9 @@ function sortIcon(column) {
           </Button>
         </div>
         <!-- Desktop view -->
-        <div v-if="isDesktop" class="rounded-md border">
+        <div v-if="isDesktop" class="relative rounded-md border">
+          <!-- Lock overlay -->
+          <LoadingOverlay :show="isUpdatingStatus" text="Actualizando estado..." />
           <Table>
             <TableHeader>
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -263,7 +270,9 @@ function sortIcon(column) {
           </Table>
         </div>
         <!-- Mobile view -->
-        <div v-else class="flex flex-col gap-4">
+        <div v-else class="relative flex flex-col gap-4">
+          <!-- Lock overlay -->
+          <LoadingOverlay :show="isUpdatingStatus" text="Actualizando estado..." />
           <!-- Skeleton -->
           <template v-if="isLoading">
             <UserCardSkeleton v-for="card in 5" :key="`skeleton-card-${card}`" />

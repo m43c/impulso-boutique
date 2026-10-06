@@ -133,6 +133,7 @@ async function handleToggleStatus(user) {
       <UsersList
         :users="usersStore.users"
         :is-loading="usersStore.isFetching"
+        :is-updating-status="usersStore.isTogglingStatus"
         :error="fetchError"
         :current-user-id="currentUserId"
         @add-user="handleAddUser"
