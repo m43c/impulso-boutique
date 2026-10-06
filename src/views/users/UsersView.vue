@@ -137,9 +137,10 @@ async function handleToggleStatus(user) {
         :error="fetchError"
         :current-user-id="currentUserId"
         @add-user="handleAddUser"
-        @retry="loadUsers"
         @edit-user="handleEditUser"
         @toggle-status="handleToggleStatus"
+        @retry="loadUsers"
+        @refresh="loadUsers"
       />
       <!-- Add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">

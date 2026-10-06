@@ -12,6 +12,7 @@ import {
   Loader2,
   Pencil,
   Search,
+  RefreshCw,
   UserCheck,
   UserPlus,
   UserX,
@@ -70,7 +71,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-user', 'retry', 'edit-user', 'toggle-status'])
+const emit = defineEmits(['add-user', 'edit-user', 'toggle-status', 'retry', 'refresh'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -190,6 +191,24 @@ function sortIcon(column) {
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
           </div>
+          <!-- Refresh button -->
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                variant="outline"
+                size="icon"
+                class="shrink-0"
+                :disabled="isLoading"
+                aria-label="Actualizar tabla"
+                @click="emit('refresh')"
+              >
+                <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Actualizar lista</p>
+            </TooltipContent>
+          </Tooltip>
           <!-- Filters -->
           <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
           <!-- Sorting button (mobile) -->
@@ -197,7 +216,7 @@ function sortIcon(column) {
           <!-- Add user button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
             <UserPlus class="h-4 w-4" />
-            Agregar usuario
+            Nuevo usuario
           </Button>
         </div>
         <!-- Desktop view -->
