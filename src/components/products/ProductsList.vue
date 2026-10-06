@@ -64,7 +64,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-product', 'retry', 'view-details', 'toggle-status'])
+const emit = defineEmits(['add-product', 'retry', 'view-details', 'toggle-status', 'edit-product'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -143,6 +143,7 @@ const table = useTable({
   },
   meta: {
     onViewDetails: (product) => emit('view-details', product),
+    onEdit: (product) => emit('edit-product', product),
     onToggleStatus: (product) => emit('toggle-status', product),
   },
 })
@@ -318,7 +319,7 @@ function sortIcon(column) {
                     <!-- Edit product -->
                     <DropdownMenuItem
                       class="cursor-pointer"
-                      @click="console.log('Editar:', row.original)"
+                      @click="emit('edit-product', row.original)"
                     >
                       <Pencil class="mr-2 h-4 w-4" />
                       <span>Editar</span>

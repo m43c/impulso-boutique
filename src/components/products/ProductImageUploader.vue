@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { Camera, ImagePlus, ImageOff, X } from '@lucide/vue'
 import { toast } from 'vue-sonner'
@@ -12,6 +12,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useCamera } from '@/composables/useCamera'
+import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
+
+const props = defineProps({
+  existingImageId: {
+    type: String,
+    default: null,
+  },
+})
 
 const modelValue = defineModel({
   type: File,
@@ -27,6 +35,20 @@ const isDragging = ref(false)
 const isCameraOpen = ref(false)
 
 const { isActive, cameraError, start, stop, capture } = useCamera()
+
+const displayUrl = computed(() => {
+  if (modelValue.value && previewUrl.value) {
+    return previewUrl.value
+  }
+
+  if (props.existingImageId) {
+    return buildImageUrl(props.existingImageId, IMAGE_SIZES.card)
+  }
+
+  return null
+})
+
+const hasImage = computed(() => !!displayUrl.value)
 
 watch(cameraError, (msg) => {
   if (msg) {
@@ -151,19 +173,31 @@ onBeforeUnmount(() => {
     <div v-if="!isDesktop" class="relative">
       <div
         class="border-muted-foreground/25 relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-dashed transition-all duration-300"
-        :class="modelValue && previewUrl ? 'h-52' : 'h-40'"
+        :class="hasImage ? 'h-52' : 'h-40'"
       >
         <!-- Image preview -->
-        <template v-if="modelValue && previewUrl">
-          <img :src="previewUrl" alt="Vista previa" class="h-full w-full rounded-lg object-cover" />
-          <!-- Remove button -->
+        <template v-if="hasImage">
+          <img
+            :src="displayUrl"
+            alt="Vista previa"
+            class="h-full w-full cursor-pointer rounded-lg object-cover"
+            @click="openFileDialog"
+          />
+          <!-- Image hint -->
+          <div
+            class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-linear-to-t from-black/60 to-transparent pt-6 pb-2"
+          >
+            <span class="text-xs font-medium text-white">Toca para cambiar la imagen</span>
+          </div>
+          <!-- Remove image button -->
           <Button
+            v-if="modelValue"
             type="button"
             variant="secondary"
             size="icon"
-            class="absolute top-2 right-2 z-10 size-6 rounded-full shadow-md"
-            aria-label="Quitar imagen"
-            @click="removeImage"
+            class="absolute top-2 right-2 z-10 size-7 rounded-full shadow-md"
+            aria-label="Descartar nueva imagen"
+            @click.stop="removeImage"
           >
             <X class="size-4" />
           </Button>
@@ -182,17 +216,22 @@ onBeforeUnmount(() => {
               </button>
             </p>
           </div>
-          <!-- Camera button -->
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            class="text-muted-foreground hover:bg-accent hover:text-foreground absolute right-2 bottom-2 size-8 rounded-full"
-            @click="openCamera"
-          >
-            <Camera class="size-4" />
-          </Button>
         </template>
+
+        <!-- Camera button -->
+        <Button
+          type="button"
+          :variant="hasImage ? 'secondary' : 'ghost'"
+          size="icon"
+          class="absolute right-2 bottom-2 z-10 size-7 rounded-full"
+          :class="
+            hasImage ? 'shadow-md' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          "
+          aria-label="Tomar foto"
+          @click.stop="openCamera"
+        >
+          <Camera class="size-4" />
+        </Button>
       </div>
     </div>
     <!-- Desktop view-->
@@ -201,8 +240,8 @@ onBeforeUnmount(() => {
       <div
         class="bg-muted/20 border-border relative flex h-40 w-1/2 items-center justify-center overflow-hidden rounded-xl border"
       >
-        <template v-if="modelValue && previewUrl">
-          <img :src="previewUrl" alt="Vista previa" class="h-full w-full object-cover" />
+        <template v-if="hasImage">
+          <img :src="displayUrl" alt="Vista previa" class="h-full w-full object-cover" />
         </template>
         <template v-else>
           <div
@@ -241,7 +280,7 @@ onBeforeUnmount(() => {
           type="button"
           variant="ghost"
           size="icon"
-          class="text-muted-foreground hover:bg-accent hover:text-foreground absolute right-2 bottom-2 size-8 rounded-full"
+          class="text-muted-foreground hover:bg-accent hover:text-foreground absolute right-2 bottom-2 size-7 rounded-full"
           @click="openCamera"
         >
           <Camera class="size-4" />

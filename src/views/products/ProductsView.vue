@@ -23,7 +23,9 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 const isSheetOpen = ref(false)
 const isDetailsOpen = ref(false)
 const fetchError = ref(null)
+const formError = ref(null)
 const detailsProduct = ref(null)
+const editingProduct = ref(null)
 
 async function loadProducts() {
   fetchError.value = null
@@ -36,9 +38,18 @@ async function loadProducts() {
   }
 }
 
+function loadOptions() {
+  productsStore.fetchOptions().catch((error) => {
+    console.error('Error al cargar las sugerencias:', error)
+  })
+}
+
 onMounted(() => loadProducts())
 
 async function handleSubmit(formData) {
+  const isEditing = !!editingProduct.value
+  formError.value = null
+
   try {
     const payload = {
       name: formData.name,
@@ -51,27 +62,48 @@ async function handleSubmit(formData) {
       min_stock: formData.minStock,
     }
 
-    await productsStore.createProduct(payload, formData.image)
-    toast.success('Producto creado correctamente')
+    if (isEditing) {
+      await productsStore.updateProduct({ ...payload, id: editingProduct.value.id }, formData.image)
+      toast.success('Producto actualizado correctamente')
+    } else {
+      await productsStore.createProduct(payload, formData.image)
+      toast.success('Producto creado correctamente')
+    }
 
     productsStore.fetchProducts()
+
     isSheetOpen.value = false
+    editingProduct.value = null
   } catch (error) {
     console.error('Error al guardar el producto:', error)
-    toast.error('No se pudo crear el producto')
+
+    const fallback = isEditing
+      ? 'No se pudo actualizar el producto'
+      : 'No se pudo crear el producto'
+      
+    formError.value = error?.message || fallback
+    toast.error(formError.value)
   }
 }
 
 function handleCancel() {
   isSheetOpen.value = false
+  editingProduct.value = null
+  formError.value = null
 }
 
 function handleAddProduct() {
+  editingProduct.value = null
+  formError.value = null
   isSheetOpen.value = true
+  loadOptions()
+}
 
-  productsStore.fetchOptions().catch((error) => {
-    console.error('Error al cargar las sugerencias:', error)
-  })
+function handleEditProduct(product) {
+  editingProduct.value = product
+  formError.value = null
+  isSheetOpen.value = true
+  loadOptions()
 }
 
 function handleViewDetails(product) {
@@ -98,6 +130,7 @@ function handleToggleStatus(product) {
         @add-product="handleAddProduct"
         @retry="loadProducts"
         @view-details="handleViewDetails"
+        @edit-product="handleEditProduct"
         @toggle-status="handleToggleStatus"
       />
       <!-- Product details -->
@@ -119,11 +152,19 @@ function handleToggleStatus(product) {
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
         <SheetHeader class="p-0 pb-2">
-          <SheetTitle>Crear producto</SheetTitle>
-          <SheetDescription>Completa la información del nuevo producto</SheetDescription>
+          <SheetTitle>{{ editingProduct ? 'Editar producto' : 'Crear producto' }}</SheetTitle>
+          <SheetDescription>
+            {{
+              editingProduct
+                ? 'Actualiza la información del producto'
+                : 'Completa la información del nuevo producto'
+            }}
+          </SheetDescription>
         </SheetHeader>
         <ProductForm
-          :is-loading="productsStore.isCreating"
+          :product="editingProduct"
+          :is-loading="productsStore.isCreating || productsStore.isUpdating"
+          :error-message="formError"
           :options="productsStore.options"
           @submit="handleSubmit"
           @cancel="handleCancel"

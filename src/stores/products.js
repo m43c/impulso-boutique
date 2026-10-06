@@ -6,6 +6,7 @@ import { uploadImage } from '@/services/cloudinary'
 export const useProductsStore = defineStore('products', () => {
   const isCreating = ref(false)
   const isFetching = ref(false)
+  const isUpdating = ref(false)
 
   const products = ref([])
   const options = ref({
@@ -85,6 +86,34 @@ export const useProductsStore = defineStore('products', () => {
     return options.value
   }
 
+  async function updateProduct(payload, imageFile) {
+    isUpdating.value = true
+
+    try {
+      const updateData = { ...payload }
+
+      if (imageFile) {
+        const result = await uploadImage(imageFile)
+        updateData.image_public_id = result.public_id
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .update(updateData)
+        .eq('id', payload.id)
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } finally {
+      isUpdating.value = false
+    }
+  }
+
   function clear() {
     products.value = []
     options.value = {
@@ -98,11 +127,13 @@ export const useProductsStore = defineStore('products', () => {
   return {
     isCreating,
     isFetching,
+    isUpdating,
     products,
     options,
     createProduct,
     fetchProducts,
     fetchOptions,
+    updateProduct,
     clear,
   }
 })

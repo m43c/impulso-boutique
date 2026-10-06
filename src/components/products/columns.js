@@ -158,8 +158,8 @@ export const columns = [
     header: 'Estado',
     enableGlobalFilter: false,
     meta: {
-      headerClass: 'justify-text',
-      cellClass: 'text-text',
+      headerClass: 'justify-center',
+      cellClass: 'text-center',
       skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
     cell: (info) => {
@@ -276,7 +276,7 @@ export const columns = [
             {
               'aria-label': `Editar a ${product.name}`,
               class: 'cursor-pointer',
-              onClick: () => console.log('Editar:', product),
+              onClick: () => info.table.options.meta?.onEdit?.(product),
             },
             () => [
               h(Pencil, {
