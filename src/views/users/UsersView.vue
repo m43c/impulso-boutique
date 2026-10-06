@@ -55,7 +55,6 @@ async function handleSubmit(formData) {
         email: formData.email,
         full_name: formData.fullName,
         role: formData.role,
-        is_active: formData.isActive,
       }
 
       if (formData.password) {
