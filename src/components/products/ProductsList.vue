@@ -16,6 +16,7 @@ import {
   PackagePlus,
   PackageX,
   Pencil,
+  RefreshCw,
   Search,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
@@ -64,7 +65,14 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-product', 'retry', 'view-details', 'toggle-status', 'edit-product'])
+const emit = defineEmits([
+  'add-product',
+  'view-details',
+  'edit-product',
+  'toggle-status',
+  'retry',
+  'refresh',
+])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -191,12 +199,30 @@ function sortIcon(column) {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center justify-between gap-2">
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input v-model="search" placeholder="Buscar producto..." class="pl-9" />
           </div>
+          <!-- Refresh button -->
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                variant="outline"
+                size="icon"
+                class="shrink-0"
+                :disabled="isLoading"
+                aria-label="Actualizar tabla"
+                @click="emit('refresh')"
+              >
+                <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Actualizar lista</p>
+            </TooltipContent>
+          </Tooltip>
           <!-- Filters -->
           <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
           <!-- Sorting button (mobile) -->
@@ -204,7 +230,7 @@ function sortIcon(column) {
           <!-- Add product button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-product')">
             <PackagePlus class="h-4 w-4" />
-            Agregar producto
+            Nuevo producto
           </Button>
         </div>
         <!-- Desktop view -->

@@ -135,10 +135,11 @@ async function handleToggleStatus(product) {
         :is-loading="productsStore.isFetching"
         :error="fetchError"
         @add-product="handleAddProduct"
-        @retry="loadProducts"
         @view-details="handleViewDetails"
         @edit-product="handleEditProduct"
         @toggle-status="handleToggleStatus"
+        @retry="loadProducts"
+        @refresh="loadProducts"
       />
       <!-- Product details -->
       <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />

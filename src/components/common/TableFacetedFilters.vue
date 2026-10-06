@@ -85,7 +85,7 @@ const groups = computed(() =>
         if (!value) {
           return emptyLabel ?? ''
         }
-        
+
         return originalCasingLabels?.get(value) ?? toTitleCase(value)
       }
 
@@ -128,10 +128,10 @@ function handleClear() {
   <!-- Desktop view -->
   <Popover v-if="isDesktop" v-model:open="isOpen">
     <PopoverTrigger as-child>
-      <Button class="gap-2">
+      <Button variant="outline" class="gap-2">
         <Funnel class="h-4 w-4" />
         Filtros
-        <Badge v-if="activeCount" variant="secondary" class="ml-1 px-1.5">{{ activeCount }}</Badge>
+        <Badge v-if="activeCount" class="ml-1 h-4.5 w-4.5 text-[10px]">{{ activeCount }}</Badge>
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-72 p-0" align="end">
