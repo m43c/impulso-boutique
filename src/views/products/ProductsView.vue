@@ -80,7 +80,7 @@ async function handleSubmit(formData) {
     const fallback = isEditing
       ? 'No se pudo actualizar el producto'
       : 'No se pudo crear el producto'
-      
+
     formError.value = error?.message || fallback
     toast.error(formError.value)
   }
@@ -111,11 +111,18 @@ function handleViewDetails(product) {
   isDetailsOpen.value = true
 }
 
-function handleToggleStatus(product) {
+async function handleToggleStatus(product) {
   const isRetiring = product.is_active
-  const actionName = isRetiring ? 'Retirar' : 'Reponer'
+  const actionText = isRetiring ? 'retirar' : 'reponer'
 
-  console.log(`${actionName}:`, product)
+  try {
+    await productsStore.toggleProductStatus(product.id, !isRetiring)
+    toast.success(`Producto ${isRetiring ? 'retirado' : 'repuesto'} correctamente`)
+    productsStore.fetchProducts()
+  } catch (error) {
+    console.error(`Error al ${actionText} producto:`, error)
+    toast.error(error?.message || `No se pudo ${actionText} el producto`)
+  }
 }
 </script>
 

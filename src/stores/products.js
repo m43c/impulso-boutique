@@ -114,6 +114,13 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function toggleProductStatus(productId, isActive) {
+    return updateProduct({
+      id: productId,
+      is_active: isActive,
+    })
+  }
+
   function clear() {
     products.value = []
     options.value = {
@@ -134,6 +141,7 @@ export const useProductsStore = defineStore('products', () => {
     fetchProducts,
     fetchOptions,
     updateProduct,
+    toggleProductStatus,
     clear,
   }
 })

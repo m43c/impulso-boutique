@@ -88,6 +88,24 @@ async function handleSubmit(formData) {
   }
 }
 
+function handleCancel() {
+  isSheetOpen.value = false
+  editingUser.value = null
+  formError.value = null
+}
+
+function handleAddUser() {
+  editingUser.value = null
+  formError.value = null
+  isSheetOpen.value = true
+}
+
+function handleEditUser(user) {
+  editingUser.value = user
+  formError.value = null
+  isSheetOpen.value = true
+}
+
 async function handleToggleStatus(user) {
   if (user.id === authStore.user?.id) {
     toast.error('No puedes desactivar tu propia cuenta')
@@ -105,24 +123,6 @@ async function handleToggleStatus(user) {
     const message = await getEdgeFunctionErrorMessage(error, `No se pudo ${actionText} el usuario`)
     toast.error(message)
   }
-}
-
-function handleCancel() {
-  isSheetOpen.value = false
-  editingUser.value = null
-  formError.value = null
-}
-
-function handleAddUser() {
-  editingUser.value = null
-  formError.value = null
-  isSheetOpen.value = true
-}
-
-function handleEditUser(user) {
-  editingUser.value = user
-  formError.value = null
-  isSheetOpen.value = true
 }
 </script>
 

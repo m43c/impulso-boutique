@@ -39,7 +39,7 @@ const props = defineProps({
           <h3 class="text-lg leading-tight font-semibold">{{ product.name }}</h3>
           <Badge
             variant="outline"
-            class="shrink-0 text-[11px]"
+            class="shrink-0 text-[10px]"
             :class="
               product.is_active
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
