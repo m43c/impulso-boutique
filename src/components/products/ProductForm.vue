@@ -77,7 +77,10 @@ const formSchema = computed(() =>
         .string()
         .trim()
         .min(1, 'Ingresa el precio')
-        .regex(/^\d+(\.\d{1,2})?$/, 'Ingresa un precio válido (máx. 2 decimales)')
+        .transform((value) => value.replace(',', '.'))
+        .refine((value) => /^-?\d+(\.\d{1,2})?$/.test(value), {
+          message: 'Ingresa un precio válido (máx. 2 decimales)',
+        })
         .transform(Number)
         .refine((value) => value > 0, 'El precio debe ser mayor a 0'),
       minStock: z

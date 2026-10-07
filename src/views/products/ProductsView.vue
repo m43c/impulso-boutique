@@ -15,6 +15,7 @@ import {
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsList from '@/components/products/ProductsList.vue'
 import ProductDetails from '@/components/products/ProductDetails.vue'
+import { getProductErrorMessage } from '@/utils/productErrors'
 
 const productsStore = useProductsStore()
 
@@ -70,19 +71,17 @@ async function handleSubmit(formData) {
       toast.success('Producto creado correctamente')
     }
 
-    productsStore.fetchProducts()
+    loadProducts()
 
     isSheetOpen.value = false
     editingProduct.value = null
   } catch (error) {
     console.error('Error al guardar el producto:', error)
 
-    const fallback = isEditing
-      ? 'No se pudo actualizar el producto'
-      : 'No se pudo crear el producto'
-
-    formError.value = error?.message || fallback
-    toast.error(formError.value)
+    formError.value = getProductErrorMessage(
+      error,
+      isEditing ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto',
+    )
   }
 }
 
@@ -118,10 +117,10 @@ async function handleToggleStatus(product) {
   try {
     await productsStore.toggleProductStatus(product.id, !isRetiring)
     toast.success(`Producto ${isRetiring ? 'retirado' : 'repuesto'} correctamente`)
-    productsStore.fetchProducts()
+    loadProducts()
   } catch (error) {
     console.error(`Error al ${actionText} producto:`, error)
-    toast.error(error?.message || `No se pudo ${actionText} el producto`)
+    toast.error(getProductErrorMessage(error, `No se pudo ${actionText} el producto`))
   }
 }
 </script>
