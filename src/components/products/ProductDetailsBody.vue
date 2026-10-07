@@ -1,10 +1,10 @@
 <script setup>
-import { ImageOff } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
-import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
+import { IMAGE_SIZES } from '@/services/cloudinary'
+import ProductImage from '@/components/products/ProductImage.vue'
 
 const props = defineProps({
   product: {
@@ -12,26 +12,20 @@ const props = defineProps({
     required: true,
   },
 })
-
 </script>
 
 <template>
   <TooltipProvider :delay-duration="200">
     <div class="flex flex-col gap-4 md:grid md:grid-cols-12 md:gap-5">
       <div class="flex justify-center md:col-span-5 md:h-full">
-        <img
-          v-if="product.image_public_id"
-          :src="buildImageUrl(product.image_public_id, IMAGE_SIZES.detail)"
+        <ProductImage
+          :public-id="product.image_public_id"
           :alt="product.name"
-          decoding="async"
-          class="h-48 w-48 rounded-lg object-cover md:h-full md:w-full"
+          :size="IMAGE_SIZES.detail"
+          image-class="h-48 w-48 rounded-lg object-cover md:h-full md:w-full"
+          fallback-class="bg-muted flex h-48 w-48 items-center justify-center rounded-lg md:h-full md:w-full"
+          icon-class="text-muted-foreground h-8 w-8"
         />
-        <div
-          v-else
-          class="bg-muted flex h-48 w-48 items-center justify-center rounded-lg md:h-52 md:w-full"
-        >
-          <ImageOff class="text-muted-foreground h-8 w-8" />
-        </div>
       </div>
       <div class="flex flex-col gap-3 md:col-span-7">
         <!-- Name + status -->

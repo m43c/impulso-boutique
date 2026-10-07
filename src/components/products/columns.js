@@ -1,17 +1,9 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import {
-  EllipsisVertical,
-  Eye,
-  ImageOff,
-  PackageCheck,
-  PackagePlus,
-  PackageX,
-  Pencil,
-} from '@lucide/vue'
+import { EllipsisVertical, Eye, PackageCheck, PackageX, Pencil } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +14,8 @@ import {
 import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
 import { normalizeText } from '@/utils/text'
-import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
+import { IMAGE_SIZES } from '@/services/cloudinary'
+import ProductImage from '@/components/products/ProductImage.vue'
 
 export const columns = [
   {
@@ -36,43 +29,34 @@ export const columns = [
       const name = info.getValue()
       const imagePublicId = product.image_public_id
 
-      const imageNode = imagePublicId
-        ? h('img', {
-            src: buildImageUrl(imagePublicId, IMAGE_SIZES.thumb),
-            alt: name,
-            loading: 'lazy',
-            decoding: 'async',
-            class: 'h-10 w-10 shrink-0 rounded-md object-cover',
-          })
-        : h(
-            'div',
-            {
-              class: 'bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
-            },
-            [
-              h(ImageOff, {
-                class: 'text-muted-foreground h-4 w-4',
-              }),
-            ],
-          )
+      const imageNode = h(ProductImage, {
+        publicId: imagePublicId,
+        alt: name,
+        size: IMAGE_SIZES.thumb,
+        imageClass: 'h-10 w-10 shrink-0 rounded-md object-cover',
+        fallbackClass: 'bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
+        iconClass: 'text-muted-foreground h-4 w-4',
+      })
 
-      const textNode = h(Tooltip, () => [
-        h(
-          TooltipTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              'span',
-              {
-                class: 'max-w-40 truncate font-medium cursor-default',
-              },
-              name,
-            ),
-        ),
-        h(TooltipContent, () => h('p', name)),
-      ])
+      const textNode = h(TooltipProvider, () =>
+        h(Tooltip, () => [
+          h(
+            TooltipTrigger,
+            {
+              asChild: true,
+            },
+            () =>
+              h(
+                'span',
+                {
+                  class: 'max-w-40 truncate font-medium cursor-default',
+                },
+                name,
+              ),
+          ),
+          h(TooltipContent, () => h('p', name)),
+        ]),
+      )
 
       return h(
         'div',

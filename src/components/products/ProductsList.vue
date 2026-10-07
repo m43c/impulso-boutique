@@ -10,7 +10,6 @@ import {
   ChevronRight,
   EllipsisVertical,
   Eye,
-  ImageOff,
   Loader2,
   PackageCheck,
   PackagePlus,
@@ -48,7 +47,8 @@ import { features } from '@/components/products/features'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
-import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
+import { IMAGE_SIZES } from '@/services/cloudinary'
+import ProductImage from '@/components/products/ProductImage.vue'
 
 const props = defineProps({
   products: {
@@ -376,20 +376,14 @@ function sortIcon(column) {
                 :class="row.original.description ? 'pb-1' : 'pb-2'"
               >
                 <!-- Image -->
-                <img
-                  v-if="row.original.image_public_id"
-                  :src="buildImageUrl(row.original.image_public_id, IMAGE_SIZES.card)"
+                <ProductImage
+                  :public-id="row.original.image_public_id"
                   :alt="row.original.name"
-                  loading="lazy"
-                  decoding="async"
-                  class="h-28 w-28 shrink-0 rounded-md object-cover"
+                  :size="IMAGE_SIZES.card"
+                  image-class="h-28 w-28 shrink-0 rounded-md object-cover"
+                  fallback-class="bg-muted flex h-28 w-28 shrink-0 items-center justify-center rounded-md"
+                  icon-class="text-muted-foreground h-6 w-6"
                 />
-                <div
-                  v-else
-                  class="bg-muted flex h-28 w-28 shrink-0 items-center justify-center rounded-md"
-                >
-                  <ImageOff class="text-muted-foreground h-6 w-6" />
-                </div>
                 <div class="flex min-w-0 flex-1 flex-col justify-between text-xs">
                   <!-- Brand -->
                   <div class="flex items-baseline gap-1 truncate">
