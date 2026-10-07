@@ -216,6 +216,10 @@ export const columns = [
     cell: (info) => {
       const product = info.row.original
       const isActive = product.is_active
+      const can = info.table.options.meta?.can
+
+      const canUpdate = can?.('products:update') ?? false
+      const canToggleStatus = can?.('products:toggle-status') ?? false
 
       return h(DropdownMenu, () => [
         h(
@@ -255,41 +259,43 @@ export const columns = [
             ],
           ),
           // Edit product
-          h(
-            DropdownMenuItem,
-            {
-              'aria-label': `Editar a ${product.name}`,
-              class: 'cursor-pointer',
-              onClick: () => info.table.options.meta?.onEdit?.(product),
-            },
-            () => [
-              h(Pencil, {
-                class: 'mr-2 h-4 w-4',
-              }),
-              h('span', 'Editar'),
-            ],
-          ),
-          // Toggle status
-          h(DropdownMenuSeparator),
-          h(
-            DropdownMenuItem,
-            {
-              'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
-              class: [
-                'cursor-pointer',
-                isActive
-                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+          canUpdate &&
+            h(
+              DropdownMenuItem,
+              {
+                'aria-label': `Editar a ${product.name}`,
+                class: 'cursor-pointer',
+                onClick: () => info.table.options.meta?.onEdit?.(product),
+              },
+              () => [
+                h(Pencil, {
+                  class: 'mr-2 h-4 w-4',
+                }),
+                h('span', 'Editar'),
               ],
-              onClick: () => info.table.options.meta?.onToggleStatus?.(product),
-            },
-            () => [
-              h(isActive ? PackageX : PackageCheck, {
-                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
-              }),
-              h('span', isActive ? 'Retirar' : 'Reponer'),
-            ],
-          ),
+            ),
+          // Toggle status
+          canToggleStatus && h(DropdownMenuSeparator),
+          canToggleStatus &&
+            h(
+              DropdownMenuItem,
+              {
+                'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
+                class: [
+                  'cursor-pointer',
+                  isActive
+                    ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                    : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+                ],
+                onClick: () => info.table.options.meta?.onToggleStatus?.(product),
+              },
+              () => [
+                h(isActive ? PackageX : PackageCheck, {
+                  class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
+                }),
+                h('span', isActive ? 'Retirar' : 'Reponer'),
+              ],
+            ),
         ]),
       ])
     },

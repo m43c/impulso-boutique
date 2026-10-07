@@ -16,10 +16,11 @@ import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsList from '@/components/products/ProductsList.vue'
 import ProductDetails from '@/components/products/ProductDetails.vue'
 import { getProductErrorMessage } from '@/utils/productErrors'
+import { usePermissions } from '@/composables/usePermissions'
 
 const productsStore = useProductsStore()
-
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const isSheetOpen = ref(false)
 const isDetailsOpen = ref(false)
@@ -144,7 +145,7 @@ async function handleToggleStatus(product) {
       <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />
       <!-- Mobile add product button -->
       <Button
-        v-if="!fetchError"
+        v-if="!fetchError && can('products:create')"
         size="icon"
         class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
         aria-label="Agregar producto"
@@ -154,6 +155,7 @@ async function handleToggleStatus(product) {
       </Button>
       <!-- Product form -->
       <SheetContent
+        v-if="can('products:create') || can('products:update')"
         :side="isDesktop ? 'right' : 'bottom'"
         class="w-full p-6 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"

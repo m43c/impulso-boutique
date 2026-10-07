@@ -49,6 +49,7 @@ import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import { IMAGE_SIZES } from '@/services/cloudinary'
 import ProductImage from '@/components/products/ProductImage.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
   products: {
@@ -75,6 +76,7 @@ const emit = defineEmits([
 ])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const sortOptions = [
   {
@@ -150,6 +152,7 @@ const table = useTable({
     },
   },
   meta: {
+    can,
     onViewDetails: (product) => emit('view-details', product),
     onEdit: (product) => emit('edit-product', product),
     onToggleStatus: (product) => emit('toggle-status', product),
@@ -228,7 +231,11 @@ function sortIcon(column) {
           <!-- Sorting button (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add product button -->
-          <Button class="hidden gap-2 md:flex" @click="emit('add-product')">
+          <Button
+            v-if="can('products:create')"
+            class="hidden gap-2 md:flex"
+            @click="emit('add-product')"
+          >
             <PackagePlus class="h-4 w-4" />
             Nuevo producto
           </Button>
@@ -344,30 +351,33 @@ function sortIcon(column) {
                     </DropdownMenuItem>
                     <!-- Edit product -->
                     <DropdownMenuItem
+                      v-if="can('products:update')"
                       class="cursor-pointer"
                       @click="emit('edit-product', row.original)"
                     >
                       <Pencil class="mr-2 h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <!-- Toggle status -->
-                    <DropdownMenuItem
-                      class="cursor-pointer"
-                      :class="
-                        row.original.is_active
-                          ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                          : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500'
-                      "
-                      @click="emit('toggle-status', row.original)"
-                    >
-                      <component
-                        :is="row.original.is_active ? PackageX : PackageCheck"
-                        class="mr-2 h-4 w-4"
-                        :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
-                      />
-                      <span>{{ row.original.is_active ? 'Retirar' : 'Reponer' }}</span>
-                    </DropdownMenuItem>
+                    <template v-if="can('products:toggle-status')">
+                      <DropdownMenuSeparator />
+                      <!-- Toggle status -->
+                      <DropdownMenuItem
+                        class="cursor-pointer"
+                        :class="
+                          row.original.is_active
+                            ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                            : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500'
+                        "
+                        @click="emit('toggle-status', row.original)"
+                      >
+                        <component
+                          :is="row.original.is_active ? PackageX : PackageCheck"
+                          class="mr-2 h-4 w-4"
+                          :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
+                        />
+                        <span>{{ row.original.is_active ? 'Retirar' : 'Reponer' }}</span>
+                      </DropdownMenuItem>
+                    </template>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
