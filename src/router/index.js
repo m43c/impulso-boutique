@@ -37,6 +37,12 @@ const router = createRouter({
           component: () => import('@/views/users/ProfileView.vue'),
           meta: { title: 'Perfil' },
         },
+        {
+          path: 'products',
+          name: 'products',
+          component: () => import('@/views/products/ProductsView.vue'),
+          meta: { title: 'Productos' },
+        },
       ],
     },
     {

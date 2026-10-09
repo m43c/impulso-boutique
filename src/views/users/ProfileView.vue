@@ -44,6 +44,7 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
             isDesktop ? 'flex-row items-center' : 'flex-col items-center text-center',
           ]"
         >
+          <!-- Avatar + initials -->
           <Avatar class="size-14">
             <AvatarFallback
               class="bg-sidebar-border text-sidebar-primary-foreground rounded-full text-lg"
@@ -56,17 +57,20 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
             <span class="text-muted-foreground text-sm">{{ authStore.user?.email }}</span>
           </div>
         </CardHeader>
+        <!-- Role -->
         <CardContent class="flex flex-col gap-4">
           <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">Rol</span>
             <span>{{ formatRole(authStore.profile?.role) }}</span>
           </div>
+          <!-- Status -->
           <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">Estado</span>
             <Badge :variant="authStore.profile?.is_active ? 'success' : 'destructive'">
               {{ authStore.profile?.is_active ? 'Activo' : 'Inactivo' }}
             </Badge>
           </div>
+          <!-- Creation date -->
           <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">Miembro desde</span>
             <span>{{ formatDate(authStore.profile?.created_at) }}</span>

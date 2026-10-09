@@ -6,6 +6,7 @@ export const useUsersStore = defineStore('users', () => {
   const isCreating = ref(false)
   const isUpdating = ref(false)
   const isFetching = ref(false)
+  const isTogglingStatus = ref(false)
 
   const users = ref([])
 
@@ -45,6 +46,19 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  async function toggleUserStatus(userId, isActive) {
+    isTogglingStatus.value = true
+
+    try {
+      return await updateUser({
+        user_id: userId,
+        is_active: isActive,
+      })
+    } finally {
+      isTogglingStatus.value = false
+    }
+  }
+
   async function fetchUsers() {
     isFetching.value = true
 
@@ -73,9 +87,11 @@ export const useUsersStore = defineStore('users', () => {
     isCreating,
     isUpdating,
     isFetching,
+    isTogglingStatus,
     users,
     createUser,
     updateUser,
+    toggleUserStatus,
     fetchUsers,
     clear,
   }

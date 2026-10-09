@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const props = defineProps({
@@ -71,7 +70,6 @@ const formSchema = computed(() =>
         role: z.enum(['admin', 'advisor', 'cashier'], {
           errorMap: () => ({ message: 'Selecciona un rol' }),
         }),
-        isActive: z.boolean(),
       })
       .strict(),
   ),
@@ -89,14 +87,12 @@ function populateForm(user) {
           email: user.email,
           password: '',
           role: user.role,
-          isActive: user.is_active,
         }
       : {
           fullName: '',
           email: '',
           password: '',
           role: '',
-          isActive: true,
         },
   })
   showPassword.value = false
@@ -208,26 +204,6 @@ function handleCancel() {
           </RadioGroup>
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </FieldSet>
-      </VeeField>
-      <!-- Status -->
-      <VeeField v-if="isEditMode" v-slot="{ value, handleChange }" name="isActive">
-        <div class="flex flex-col gap-3">
-          <Label for="isActive" class="cursor-pointer">Estado</Label>
-          <div class="flex items-center gap-2">
-            <Switch
-              id="isActive"
-              :model-value="value"
-              :disabled="isSelf"
-              @update:model-value="handleChange"
-            />
-            <p class="text-sm">
-              {{ value ? 'Activo' : 'Inactivo' }}
-            </p>
-          </div>
-          <p v-if="isSelf" class="text-muted-foreground text-sm">
-            No puedes desactivar tu propia cuenta
-          </p>
-        </div>
       </VeeField>
     </FieldGroup>
     <!-- Actions -->

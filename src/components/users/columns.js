@@ -1,8 +1,16 @@
 import { h } from 'vue'
-import { Pencil } from '@lucide/vue'
+import { filterFn_arrHas } from '@tanstack/vue-table'
+import { EllipsisVertical, Pencil, UserCheck, UserX } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { formatDate, formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatRole } from '@/utils/roles'
 
@@ -10,54 +18,92 @@ export const columns = [
   {
     accessorKey: 'full_name',
     header: 'Nombre completo',
+    meta: {
+      skeletonClass: 'h-4 w-32',
+    },
   },
   {
     accessorKey: 'email',
     header: 'Correo electrónico',
+    meta: {
+      skeletonClass: 'h-4 w-44',
+    },
   },
   {
-    accessorKey: 'role',
+    accessorFn: (row) => formatRole(row.role),
+    id: 'role',
     header: 'Rol',
-    cell: (info) => formatRole(info.getValue()),
+    filterFn: filterFn_arrHas,
+    meta: {
+      skeletonClass: 'h-4 w-20',
+    },
+    cell: (info) => info.getValue(),
   },
   {
-    accessorKey: 'is_active',
+    accessorFn: (row) => (row.is_active ? 'Activo' : 'Inactivo'),
+    id: 'is_active',
     header: 'Estado',
+    enableGlobalFilter: false,
+    filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
-    cell: (info) =>
-      h(
+    cell: (info) => {
+      const isActive = info.row.original.is_active
+      const label = info.getValue()
+
+      return h(
         Badge,
         {
-          variant: info.getValue() ? 'success' : 'destructive',
+          variant: 'outline',
+          class: isActive
+            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+            : 'border-rose-500/30 text-rose-400 bg-rose-500/10',
         },
-        () => (info.getValue() ? 'Activo' : 'Inactivo'),
-      ),
+        () => label,
+      )
+    },
   },
   {
     accessorKey: 'created_at',
-    header: 'Fecha de creación',
+    header: 'Creación',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => formatDate(info.getValue()),
   },
   {
     accessorKey: 'updated_at',
-    header: 'Última actualización',
+    header: 'Actualización',
+    enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-4 w-24',
     },
     cell: (info) => {
       const val = info.getValue()
 
       return h(Tooltip, () => [
-        h(TooltipTrigger, { asChild: true }, () =>
-          h('button', { type: 'button', class: 'cursor-default' }, formatRelativeDate(val)),
+        h(
+          TooltipTrigger,
+          {
+            asChild: true,
+          },
+          () =>
+            h(
+              'button',
+              {
+                type: 'button',
+                class: 'cursor-default',
+              },
+              formatRelativeDate(val),
+            ),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])
@@ -70,18 +116,84 @@ export const columns = [
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
+      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
     },
-    cell: (info) =>
-      h(
-        Button,
-        {
-          variant: 'ghost',
-          size: 'icon',
-          'aria-label': `Editar a ${info.row.original.full_name}`,
-          class: 'h-8 w-8 rounded-full',
-          onClick: () => info.table.options.meta?.onEdit?.(info.row.original),
-        },
-        () => h(Pencil),
-      ),
+    cell: (info) => {
+      const user = info.row.original
+      const isActive = user.is_active
+      const currentUserId = info.table.options.meta?.currentUserId
+      const isSelf = user.id === currentUserId
+
+      return h(DropdownMenu, () => [
+        h(
+          DropdownMenuTrigger,
+          {
+            asChild: true,
+          },
+          () =>
+            h(
+              Button,
+              {
+                variant: 'ghost',
+                size: 'icon',
+                'aria-label': `Opciones para ${user.full_name}`,
+                class: 'h-8 w-8 rounded-full',
+              },
+              () =>
+                h(EllipsisVertical, {
+                  class: 'h-4 w-4',
+                }),
+            ),
+        ),
+        h(DropdownMenuContent, { align: 'end' }, () => [
+          // Edit user
+          h(
+            DropdownMenuItem,
+            {
+              'aria-label': `Editar a ${user.full_name}`,
+              class: 'cursor-pointer',
+              onClick: () => info.table.options.meta?.onEdit?.(user),
+            },
+            () => [
+              h(Pencil, {
+                class: 'mr-2 h-4 w-4',
+              }),
+              h('span', 'Editar'),
+            ],
+          ),
+          // Toggle status
+          h(DropdownMenuSeparator),
+          h(
+            DropdownMenuItem,
+            {
+              'aria-label': isActive
+                ? `Desactivar a ${user.full_name}`
+                : `Activar a ${user.full_name}`,
+              disabled: isSelf,
+              class: [
+                'cursor-pointer',
+                isActive
+                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+                isSelf ? 'pointer-events-none opacity-50' : '',
+              ],
+              onClick: () => {
+                if (isSelf) {
+                  return
+                }
+
+                info.table.options.meta?.onToggleStatus?.(user)
+              },
+            },
+            () => [
+              h(isActive ? UserX : UserCheck, {
+                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
+              }),
+              h('span', isActive ? 'Desactivar' : 'Activar'),
+            ],
+          ),
+        ]),
+      ])
+    },
   },
 ]

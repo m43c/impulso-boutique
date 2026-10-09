@@ -29,6 +29,7 @@ const fetchError = ref(null)
 const formError = ref(null)
 
 const isSelf = computed(() => !!editingUser.value && editingUser.value.id === authStore.user?.id)
+const currentUserId = computed(() => authStore.user?.id)
 
 async function loadUsers() {
   fetchError.value = null
@@ -54,7 +55,6 @@ async function handleSubmit(formData) {
         email: formData.email,
         full_name: formData.fullName,
         role: formData.role,
-        is_active: formData.isActive,
       }
 
       if (formData.password) {
@@ -81,7 +81,6 @@ async function handleSubmit(formData) {
 
     const fallback = isEditing ? 'No se pudo actualizar el usuario' : 'No se pudo crear el usuario'
     const message = await getEdgeFunctionErrorMessage(error, fallback)
-    console.log(message)
 
     formError.value = message
     toast.error(message)
@@ -105,20 +104,44 @@ function handleEditUser(user) {
   formError.value = null
   isSheetOpen.value = true
 }
+
+async function handleToggleStatus(user) {
+  if (user.id === authStore.user?.id) {
+    toast.error('No puedes desactivar tu propia cuenta')
+    return
+  }
+
+  const isDeactivating = user.is_active
+
+  try {
+    await usersStore.toggleUserStatus(user.id, !isDeactivating)
+    toast.success(`Usuario ${isDeactivating ? 'desactivado' : 'activado'} correctamente`)
+    usersStore.fetchUsers()
+  } catch (error) {
+    console.error(`Error al ${actionText} usuario:`, error)
+    const message = await getEdgeFunctionErrorMessage(error, `No se pudo ${actionText} el usuario`)
+    toast.error(message)
+  }
+}
 </script>
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
     <Sheet v-model:open="isSheetOpen">
+      <!-- Users list -->
       <UsersList
         :users="usersStore.users"
         :is-loading="usersStore.isFetching"
+        :is-updating-status="usersStore.isTogglingStatus"
         :error="fetchError"
+        :current-user-id="currentUserId"
         @add-user="handleAddUser"
         @edit-user="handleEditUser"
+        @toggle-status="handleToggleStatus"
         @retry="loadUsers"
+        @refresh="loadUsers"
       />
-      <!--Mobile -->
+      <!-- Add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">
         <Button
           size="icon"
@@ -129,11 +152,13 @@ function handleEditUser(user) {
           <UserPlus class="size-5" />
         </Button>
       </SheetTrigger>
+      <!-- User form -->
       <SheetContent
         :side="isDesktop ? 'right' : 'bottom'"
         class="w-full p-6 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
+        <!-- Title and description -->
         <SheetHeader class="p-0 pb-2">
           <SheetTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</SheetTitle>
           <SheetDescription>
@@ -144,6 +169,7 @@ function handleEditUser(user) {
             }}
           </SheetDescription>
         </SheetHeader>
+        <!-- Form -->
         <UserForm
           :user="editingUser"
           :is-self="isSelf"
