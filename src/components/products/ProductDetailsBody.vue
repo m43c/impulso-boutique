@@ -47,7 +47,7 @@ const props = defineProps({
         <p class="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
           {{ product.description || 'Sin descripción' }}
         </p>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3 text-sm">
+        <div class="grid grid-cols-2 gap-x-2 gap-y-3 border-t pt-3 text-sm">
           <!-- Category -->
           <div>
             <p class="text-muted-foreground text-xs">Categoría</p>
@@ -56,17 +56,17 @@ const props = defineProps({
           <!-- Brand -->
           <div>
             <p class="text-muted-foreground text-xs">Marca</p>
-            <p class="font-medium">{{ product.brand || '—' }}</p>
+            <p class="font-medium">{{ product.brand || 'Sin marca' }}</p>
           </div>
           <!-- Color -->
           <div>
             <p class="text-muted-foreground text-xs">Color</p>
-            <p class="font-medium">{{ product.color || '—' }}</p>
+            <p class="font-medium">{{ product.color || 'Sin color' }}</p>
           </div>
           <!-- Size -->
           <div>
             <p class="text-muted-foreground text-xs">Talla</p>
-            <p class="font-medium">{{ product.size || '—' }}</p>
+            <p class="font-medium">{{ product.size || 'Sin talla' }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-xs">Precio</p>
