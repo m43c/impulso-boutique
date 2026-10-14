@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // Public routes
     {
       path: '/',
       redirect: { name: 'login' },
@@ -14,6 +15,7 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
     },
+    // Private routes
     {
       path: '/',
       component: () => import('@/layouts/AppLayout.vue'),
@@ -25,6 +27,7 @@ const router = createRouter({
           component: () => import('@/views/HomeView.vue'),
           meta: { title: 'Inicio' },
         },
+        // User routes
         {
           path: 'users',
           name: 'users',
@@ -37,14 +40,24 @@ const router = createRouter({
           component: () => import('@/views/users/ProfileView.vue'),
           meta: { title: 'Perfil' },
         },
+        // Product routes
         {
           path: 'products',
           name: 'products',
           component: () => import('@/views/products/ProductsView.vue'),
           meta: { title: 'Productos' },
         },
+        {
+          path: 'products/:id',
+          name: 'product-details',
+          component: () => import('@/views/products/ProductDetailsView.vue'),
+          meta: {
+            title: 'Detalles del producto',
+          },
+        },
       ],
     },
+    // 404 not found
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',

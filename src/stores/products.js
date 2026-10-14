@@ -69,6 +69,16 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchProductById(id) {
+    const { data, error } = await supabase.from('products').select().eq('id', id).single()
+
+    if (error) {
+      throw error
+    }
+
+    return data
+  }
+
   async function fetchOptions() {
     const { data, error } = await supabase.rpc('get_product_options')
 
@@ -139,6 +149,7 @@ export const useProductsStore = defineStore('products', () => {
     options,
     createProduct,
     fetchProducts,
+    fetchProductById,
     fetchOptions,
     updateProduct,
     toggleProductStatus,

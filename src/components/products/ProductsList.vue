@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -68,13 +69,13 @@ const props = defineProps({
 
 const emit = defineEmits([
   'add-product',
-  'view-details',
   'edit-product',
   'toggle-status',
   'retry',
   'refresh',
 ])
 
+const router = useRouter()
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
@@ -137,6 +138,10 @@ const filterableColumns = [
   },
 ]
 
+function goToDetails(product) {
+  router.push({ name: 'product-details', params: { id: product.id } })
+}
+
 const table = useTable({
   features,
   get data() {
@@ -153,7 +158,7 @@ const table = useTable({
   },
   meta: {
     can,
-    onViewDetails: (product) => emit('view-details', product),
+    onViewDetails: goToDetails,
     onEdit: (product) => emit('edit-product', product),
     onToggleStatus: (product) => emit('toggle-status', product),
   },
@@ -342,10 +347,7 @@ function sortIcon(column) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <!-- Show details -->
-                    <DropdownMenuItem
-                      class="cursor-pointer"
-                      @click="emit('view-details', row.original)"
-                    >
+                    <DropdownMenuItem class="cursor-pointer" @click="goToDetails(row.original)">
                       <Eye class="mr-2 h-4 w-4" />
                       <span>Ver detalles</span>
                     </DropdownMenuItem>

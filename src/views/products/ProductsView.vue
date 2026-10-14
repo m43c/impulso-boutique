@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/sheet'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsList from '@/components/products/ProductsList.vue'
-import ProductDetails from '@/components/products/ProductDetails.vue'
 import { getProductErrorMessage } from '@/utils/productErrors'
 import { usePermissions } from '@/composables/usePermissions'
 
@@ -23,10 +22,8 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
 const isSheetOpen = ref(false)
-const isDetailsOpen = ref(false)
 const fetchError = ref(null)
 const formError = ref(null)
-const detailsProduct = ref(null)
 const editingProduct = ref(null)
 
 async function loadProducts() {
@@ -106,11 +103,6 @@ function handleEditProduct(product) {
   loadOptions()
 }
 
-function handleViewDetails(product) {
-  detailsProduct.value = product
-  isDetailsOpen.value = true
-}
-
 async function handleToggleStatus(product) {
   const isRetiring = product.is_active
   const actionText = isRetiring ? 'retirar' : 'reponer'
@@ -135,15 +127,11 @@ async function handleToggleStatus(product) {
         :is-loading="productsStore.isFetching"
         :error="fetchError"
         @add-product="handleAddProduct"
-        @view-details="handleViewDetails"
         @edit-product="handleEditProduct"
         @toggle-status="handleToggleStatus"
         @retry="loadProducts"
         @refresh="loadProducts"
       />
-      <!-- Product details -->
-      <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />
-      <!-- Mobile add product button -->
       <Button
         v-if="!fetchError && can('products:create')"
         size="icon"
