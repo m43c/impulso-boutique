@@ -53,6 +53,7 @@ const router = createRouter({
           component: () => import('@/views/products/ProductDetailsView.vue'),
           meta: {
             title: 'Detalles del producto',
+            breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
           },
         },
       ],
