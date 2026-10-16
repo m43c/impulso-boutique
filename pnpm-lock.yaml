@@ -35,6 +35,9 @@ importers:
       pinia:
         specifier: ^4.0.3
         version: 4.0.3(@vue/devtools-api@8.2.1)(vue@3.5.42)
+      qrcode.vue:
+        specifier: ^3.11.0
+        version: 3.11.0(vue@3.5.42)
       reka-ui:
         specifier: ^2.10.4
         version: 2.10.4(vue@3.5.42)
@@ -835,6 +838,11 @@ packages:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
     engines: {node: '>=14'}
     hasBin: true
+
+  qrcode.vue@3.11.0:
+    resolution: {integrity: sha512-PnaO9yqcEVsH9euUmo4Nn0JZMkNwk4u6fDUosKjDTXv2Cgv7rHZhr2D8Iq54clBvSycOESwgUE/rw/tBRBjIVg==}
+    peerDependencies:
+      vue: ^3.0.0
 
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
@@ -1637,6 +1645,10 @@ snapshots:
       prettier: 3.9.6
 
   prettier@3.9.6: {}
+
+  qrcode.vue@3.11.0(vue@3.5.42):
+    dependencies:
+      vue: 3.5.42
 
   quansync@0.2.11: {}
 

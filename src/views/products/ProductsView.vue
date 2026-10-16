@@ -132,6 +132,7 @@ async function handleToggleStatus(product) {
         @retry="loadProducts"
         @refresh="loadProducts"
       />
+      <!-- Floating add product button -->
       <Button
         v-if="!fetchError && can('products:create')"
         size="icon"

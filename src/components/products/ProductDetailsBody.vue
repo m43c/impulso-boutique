@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { formatDateTime, formatRelativeDate } from '@/utils/date'
+import { formatDateTime } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
 import { IMAGE_SIZES } from '@/services/cloudinary'
 import ProductImage from '@/components/products/ProductImage.vue'
@@ -17,37 +17,37 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  stats: {
+    type: Object,
+    default: () => ({
+      available: 0,
+      sold: 0,
+      unavailable: 0,
+    }),
+  },
 })
-
-const kpis = {
-  available: 0,
-  sold: 0,
-  unavailable: 0,
-}
 </script>
 
 <template>
   <TooltipProvider :delay-duration="200">
     <!-- Desktop view -->
-    <div class="hidden flex-col gap-5 md:flex md:flex-row">
+    <div class="hidden flex-col gap-4 lg:flex">
       <!-- Image -->
-      <div class="w-48 shrink-0">
-        <ProductImage
-          :public-id="product.image_public_id"
-          :alt="product.name"
-          :size="IMAGE_SIZES.detail"
-          image-class="w-full h-full rounded-lg object-cover aspect-square"
-          fallback-class="bg-muted flex justify-center w-full h-full aspect-square items-center rounded-lg"
-          icon-class="text-muted-foreground h-8 w-8"
-        />
-      </div>
-      <div class="flex min-w-0 flex-1 flex-col gap-2">
-        <!-- Name + Status -->
-        <div class="flex items-start justify-between gap-3">
-          <h3 class="text-lg leading-tight font-semibold">{{ product.name }}</h3>
+      <ProductImage
+        :public-id="product.image_public_id"
+        :alt="product.name"
+        :size="IMAGE_SIZES.detail"
+        image-class="w-full h-full rounded-lg object-cover aspect-square"
+        fallback-class="bg-muted flex justify-center w-full h-full aspect-square items-center rounded-lg"
+        icon-class="text-muted-foreground h-8 w-8"
+      />
+      <!-- Name + Status -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-base leading-tight font-semibold">{{ product.name }}</h3>
+        <div>
           <Badge
             variant="outline"
-            class="shrink-0 text-[11px]"
+            class="text-[11px]"
             :class="
               product.is_active
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -57,141 +57,84 @@ const kpis = {
             {{ product.is_active ? 'Vigente' : 'Retirado' }}
           </Badge>
         </div>
-        <!-- Description -->
-        <p class="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-          {{ product.description || 'Sin descripción' }}
-        </p>
-        <div class="grid grid-cols-2 border-t pt-2 text-xs md:grid-cols-3 md:gap-4">
-          <div class="flex flex-col gap-3">
-            <!-- Category-->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Categoría:</p>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <button class="min-w-0 cursor-default truncate">{{ product.category }}</button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{{ product.category }}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <!-- Color -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Color:</p>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <button class="min-w-0 cursor-default truncate">
-                    {{ product.color || 'Sin color' }}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{{ product.color || 'Sin color' }}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <!-- Price -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Precio:</p>
-              <span class="min-w-0 font-semibold">
-                {{ formatCurrency(product.price) }}
-              </span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-3">
-            <!-- Brand -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Marca:</p>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <button class="min-w-0 cursor-default truncate">
-                    {{ product.brand || 'Sin marca' }}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{{ product.brand || 'Sin marca' }}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <!-- Size -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Talla:</p>
-              <span class="min-w-0">{{ product.size || 'Sin talla' }}</span>
-            </div>
-            <!-- Min stock -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Stock mínimo:</p>
-              <span class="min-w-0">{{ product.min_stock }}</span>
-            </div>
-          </div>
-          <!-- KPIs -->
-          <div class="col-span-2 flex flex-col gap-2 md:col-span-1">
-            <div class="flex justify-between gap-2">
-              <!-- Available -->
-              <p class="text-muted-foreground shrink-0">Disponibles:</p>
-              <Badge
-                variant="outline"
-                class="flex h-5 w-5 items-center justify-center rounded-full border-violet-500/30 bg-violet-500/10 p-0 text-[10px] font-semibold text-violet-400"
-              >
-                {{ kpis.available }}
-              </Badge>
-            </div>
-            <!-- Sold -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">Vendidas:</p>
-              <Badge
-                variant="outline"
-                class="flex h-5 w-5 items-center justify-center rounded-full border-blue-500/30 bg-blue-500/10 p-0 text-[10px] font-semibold text-blue-400"
-              >
-                {{ kpis.sold }}
-              </Badge>
-            </div>
-            <!-- Unavailable -->
-            <div class="flex justify-between gap-2">
-              <p class="text-muted-foreground shrink-0">No disponibles:</p>
-              <Badge
-                variant="outline"
-                class="flex h-5 w-5 items-center justify-center rounded-full border-amber-500/30 bg-amber-500/10 p-0 text-[10px] font-semibold text-amber-400"
-              >
-                {{ kpis.unavailable }}
-              </Badge>
-            </div>
-          </div>
+      </div>
+      <!-- Description -->
+      <p class="text-muted-foreground text-sm leading-relaxed">
+        {{ product.description || 'Sin descripción' }}
+      </p>
+      <!-- KPIs -->
+      <div class="grid grid-cols-3 gap-2 border-y py-4">
+        <div class="flex flex-col items-center">
+          <Badge
+            variant="outline"
+            class="h-8 w-8 rounded-full border-violet-500/30 bg-violet-500/10 text-xs font-semibold text-violet-400"
+          >
+            {{ stats.available }}
+          </Badge>
+          <span class="mt-1 text-xs text-violet-500">Disponibles</span>
         </div>
-        <!-- Date -->
-        <div
-          class="text-muted-foreground flex flex-col gap-2 border-t pt-2 text-xs sm:flex-row sm:justify-between"
-        >
-          <div class="flex items-center gap-1">
-            <span>Creado:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button type="button" class="cursor-default">
-                  {{ formatRelativeDate(product.created_at) }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ formatDateTime(product.created_at) }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div class="flex items-center gap-1">
-            <span>Actualizado:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button type="button" class="cursor-default">
-                  {{ formatRelativeDate(product.updated_at) }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ formatDateTime(product.updated_at) }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+        <div class="flex flex-col items-center">
+          <Badge
+            variant="outline"
+            class="h-8 w-8 rounded-full border-blue-500/30 bg-blue-500/10 text-xs font-semibold text-blue-400"
+          >
+            {{ stats.sold }}
+          </Badge>
+          <span class="mt-1 text-xs text-blue-500">Vendidos</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <Badge
+            variant="outline"
+            class="h-8 w-8 rounded-full border-amber-500/30 bg-amber-500/10 text-xs font-semibold text-amber-400"
+          >
+            {{ stats.unavailable }}
+          </Badge>
+          <span class="mt-1 text-xs text-amber-500">No disponibles</span>
+        </div>
+      </div>
+      <!-- Details -->
+      <div class="flex flex-col gap-2 text-sm">
+        <!-- Category -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground">Categoría</span>
+          <span>{{ product.category }}</span>
+        </div>
+        <!-- Brand -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground">Marca</span>
+          <span>{{ product.brand || 'Sin marca' }}</span>
+        </div>
+        <!-- Color -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground shrink-0">Color</span>
+          <span>{{ product.color || 'Sin color' }}</span>
+        </div>
+        <!-- Size -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground">Talla</span>
+          <span>{{ product.size || 'Sin talla' }}</span>
+        </div>
+        <!-- Price -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground">Precio</span>
+          <span class="font-semibold">{{ formatCurrency(product.price) }}</span>
+        </div>
+        <!-- Min stock -->
+        <div class="flex justify-between gap-2">
+          <span class="text-muted-foreground">Stock mínimo</span>
+          <span>{{ product.min_stock }}</span>
+        </div>
+      </div>
+      <!-- Created date -->
+      <div class="text-muted-foreground border-t pt-3">
+        <div class="text-muted-foreground flex flex-col gap-1 text-xs">
+          <span>Creado: {{ formatDateTime(product.created_at) }}</span>
+          <span>Actualizado: {{ formatDateTime(product.updated_at) }}</span>
         </div>
       </div>
     </div>
     <!-- Mobile view -->
-    <div class="flex w-full min-w-0 flex-col md:hidden">
+    <div class="flex w-full min-w-0 flex-col lg:hidden">
       <!-- Name -->
       <h3 class="mb-3 text-sm leading-tight font-semibold">{{ product.name }}</h3>
       <!-- Image -->
@@ -269,7 +212,7 @@ const kpis = {
             variant="outline"
             class="h-8 w-8 rounded-full border-violet-500/30 bg-violet-500/10 text-sm font-semibold text-violet-400"
           >
-            {{ kpis.available }}
+            {{ stats.available }}
           </Badge>
           <span class="mt-1 text-xs text-violet-500">Disponibles</span>
         </div>
@@ -279,7 +222,7 @@ const kpis = {
             variant="outline"
             class="h-8 w-8 rounded-full border-blue-500/30 bg-blue-500/10 text-sm font-semibold text-blue-400"
           >
-            {{ kpis.sold }}
+            {{ stats.sold }}
           </Badge>
           <span class="mt-1 text-xs text-blue-500">Vendidos</span>
         </div>
@@ -289,7 +232,7 @@ const kpis = {
             variant="outline"
             class="h-8 w-8 rounded-full border-amber-500/30 bg-amber-500/10 text-sm font-semibold text-amber-400"
           >
-            {{ kpis.unavailable }}
+            {{ stats.unavailable }}
           </Badge>
           <span class="mt-1 text-xs text-amber-500">No disponibles</span>
         </div>

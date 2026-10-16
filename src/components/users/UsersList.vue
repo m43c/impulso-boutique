@@ -216,7 +216,7 @@ function sortIcon(column) {
           <!-- Add user button -->
           <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
             <UserPlus class="h-4 w-4" />
-            Nuevo usuario
+            Agregar usuario
           </Button>
         </div>
         <!-- Desktop view -->

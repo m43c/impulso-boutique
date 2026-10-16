@@ -22,7 +22,7 @@ const route = useRoute()
     <AppSidebar />
     <SidebarInset class="flex min-h-0 flex-col">
       <!-- Desktop view -->
-      <header class="flex h-14 shrink-0 items-center justify-between gap-2 px-4 md:gap-2 md:px-6">
+      <header class="flex h-14 shrink-0 items-center justify-between gap-2 px-6 md:gap-2">
         <div class="flex min-w-0 flex-1 items-center gap-2">
           <SidebarTrigger class="-ml-1 shrink-0" />
           <!-- Separator -->

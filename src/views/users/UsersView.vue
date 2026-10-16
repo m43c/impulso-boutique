@@ -141,7 +141,7 @@ async function handleToggleStatus(user) {
         @retry="loadUsers"
         @refresh="loadUsers"
       />
-      <!-- Add user button -->
+      <!-- Floating add user button -->
       <SheetTrigger v-if="!fetchError" as-child class="md:hidden">
         <Button
           size="icon"

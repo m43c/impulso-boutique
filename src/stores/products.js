@@ -7,6 +7,8 @@ export const useProductsStore = defineStore('products', () => {
   const isCreating = ref(false)
   const isFetching = ref(false)
   const isUpdating = ref(false)
+  const isLoadingUnitStats = ref(false)
+  const isRegisteringEntry = ref(false)
 
   const products = ref([])
   const options = ref({
@@ -14,6 +16,13 @@ export const useProductsStore = defineStore('products', () => {
     brands: [],
     colors: [],
     sizes: [],
+  })
+  const unitStats = ref({
+    available: 0,
+    sold: 0,
+    returned: 0,
+    unavailable: 0,
+    total: 0,
   })
 
   async function createProduct(payload, imageFile) {
@@ -131,6 +140,63 @@ export const useProductsStore = defineStore('products', () => {
     })
   }
 
+  async function fetchUnitStats(productId) {
+    isLoadingUnitStats.value = true
+
+    try {
+      const { data, error } = await supabase.rpc('get_product_unit_stats', {
+        p_product_id: productId,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      unitStats.value = data ?? {
+        available: 0,
+        sold: 0,
+        returned: 0,
+        unavailable: 0,
+        total: 0,
+      }
+
+      return unitStats.value
+    } finally {
+      isLoadingUnitStats.value = false
+    }
+  }
+
+  async function registerEntry({ product_id, quantity, reason, note = null }) {
+    isRegisteringEntry.value = true
+
+    try {
+      const { data, error } = await supabase.rpc('register_entry', {
+        p_product_id: product_id,
+        p_quantity: quantity,
+        p_reason: reason,
+        p_note: note,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } finally {
+      isRegisteringEntry.value = false
+    }
+  }
+
+  function resetUnitStats() {
+    unitStats.value = {
+      available: 0,
+      sold: 0,
+      returned: 0,
+      unavailable: 0,
+      total: 0,
+    }
+  }
+
   function clear() {
     products.value = []
     options.value = {
@@ -145,14 +211,20 @@ export const useProductsStore = defineStore('products', () => {
     isCreating,
     isFetching,
     isUpdating,
+    isLoadingUnitStats,
+    isRegisteringEntry,
     products,
     options,
+    unitStats,
     createProduct,
     fetchProducts,
     fetchProductById,
     fetchOptions,
     updateProduct,
     toggleProductStatus,
+    fetchUnitStats,
+    registerEntry,
+    resetUnitStats,
     clear,
   }
 })

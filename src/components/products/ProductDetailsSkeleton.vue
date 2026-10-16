@@ -5,48 +5,39 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 <template>
   <Card aria-hidden="true" class="w-full py-0">
-    <CardContent class="w-full min-w-0 p-4 md:p-4">
+    <CardContent class="w-full min-w-0 p-4">
       <!-- Desktop skeleton -->
-      <div class="hidden gap-5 md:flex md:flex-row">
+      <div class="hidden flex-col gap-4 lg:flex">
         <!-- Image -->
-        <Skeleton class="aspect-square w-48 shrink-0 rounded-lg" />
-        <div class="flex min-w-0 flex-1 flex-col gap-3">
-          <!-- Name + status -->
-          <div class="flex items-start justify-between gap-3">
-            <Skeleton class="h-6 w-4/6" />
-            <Skeleton class="h-5 w-16 shrink-0 rounded-full" />
+        <Skeleton class="aspect-square w-full rounded-lg" />
+        <!-- Name + status -->
+        <div class="flex flex-col gap-2">
+          <Skeleton class="h-6 w-4/5" />
+          <Skeleton class="h-5 w-20 rounded-full" />
+        </div>
+        <!-- Description -->
+        <div class="flex flex-col gap-2">
+          <Skeleton class="h-4 w-full" />
+          <Skeleton class="h-4 w-3/4" />
+        </div>
+        <!-- KPIs -->
+        <div class="grid grid-cols-3 gap-2 border-y py-4">
+          <div v-for="i in 3" :key="i" class="flex flex-col items-center gap-1">
+            <Skeleton class="h-8 w-8 rounded-full" />
+            <Skeleton class="h-3 w-16 max-w-full" />
           </div>
-          <!-- Description -->
-          <div class="flex flex-col gap-2">
-            <Skeleton class="h-4 w-5/6" />
-            <Skeleton class="h-4 w-5/6" />
+        </div>
+        <!-- Details -->
+        <div class="flex flex-col gap-2">
+          <div v-for="i in 6" :key="i" class="flex justify-between gap-2">
+            <Skeleton class="h-4 w-1/3" />
+            <Skeleton class="h-4 w-1/4" />
           </div>
-          <!-- Product attributes + KPIs -->
-          <div class="grid grid-cols-2 gap-x-6 border-t pt-2 md:grid-cols-3">
-            <!-- Category + color + price -->
-            <div class="flex flex-col gap-2">
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-            </div>
-            <!-- Brand + size + minimum stock -->
-            <div class="flex flex-col gap-2">
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-            </div>
-            <!-- KPIs -->
-            <div class="col-span-2 flex flex-col gap-2 md:col-span-1">
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-              <Skeleton class="h-4 w-full" />
-            </div>
-          </div>
-          <!-- Dates -->
-          <div class="flex flex-col gap-2 border-t pt-2 sm:flex-row sm:justify-between">
-            <Skeleton class="h-3 w-36" />
-            <Skeleton class="h-3 w-36" />
-          </div>
+        </div>
+        <!-- Dates -->
+        <div class="flex flex-col gap-1 border-t pt-3">
+          <Skeleton class="h-3 w-36" />
+          <Skeleton class="h-3 w-36" />
         </div>
       </div>
       <!-- Mobile skeleton -->

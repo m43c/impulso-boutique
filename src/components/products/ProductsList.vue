@@ -242,7 +242,7 @@ function sortIcon(column) {
             @click="emit('add-product')"
           >
             <PackagePlus class="h-4 w-4" />
-            Nuevo producto
+            Agregar producto
           </Button>
         </div>
         <!-- Desktop view -->
