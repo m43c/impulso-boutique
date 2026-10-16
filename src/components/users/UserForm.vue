@@ -118,11 +118,11 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
-    <!-- Errors -->
+    <!-- Error -->
     <Alert v-if="errorMessage" variant="destructive" class="mb-4">
       <AlertDescription>{{ errorMessage }}</AlertDescription>
     </Alert>
-    <!-- Form fields -->
+    <!-- Fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Full name -->
       <VeeField v-slot="{ componentField, errors }" name="fullName">
