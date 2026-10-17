@@ -7,8 +7,9 @@ export const useProductsStore = defineStore('products', () => {
   const isCreating = ref(false)
   const isFetching = ref(false)
   const isUpdating = ref(false)
-  const isLoadingUnitStats = ref(false)
   const isRegisteringEntry = ref(false)
+  const isLoadingUnitStats = ref(false)
+  const isFetchingUnits = ref(false)
 
   const products = ref([])
   const options = ref({
@@ -24,6 +25,7 @@ export const useProductsStore = defineStore('products', () => {
     unavailable: 0,
     total: 0,
   })
+  const productUnits = ref([])
 
   async function createProduct(payload, imageFile) {
     isCreating.value = true
@@ -140,6 +142,27 @@ export const useProductsStore = defineStore('products', () => {
     })
   }
 
+  async function registerEntry({ product_id, quantity, reason, note = null }) {
+    isRegisteringEntry.value = true
+
+    try {
+      const { data, error } = await supabase.rpc('register_entry', {
+        p_product_id: product_id,
+        p_quantity: quantity,
+        p_reason: reason,
+        p_note: note,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } finally {
+      isRegisteringEntry.value = false
+    }
+  }
+
   async function fetchUnitStats(productId) {
     isLoadingUnitStats.value = true
 
@@ -166,24 +189,25 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
-  async function registerEntry({ product_id, quantity, reason, note = null }) {
-    isRegisteringEntry.value = true
+  async function fetchProductUnits(productId) {
+    isFetchingUnits.value = true
 
     try {
-      const { data, error } = await supabase.rpc('register_entry', {
-        p_product_id: product_id,
-        p_quantity: quantity,
-        p_reason: reason,
-        p_note: note,
+      const { data, error } = await supabase.rpc('get_product_units', {
+        p_product_id: productId,
       })
 
       if (error) {
         throw error
       }
 
-      return data
+      productUnits.value = data ?? []
+      return productUnits.value
+    } catch (error) {
+      productUnits.value = []
+      throw error
     } finally {
-      isRegisteringEntry.value = false
+      isFetchingUnits.value = false
     }
   }
 
@@ -197,6 +221,10 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  function resetProductUnits() {
+    productUnits.value = []
+  }
+
   function clear() {
     products.value = []
     options.value = {
@@ -205,26 +233,31 @@ export const useProductsStore = defineStore('products', () => {
       colors: [],
       sizes: [],
     }
+    productUnits.value = []
   }
 
   return {
     isCreating,
     isFetching,
     isUpdating,
-    isLoadingUnitStats,
     isRegisteringEntry,
+    isLoadingUnitStats,
+    isFetchingUnits,
     products,
     options,
     unitStats,
+    productUnits,
     createProduct,
     fetchProducts,
     fetchProductById,
     fetchOptions,
     updateProduct,
     toggleProductStatus,
-    fetchUnitStats,
     registerEntry,
+    fetchUnitStats,
+    fetchProductUnits,
     resetUnitStats,
+    resetProductUnits,
     clear,
   }
 })

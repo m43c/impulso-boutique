@@ -22,7 +22,8 @@ export const columns = [
     accessorKey: 'name',
     header: 'Producto',
     meta: {
-      skeletonClass: 'h-8 w-48',
+      skeletonClass: 'h-8 w-80',
+      cellClass: 'w-[350px] max-w-[350px]',
     },
     cell: (info) => {
       const product = info.row.original
@@ -38,33 +39,16 @@ export const columns = [
         iconClass: 'text-muted-foreground h-4 w-4',
       })
 
-      const textNode = h(TooltipProvider, () =>
+      const textNode = h(TooltipProvider, { delayDuration: 200 }, () =>
         h(Tooltip, () => [
-          h(
-            TooltipTrigger,
-            {
-              asChild: true,
-            },
-            () =>
-              h(
-                'span',
-                {
-                  class: 'max-w-40 truncate font-medium cursor-default',
-                },
-                name,
-              ),
+          h(TooltipTrigger, { asChild: true }, () =>
+            h('span', { class: 'min-w-0 truncate font-medium cursor-default' }, name),
           ),
           h(TooltipContent, () => h('p', name)),
         ]),
       )
 
-      return h(
-        'div',
-        {
-          class: 'flex items-center gap-3',
-        },
-        [imageNode, textNode],
-      )
+      return h('div', { class: 'flex min-w-0 items-center gap-3' }, [imageNode, textNode])
     },
   },
   {

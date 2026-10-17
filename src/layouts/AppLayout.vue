@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute } from 'vue-router'
-import { Bell, Sun } from '@lucide/vue'
+import { Bell, ScanQrCode, Sun } from '@lucide/vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import {
@@ -60,6 +60,9 @@ const route = useRoute()
         </div>
         <!-- Icons -->
         <div class="flex shrink-0 items-center gap-0 md:gap-1">
+          <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full">
+            <ScanQrCode class="size-5" />
+          </Button>
           <Button variant="ghost" size="icon" class="relative h-8 w-8 rounded-full">
             <Bell class="size-5" />
             <Badge

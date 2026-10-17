@@ -85,7 +85,7 @@ function isOptionActive(option) {
       <template v-if="activeSort">
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          class="text-muted-foreground cursor-pointer justify-center text-xs"
+          class="text-muted-foreground justify-center text-xs bg-secondary font-medium"
           @click="resetSort()"
         >
           Restablecer orden

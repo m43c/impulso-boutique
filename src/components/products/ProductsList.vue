@@ -211,7 +211,7 @@ function sortIcon(column) {
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input v-model="search" placeholder="Buscar producto..." class="pl-9" />
+            <Input v-model="search" placeholder="Buscar producto..." class="pl-8" />
           </div>
           <!-- Refresh button -->
           <Tooltip>

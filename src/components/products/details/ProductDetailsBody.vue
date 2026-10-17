@@ -245,7 +245,7 @@ const props = defineProps({
           >
             <span class="text-xs">Ver mas detalles</span>
           </AccordionTrigger>
-          <AccordionContent class="flex min-w-0 flex-col gap-2 text-sm">
+          <AccordionContent class="flex min-w-0 flex-col gap-2 text-sm pb-0!">
             <!-- Description -->
             <p class="text-muted-foreground text-xs leading-relaxed">
               {{ product.description || 'Sin descripción' }}
@@ -265,7 +265,7 @@ const props = defineProps({
             <!-- Divisor -->
             <div class="border-t"></div>
             <!-- Date -->
-            <div class="text-muted-foreground flex flex-col gap-1 text-[11px]">
+            <div class="text-muted-foreground flex flex-col gap-1 text-xs">
               <span>Creado: {{ formatDateTime(product.created_at) }}</span>
               <span>Actualizado: {{ formatDateTime(product.updated_at) }}</span>
             </div>

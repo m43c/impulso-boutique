@@ -3,13 +3,15 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { toast } from 'vue-sonner'
-import { Boxes, Calculator, CircleAlert, Loader2, Package } from '@lucide/vue'
+import { Boxes, CircleAlert, Loader2 } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import ProductDetailsBody from '@/components/products/ProductDetailsBody.vue'
-import ProductDetailsSkeleton from '@/components/products/ProductDetailsSkeleton.vue'
-import ProductUnitsModal from '@/components/products/ProductUnitsModal.vue'
-import ProductUnitsLabelsModal from '@/components/products/ProductUnitsLabelsModal.vue'
+import ProductDetailsBody from '@/components/products/details/ProductDetailsBody.vue'
+import ProductDetailsSkeleton from '@/components/products/details/ProductDetailsSkeleton.vue'
+import ProductUnitsModal from '@/components/products/units/ProductUnitsModal.vue'
+import ProductUnitsLabelsModal from '@/components/products/units/ProductUnitsLabelsModal.vue'
+import ProductUnitsList from '@/components/products/units/ProductUnitsList.vue'
+import ProductUnitsSkeleton from '@/components/products/units/ProductUnitsSkeleton.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
@@ -43,7 +45,7 @@ async function loadProduct() {
       }
     }
 
-    await productsStore.fetchUnitStats(id)
+    await Promise.all([productsStore.fetchUnitStats(id), productsStore.fetchProductUnits(id)])
   } catch (e) {
     console.error('Error al cargar el producto:', e)
     error.value = 'No se pudo cargar el producto'
@@ -57,7 +59,10 @@ async function handleUnitsSubmit({ unitIds, quantity }) {
 
   toast.success(`${quantity} ${noun} correctamente`)
 
-  await productsStore.fetchUnitStats(product.value.id)
+  await Promise.all([
+    productsStore.fetchUnitStats(product.value.id),
+    productsStore.fetchProductUnits(product.value.id),
+  ])
 
   registeredUnitIds.value = unitIds
   isLabelsModalOpen.value = true
@@ -67,9 +72,6 @@ async function handleUnitsSubmit({ unitIds, quantity }) {
 
 function handleLabelsClose(open) {
   isLabelsModalOpen.value = open
-  if (!open) {
-    registeredUnitIds.value = []
-  }
 }
 
 function openUnitsModal() {
@@ -80,10 +82,24 @@ function openUnitsModal() {
   isUnitsModalOpen.value = true
 }
 
+function handleUnitViewDetails(unit) {
+  console.log('Ver detalles de unidad:', unit)
+}
+
+function handleUnitReprint(unit) {
+  console.log('Reimprimir etiqueta de unidad:', unit)
+}
+
+async function handleUnitsRefresh() {
+  if (!product.value) return
+  await productsStore.fetchProductUnits(product.value.id)
+}
+
 onMounted(loadProduct)
 
 onBeforeUnmount(() => {
   productsStore.resetUnitStats()
+  productsStore.resetProductUnits()
 })
 
 watch(() => route.params.id, loadProduct)
@@ -97,6 +113,8 @@ watch(() => route.params.id, loadProduct)
     >
       <!-- Skeleton (Left column) -->
       <ProductDetailsSkeleton />
+      <!-- Skeleton (Right column) -->
+      <ProductUnitsSkeleton />
     </div>
     <!-- Error status -->
     <Card v-else-if="error" class="flex h-[calc(100vh-5rem)] flex-col">
@@ -119,18 +137,20 @@ watch(() => route.params.id, loadProduct)
     >
       <!-- Left column (Product details) -->
       <div class="lg:min-h-0">
-        <Card class="w-full py-0 lg:flex lg:h-full lg:flex-col">
-          <CardContent class="w-full min-w-0 p-4 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+        <div
+          class="bg-card lg:bg-background flex w-full flex-col rounded-xl border p-4 shadow-sm lg:h-full lg:rounded-md lg:shadow-none"
+        >
+          <div class="w-full min-w-0 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
             <div class="lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
               <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
       <!-- Right column (Units and history) -->
       <div class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-col lg:gap-4">
         <!-- header -->
-        <div class="flex shrink-0 flex-col items-center justify-between gap-4 mb-2">
+        <div class="mb-2 flex shrink-0 flex-col items-center justify-between gap-4">
           <!-- Tabs -->
           <div
             class="border-border/60 inline-flex w-full rounded-md border p-0.5 lg:w-auto lg:self-start"
@@ -162,50 +182,32 @@ watch(() => route.params.id, loadProduct)
               Historial
             </button>
           </div>
-          <!-- Action buttons -->
-          <div class="hidden w-full justify-end gap-2 lg:flex">
-            <Button variant="outline">
-              <Calculator class="h-4 w-4" />
-              Conteo físico
-            </Button>
-            <Button @click="openUnitsModal">
-              <Boxes class="h-4 w-4" />
-              Agregar unidades
-            </Button>
-          </div>
         </div>
         <!-- Panel content -->
-        <Card class="flex min-h-[50vh] flex-col overflow-hidden py-0 lg:min-h-0 lg:flex-1">
-          <CardContent class="flex min-h-0 flex-1 flex-col p-0 lg:overflow-y-auto">
-            <!-- Units empty status -->
-            <div
+        <div
+          class="bg-card lg:bg-background flex min-h-[50vh] flex-col overflow-hidden rounded-xl border shadow-sm lg:min-h-0 lg:flex-1 lg:rounded-md lg:shadow-none"
+        >
+          <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
+            <!-- Units tab -->
+            <ProductUnitsList
               v-if="activeTab === 'units'"
-              class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
-            >
-              <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
-                <Package class="h-9 w-9" />
-              </div>
-              <h3 class="text-sm font-semibold">Aún no hay unidades</h3>
-              <p class="text-muted-foreground mt-1 max-w-xs text-xs">
-                Registra la primera compra para generar QR
-              </p>
-              <!-- Actions -->
-              <div class="mt-4 flex max-w-xs flex-col gap-2 lg:hidden">
-                <Button variant="outline" class="w-full">
-                  <Calculator class="h-4 w-4" />
-                  Conteo físico
-                </Button>
-              </div>
-            </div>
-            <!-- History empty status -->
+              :units="productsStore.productUnits"
+              :is-loading="productsStore.isFetchingUnits"
+              :highlight-ids="registeredUnitIds"
+              @add-units="openUnitsModal"
+              @view-details="handleUnitViewDetails"
+              @reprint="handleUnitReprint"
+              @refresh="handleUnitsRefresh"
+            />
+            <!-- History tab -->
             <div
               v-else
               class="text-muted-foreground flex flex-1 items-center justify-center text-sm"
             >
               Aún no hay movimientos registrados
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Units modal/drawer -->

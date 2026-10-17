@@ -185,7 +185,7 @@ function sortIcon(column) {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center justify-between gap-2">
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />

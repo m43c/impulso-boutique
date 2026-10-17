@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import ProductUnitsForm from '@/components/products/ProductUnitsForm.vue'
+import ProductUnitsForm from '@/components/products/units/ProductUnitsForm.vue'
 
 const props = defineProps({
   open: {
