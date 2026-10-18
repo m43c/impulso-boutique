@@ -67,13 +67,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits([
-  'add-product',
-  'edit-product',
-  'toggle-status',
-  'retry',
-  'refresh',
-])
+const emit = defineEmits(['add-product', 'edit-product', 'toggle-status', 'retry', 'refresh'])
 
 const router = useRouter()
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -348,7 +342,7 @@ function sortIcon(column) {
                   <DropdownMenuContent align="end">
                     <!-- Show details -->
                     <DropdownMenuItem class="cursor-pointer" @click="goToDetails(row.original)">
-                      <Eye class="mr-2 h-4 w-4" />
+                      <Eye class="h-4 w-4" />
                       <span>Ver detalles</span>
                     </DropdownMenuItem>
                     <!-- Edit product -->
@@ -357,7 +351,7 @@ function sortIcon(column) {
                       class="cursor-pointer"
                       @click="emit('edit-product', row.original)"
                     >
-                      <Pencil class="mr-2 h-4 w-4" />
+                      <Pencil class="h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
                     <template v-if="can('products:toggle-status')">
@@ -374,7 +368,7 @@ function sortIcon(column) {
                       >
                         <component
                           :is="row.original.is_active ? PackageX : PackageCheck"
-                          class="mr-2 h-4 w-4"
+                          class="h-4 w-4"
                           :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
                         />
                         <span>{{ row.original.is_active ? 'Retirar' : 'Reponer' }}</span>

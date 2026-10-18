@@ -333,7 +333,7 @@ function sortIcon(column) {
                       class="cursor-pointer"
                       @click="emit('edit-user', row.original)"
                     >
-                      <Pencil class="mr-2 h-4 w-4" />
+                      <Pencil class="h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -353,7 +353,7 @@ function sortIcon(column) {
                     >
                       <component
                         :is="row.original.is_active ? UserX : UserCheck"
-                        class="mr-2 h-4 w-4"
+                        class="h-4 w-4"
                         :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
                       />
                       <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>

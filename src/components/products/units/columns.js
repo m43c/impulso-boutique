@@ -128,24 +128,16 @@ export const columns = [
             () => h(EllipsisVertical, { class: 'h-4 w-4' }),
           ),
         ),
+        // Show QR
         h(DropdownMenuContent, { align: 'end' }, () => [
           h(
             DropdownMenuItem,
             {
-              'aria-label': `Ver detalles de ${unit.id.slice(0, 8)}`,
+              'aria-label': `Ver QR de unidad ${unit.id.slice(0, 8)}`,
               class: 'cursor-pointer',
-              onClick: () => info.table.options.meta?.onViewDetails?.(unit),
+              onClick: () => info.table.options.meta?.onViewQr?.(unit),
             },
-            () => [h(Eye, { class: 'h-4 w-4' }), h('span', 'Ver detalles')],
-          ),
-          h(
-            DropdownMenuItem,
-            {
-              'aria-label': `Reimprimir etiqueta de ${unit.id.slice(0, 8)}`,
-              class: 'cursor-pointer',
-              onClick: () => info.table.options.meta?.onReprint?.(unit),
-            },
-            () => [h(Printer, { class: 'h-4 w-4' }), h('span', 'Reimprimir')],
+            () => [h(Eye, { class: 'h-4 w-4' }), h('span', 'Ver QR')],
           ),
         ]),
       ])

@@ -12,6 +12,7 @@ import ProductUnitsModal from '@/components/products/units/ProductUnitsModal.vue
 import ProductUnitsLabelsModal from '@/components/products/units/ProductUnitsLabelsModal.vue'
 import ProductUnitsList from '@/components/products/units/ProductUnitsList.vue'
 import ProductUnitsSkeleton from '@/components/products/units/ProductUnitsSkeleton.vue'
+import ProductUnitQrModal from '@/components/products/units/ProductUnitQrModal.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
@@ -24,6 +25,9 @@ const activeTab = ref('units')
 const isUnitsModalOpen = ref(false)
 const isLabelsModalOpen = ref(false)
 const registeredUnitIds = ref([])
+
+const isQrModalOpen = ref(false)
+const selectedUnitForQr = ref(null)
 
 async function loadProduct() {
   isLoading.value = true
@@ -93,6 +97,16 @@ function handleUnitReprint(unit) {
 async function handleUnitsRefresh() {
   if (!product.value) return
   await productsStore.fetchProductUnits(product.value.id)
+}
+
+function handleUnitViewQr(unit) {
+  selectedUnitForQr.value = unit
+  isQrModalOpen.value = true
+}
+
+function handleQrReprint(unit) {
+  registeredUnitIds.value = [unit.id]
+  isLabelsModalOpen.value = true
 }
 
 onMounted(loadProduct)
@@ -195,8 +209,7 @@ watch(() => route.params.id, loadProduct)
               :is-loading="productsStore.isFetchingUnits"
               :highlight-ids="registeredUnitIds"
               @add-units="openUnitsModal"
-              @view-details="handleUnitViewDetails"
-              @reprint="handleUnitReprint"
+              @view-qr="handleUnitViewQr"
               @refresh="handleUnitsRefresh"
             />
             <!-- History tab -->
@@ -216,12 +229,19 @@ watch(() => route.params.id, loadProduct)
       :product="product"
       @submit="handleUnitsSubmit"
     />
-    <!-- Units codes QR -->
+    <!-- Unit code QR -->
     <ProductUnitsLabelsModal
       :open="isLabelsModalOpen"
       :product="product"
       :unit-ids="registeredUnitIds"
       @update:open="handleLabelsClose"
+    />
+    <!-- QR view -->
+    <ProductUnitQrModal
+      v-model:open="isQrModalOpen"
+      :unit="selectedUnitForQr"
+      :product="product"
+      @reprint="handleQrReprint"
     />
     <!-- Floating add units button -->
     <Button

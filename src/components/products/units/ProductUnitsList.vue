@@ -61,7 +61,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-units', 'view-details', 'reprint', 'refresh'])
+const emit = defineEmits(['add-units', 'view-qr', 'refresh'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -134,8 +134,7 @@ const table = useTable({
     },
   },
   meta: {
-    onViewDetails: (unit) => emit('view-details', unit),
-    onReprint: (unit) => emit('reprint', unit),
+    onViewQr: (unit) => emit('view-qr', unit),
   },
 })
 
@@ -279,7 +278,6 @@ function isHighlighted(unit) {
           </Table>
         </template>
         <!-- Mobile view -->
-        <!-- <div v-else class="flex flex-col gap-3 p-3"> -->
         <div v-else class="flex min-h-0 flex-1 flex-col gap-3 p-3">
           <!-- Skeleton -->
           <template v-if="isLoading">
@@ -356,16 +354,9 @@ function isHighlighted(unit) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    class="cursor-pointer"
-                    @click="emit('view-details', row.original)"
-                  >
-                    <Eye class="mr-2 h-4 w-4" />
-                    <span>Ver detalles</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem class="cursor-pointer" @click="emit('reprint', row.original)">
-                    <Printer class="mr-2 h-4 w-4" />
-                    <span>Reimprimir</span>
+                  <DropdownMenuItem class="cursor-pointer" @click="emit('view-qr', row.original)">
+                    <Eye class="h-4 w-4" />
+                    <span>Ver Qr</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

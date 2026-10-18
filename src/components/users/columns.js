@@ -156,7 +156,7 @@ export const columns = [
             },
             () => [
               h(Pencil, {
-                class: 'mr-2 h-4 w-4',
+                class: 'h-4 w-4',
               }),
               h('span', 'Editar'),
             ],
@@ -187,7 +187,7 @@ export const columns = [
             },
             () => [
               h(isActive ? UserX : UserCheck, {
-                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
+                class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
               }),
               h('span', isActive ? 'Desactivar' : 'Activar'),
             ],
