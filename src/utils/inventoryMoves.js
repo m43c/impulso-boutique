@@ -12,3 +12,13 @@ const moveReasonLabels = {
 export function formatMoveReason(reason) {
   return moveReasonLabels[reason] ?? reason
 }
+
+const moveTypeLabels = {
+  entry: 'Entrada',
+  exit: 'Salida',
+  adjustment: 'Ajuste',
+}
+
+export function formatMoveType(type) {
+  return moveTypeLabels[type] ?? type
+}

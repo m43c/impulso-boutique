@@ -12,7 +12,6 @@ import {
   EllipsisVertical,
   Eye,
   Package,
-  Printer,
   RefreshCw,
   Search,
 } from '@lucide/vue'
@@ -206,7 +205,7 @@ function isHighlighted(unit) {
         <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
         <!-- Add product units button -->
         <Button
-          class="hidden gap-2 md:flex"
+          class="hidden gap-2 pb-0.5 md:flex"
           size="sm"
           :disabled="isLoading"
           @click="emit('add-units')"
@@ -215,9 +214,8 @@ function isHighlighted(unit) {
           Agregar unidades
         </Button>
       </div>
-      <!-- Desktop view -->
-      <!-- <div class="min-h-0 flex-1 overflow-y-auto"> -->
       <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <!-- Desktop view -->
         <template v-if="isDesktop">
           <Table>
             <TableHeader class="bg-background/95 sticky top-0 z-10 backdrop-blur">
@@ -409,7 +407,7 @@ function isHighlighted(unit) {
             @click="table.previousPage()"
           >
             <ChevronLeft class="h-4 w-4" />
-            <span class="text-xs lg:text-sm">Anterior</span>
+            <span class="text-xs pb-0.5 lg:text-sm">Anterior</span>
           </Button>
           <!-- Next -->
           <Button
@@ -419,7 +417,7 @@ function isHighlighted(unit) {
             :disabled="!table.getCanNextPage()"
             @click="table.nextPage()"
           >
-            <span class="text-xs lg:text-sm">Siguiente</span>
+            <span class="text-xs pb-0.5 lg:text-sm">Siguiente</span>
             <ChevronRight class="h-4 w-4" />
           </Button>
         </div>

@@ -13,6 +13,7 @@ import ProductUnitsLabelsModal from '@/components/products/units/ProductUnitsLab
 import ProductUnitsList from '@/components/products/units/ProductUnitsList.vue'
 import ProductUnitsSkeleton from '@/components/products/units/ProductUnitsSkeleton.vue'
 import ProductUnitQrModal from '@/components/products/units/ProductUnitQrModal.vue'
+import ProductHistoryList from '@/components/products/history/ProductHistoryList.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
@@ -49,7 +50,11 @@ async function loadProduct() {
       }
     }
 
-    await Promise.all([productsStore.fetchUnitStats(id), productsStore.fetchProductUnits(id)])
+    await Promise.all([
+      productsStore.fetchUnitStats(id),
+      productsStore.fetchProductUnits(id),
+      productsStore.fetchProductHistory(id),
+    ])
   } catch (e) {
     console.error('Error al cargar el producto:', e)
     error.value = 'No se pudo cargar el producto'
@@ -86,14 +91,6 @@ function openUnitsModal() {
   isUnitsModalOpen.value = true
 }
 
-function handleUnitViewDetails(unit) {
-  console.log('Ver detalles de unidad:', unit)
-}
-
-function handleUnitReprint(unit) {
-  console.log('Reimprimir etiqueta de unidad:', unit)
-}
-
 async function handleUnitsRefresh() {
   if (!product.value) return
   await productsStore.fetchProductUnits(product.value.id)
@@ -114,6 +111,7 @@ onMounted(loadProduct)
 onBeforeUnmount(() => {
   productsStore.resetUnitStats()
   productsStore.resetProductUnits()
+  productsStore.resetProductHistory()
 })
 
 watch(() => route.params.id, loadProduct)
@@ -213,12 +211,12 @@ watch(() => route.params.id, loadProduct)
               @refresh="handleUnitsRefresh"
             />
             <!-- History tab -->
-            <div
+            <ProductHistoryList
               v-else
-              class="text-muted-foreground flex flex-1 items-center justify-center text-sm"
-            >
-              Aún no hay movimientos registrados
-            </div>
+              :history="productsStore.productHistory"
+              :is-loading="productsStore.isFetchingHistory"
+              @refresh="() => productsStore.fetchProductHistory(product.id)"
+            />
           </div>
         </div>
       </div>

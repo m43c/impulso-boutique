@@ -10,6 +10,7 @@ export const useProductsStore = defineStore('products', () => {
   const isRegisteringEntry = ref(false)
   const isLoadingUnitStats = ref(false)
   const isFetchingUnits = ref(false)
+  const isFetchingHistory = ref(false)
 
   const products = ref([])
   const options = ref({
@@ -26,6 +27,7 @@ export const useProductsStore = defineStore('products', () => {
     total: 0,
   })
   const productUnits = ref([])
+  const productHistory = ref([])
 
   async function createProduct(payload, imageFile) {
     isCreating.value = true
@@ -211,6 +213,28 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchProductHistory(productId) {
+    isFetchingHistory.value = true
+
+    try {
+      const { data, error } = await supabase.rpc('get_product_history', {
+        p_product_id: productId,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      productHistory.value = data ?? []
+      return productHistory.value
+    } catch (error) {
+      productHistory.value = []
+      throw error
+    } finally {
+      isFetchingHistory.value = false
+    }
+  }
+
   function resetUnitStats() {
     unitStats.value = {
       available: 0,
@@ -223,6 +247,10 @@ export const useProductsStore = defineStore('products', () => {
 
   function resetProductUnits() {
     productUnits.value = []
+  }
+
+  function resetProductHistory() {
+    productHistory.value = []
   }
 
   function clear() {
@@ -243,10 +271,12 @@ export const useProductsStore = defineStore('products', () => {
     isRegisteringEntry,
     isLoadingUnitStats,
     isFetchingUnits,
+    isFetchingHistory,
     products,
     options,
     unitStats,
     productUnits,
+    productHistory,
     createProduct,
     fetchProducts,
     fetchProductById,
@@ -256,8 +286,10 @@ export const useProductsStore = defineStore('products', () => {
     registerEntry,
     fetchUnitStats,
     fetchProductUnits,
+    fetchProductHistory,
     resetUnitStats,
     resetProductUnits,
+    resetProductHistory,
     clear,
   }
 })

@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import { EllipsisVertical, Eye, Printer } from '@lucide/vue'
+import { EllipsisVertical, Eye } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -49,7 +49,7 @@ export const columns = [
 
       const textNode = h(
         'span',
-        { class: 'font-mono text-sm font-medium whitespace-nowrap select-all' },
+        { class: 'font-mono text-[13px] font-medium whitespace-nowrap select-all' },
         id,
       )
 
