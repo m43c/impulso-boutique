@@ -63,17 +63,34 @@ export const useProductsStore = defineStore('products', () => {
     isFetching.value = true
 
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select()
-        .order('created_at', { ascending: false })
+      const [productsRes, stockRes] = await Promise.all([
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase.from('product_stock').select('*'),
+      ])
 
-      if (error) {
-        throw error
+      if (productsRes.error) {
+        throw productsRes.error
       }
 
-      products.value = data
-      return data
+      if (stockRes.error) {
+        throw stockRes.error
+      }
+
+      const stockById = new Map(stockRes.data.map((s) => [s.id, s]))
+
+      products.value = productsRes.data.map((p) => ({
+        ...p,
+        ...(stockById.get(p.id) ?? {
+          stock_available: 0,
+          stock_sold: 0,
+          stock_returned: 0,
+          stock_unavailable: 0,
+          stock_total: 0,
+          is_low_stock: false,
+        }),
+      }))
+
+      return products.value
     } catch (error) {
       products.value = []
       throw error

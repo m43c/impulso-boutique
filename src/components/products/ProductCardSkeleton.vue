@@ -29,11 +29,14 @@ import { Skeleton } from '@/components/ui/skeleton'
         </div>
       </div>
       <div class="flex flex-col gap-2 border-t pt-3">
-        <div class="flex items-center justify-between">
+        <div class="flex justify-between">
           <!-- Price -->
           <Skeleton class="h-5 w-20" />
-          <!-- Min stock -->
-          <Skeleton class="h-3.5 w-24" />
+          <!-- Stock + min stock -->
+          <div class="flex flex-col items-end gap-1">
+            <Skeleton class="h-3.5 w-28" />
+            <Skeleton class="h-2.5 w-20" />
+          </div>
         </div>
       </div>
       <!-- Date -->

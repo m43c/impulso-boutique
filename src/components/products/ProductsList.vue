@@ -97,6 +97,17 @@ const sortOptions = [
     separator: true,
   },
   {
+    label: 'Stock: menor primero',
+    columnId: 'stock',
+    desc: false,
+  },
+  {
+    label: 'Stock: mayor primero',
+    columnId: 'stock',
+    desc: true,
+    separator: true,
+  },
+  {
     label: 'Fecha: más recientes',
     columnId: 'updated_at',
     desc: true,
@@ -129,6 +140,10 @@ const filterableColumns = [
     columnId: 'size',
     label: 'Talla',
     useOriginalCasing: true,
+  },
+  {
+    columnId: 'stock_status',
+    label: 'Stock',
   },
 ]
 
@@ -437,15 +452,33 @@ function sortIcon(column) {
                 {{ row.original.description || 'Sin descripción' }}
               </p>
               <div class="flex flex-col gap-1 border-t pt-1">
-                <div class="flex items-center justify-between">
+                <div class="flex justify-between">
                   <!-- Price -->
                   <span class="text-base font-semibold">
                     {{ formatCurrency(row.original.price) }}
                   </span>
-                  <!-- Min Stock -->
-                  <span class="text-muted-foreground text-xs">
-                    Stock mín.: {{ row.original.min_stock }}
-                  </span>
+                  <!-- Stock + Min stock -->
+                  <div class="flex flex-col items-end gap-0.5">
+                    <span
+                      class="inline-flex items-center gap-1 text-xs font-medium tabular-nums"
+                      :class="
+                        (row.original.stock_available ?? 0) === 0
+                          ? 'text-rose-400'
+                          : row.original.is_low_stock
+                            ? 'text-amber-400'
+                            : ''
+                      "
+                    >
+                      Disponibles: {{ row.original.stock_available ?? 0 }}
+                      <CircleAlert
+                        v-if="row.original.is_low_stock && (row.original.stock_available ?? 0) > 0"
+                        class="h-3 w-3"
+                      />
+                    </span>
+                    <span class="text-muted-foreground text-[11px]">
+                      Stock mín.: {{ row.original.min_stock }}
+                    </span>
+                  </div>
                 </div>
                 <!-- Date -->
                 <div class="text-muted-foreground flex gap-1 text-[11px]">
