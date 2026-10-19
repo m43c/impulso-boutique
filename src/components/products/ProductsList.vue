@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -69,7 +69,9 @@ const props = defineProps({
 
 const emit = defineEmits(['add-product', 'edit-product', 'toggle-status', 'retry', 'refresh'])
 
+const route = useRoute()
 const router = useRouter()
+
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
@@ -164,6 +166,8 @@ const table = useTable({
       pageIndex: 0,
       pageSize: isDesktop.value ? 10 : 5,
     },
+    columnFilters:
+      route.query.stock === 'low' ? [{ id: 'stock_status', value: ['Stock mínimo'] }] : [],
   },
   meta: {
     can,

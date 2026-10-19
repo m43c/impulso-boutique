@@ -144,7 +144,7 @@ function handleClear() {
       <Funnel class="h-4 w-4" />
       <Badge
         v-if="activeCount"
-        class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+        class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[11px]"
       >
         {{ activeCount }}
       </Badge>

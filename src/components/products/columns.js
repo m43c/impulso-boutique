@@ -106,7 +106,7 @@ export const columns = [
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-5 w-5',
+      skeletonClass: 'mx-auto h-5 w-12',
     },
     cell: (info) => info.row.original.size || 'Sin talla',
   },
