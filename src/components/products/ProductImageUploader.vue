@@ -150,7 +150,7 @@ function closeCamera() {
 }
 
 async function capturePhoto() {
-  const file = await capture(videoEl.value)
+  const file = await capture(videoEl.value, isDesktop.value)
 
   if (!file) {
     toast.error('La cámara todavía no está lista')
@@ -217,7 +217,6 @@ onBeforeUnmount(() => {
             </p>
           </div>
         </template>
-
         <!-- Camera button -->
         <Button
           type="button"
@@ -291,7 +290,7 @@ onBeforeUnmount(() => {
     <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
     <!-- Camera Dialog -->
     <Dialog v-model:open="isCameraOpen" @update:open="!$event && closeCamera()">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="lg:max-w-lg">
         <DialogHeader>
           <DialogTitle>Tomar foto</DialogTitle>
           <DialogDescription>Captura una imagen del producto usando la cámara</DialogDescription>
@@ -304,13 +303,21 @@ onBeforeUnmount(() => {
           autoplay
           muted
           playsinline
-          class="aspect-video w-full rounded-lg object-cover"
+          class="aspect-4/3 max-h-[45vh] w-full rounded-lg bg-black object-cover"
+          :class="{ 'scale-x-[-1]': isDesktop }"
         />
-        <div class="flex gap-2 pt-2">
-          <Button type="button" class="flex-1" :disabled="!isActive" @click="capturePhoto">
+        <div class="flex flex-col-reverse gap-2 pt-2 lg:flex-row">
+          <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeCamera">
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            class="w-full sm:flex-1"
+            :disabled="!isActive"
+            @click="capturePhoto"
+          >
             Capturar
           </Button>
-          <Button type="button" variant="outline" @click="closeCamera">Cancelar</Button>
         </div>
       </DialogContent>
     </Dialog>

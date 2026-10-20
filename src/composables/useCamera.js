@@ -23,16 +23,12 @@ export function useCamera() {
       })
 
       videoEl.srcObject = stream
-
       await videoEl.play()
-
       isActive.value = true
-
       return true
     } catch (error) {
       console.error('Error al acceder a la cámara:', error)
       cameraError.value = 'No se pudo acceder a la cámara. Verifica los permisos'
-
       stop()
       return false
     }
@@ -40,7 +36,6 @@ export function useCamera() {
 
   function stop(videoEl = null) {
     stream?.getTracks().forEach((track) => track.stop())
-
     stream = null
 
     if (videoEl) {
@@ -50,17 +45,21 @@ export function useCamera() {
     isActive.value = false
   }
 
-  function capture(videoEl, fileName = 'photo.jpg') {
+  function capture(videoEl, mirror = false, fileName = 'photo.jpg') {
     if (!videoEl?.videoWidth || !videoEl?.videoHeight) {
       return Promise.resolve(null)
     }
 
     const canvas = document.createElement('canvas')
-
     canvas.width = videoEl.videoWidth
     canvas.height = videoEl.videoHeight
 
     const context = canvas.getContext('2d')
+
+    if (mirror) {
+      context.translate(canvas.width, 0)
+      context.scale(-1, 1)
+    }
 
     context.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
 
@@ -71,9 +70,7 @@ export function useCamera() {
             resolve(null)
             return
           }
-
           const file = new File([blob], fileName, { type: 'image/jpeg' })
-
           resolve(file)
         },
         'image/jpeg',
