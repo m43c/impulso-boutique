@@ -100,7 +100,9 @@ async function handleLogout() {
         <SidebarMenuItem>
           <div class="flex items-center gap-2 p-2 px-2">
             <Avatar class="size-8 shrink-0">
-              <AvatarFallback class="bg-sidebar-border text-sidebar-primary-foreground text-xs">
+              <AvatarFallback
+                class="bg-primary text-primary-foreground rounded-full text-xs font-medium"
+              >
                 {{ authStore.initials }}
               </AvatarFallback>
             </Avatar>

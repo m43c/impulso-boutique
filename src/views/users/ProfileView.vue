@@ -47,7 +47,7 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
           <!-- Avatar + initials -->
           <Avatar class="size-14">
             <AvatarFallback
-              class="bg-sidebar-border text-sidebar-primary-foreground rounded-full text-lg"
+              class="bg-primary text-primary-foreground rounded-full pb-1 text-lg font-medium"
             >
               {{ authStore.initials }}
             </AvatarFallback>

@@ -2,8 +2,9 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
+import { isDark, toggleTheme } from '@/composables/useTheme'
 import { useMediaQuery } from '@vueuse/core'
-import { Bell, ScanQrCode, Sun } from '@lucide/vue'
+import { Bell, Moon, ScanQrCode, Sun } from '@lucide/vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -132,8 +133,16 @@ onUnmounted(() => {
             </PopoverContent>
           </Popover>
           <!-- Toggle theme -->
-          <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full">
-            <Sun class="size-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+            :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+            @click="toggleTheme()"
+          >
+            <Sun v-if="isDark" class="size-5" />
+            <Moon v-else class="size-5" />
           </Button>
         </div>
       </header>
