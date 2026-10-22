@@ -1,8 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import QrcodeVue from 'qrcode.vue'
+import { toast } from 'vue-sonner'
 import { useMediaQuery } from '@vueuse/core'
-import { Download, Printer } from '@lucide/vue'
+import { Copy, Download, Printer } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -36,7 +37,9 @@ const props = defineProps({
 const emit = defineEmits(['update:open', 'reprint'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+
 const qrRef = ref(null)
+const copied = ref(false)
 
 const openModel = computed({
   get: () => props.open,
@@ -51,13 +54,10 @@ const STATUS_STYLES = {
 }
 
 function downloadQr() {
-  if (!qrRef.value) {
-    return
-  }
+  if (!qrRef.value) return
 
   const svgElement = qrRef.value.$el || qrRef.value
   const svgString = new XMLSerializer().serializeToString(svgElement)
-
   const svgBase64 = btoa(unescape(encodeURIComponent(svgString)))
   const dataUrl = `data:image/svg+xml;base64,${svgBase64}`
 
@@ -68,13 +68,16 @@ function downloadQr() {
     const canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
-
     const ctx = canvas.getContext('2d')
 
     if (ctx) {
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, size, size)
-      ctx.drawImage(img, 0, 0, size, size)
+
+      const margin = size * 0.04
+      const qrSize = size - margin * 2
+
+      ctx.drawImage(img, margin, margin, qrSize, qrSize)
 
       canvas.toBlob((blob) => {
         if (!blob) {
@@ -86,9 +89,11 @@ function downloadQr() {
 
         a.href = url
         a.download = `QR-${props.unit?.id.slice(0, 8)}.png`
+
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
+
         URL.revokeObjectURL(url)
       }, 'image/png')
     }
@@ -100,6 +105,19 @@ function downloadQr() {
 function handleReprint() {
   emit('reprint', props.unit)
   openModel.value = false
+}
+
+async function copyId() {
+  try {
+    await navigator.clipboard.writeText(props.unit.id)
+    copied.value = true
+    toast.success('ID de unidad copiado')
+    setTimeout(() => {
+      copied.value = false
+    }, 1500)
+  } catch {
+    toast.error('No se pudo copiar el ID')
+  }
 }
 </script>
 
@@ -123,6 +141,7 @@ function handleReprint() {
               :size="240"
               level="H"
               render-as="svg"
+              background="#ffffff"
               class="block h-auto w-full"
             />
           </div>
@@ -144,7 +163,20 @@ function handleReprint() {
             <!-- Unit -->
             <div class="flex items-center justify-between gap-2">
               <span class="text-muted-foreground">Unidad:</span>
-              <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
+              <div class="flex items-center gap-1">
+                <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
+                <!-- Copy button -->
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button variant="ghost" size="icon" class="ml-1 h-6 w-6" @click="copyId">
+                      <Copy class="h-3 w-3" :class="{ 'text-emerald-500': copied }" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
             <!-- Status -->
             <div class="flex items-center justify-between gap-2">
@@ -199,10 +231,11 @@ function handleReprint() {
               :size="200"
               level="H"
               render-as="svg"
+              background="#ffffff"
               class="block h-auto w-full"
             />
           </div>
-          <div class="bg-muted/40 flex w-full flex-col gap-2 rounded-lg p-4 text-sm">
+          <div class="bg-muted/40 flex w-full flex-col gap-2 rounded-lg p-4 text-xs">
             <!-- Product name -->
             <div class="flex items-center justify-between gap-2">
               <span class="text-muted-foreground">Producto:</span>
@@ -220,7 +253,20 @@ function handleReprint() {
             <!-- Unit -->
             <div class="flex items-center justify-between gap-2">
               <span class="text-muted-foreground">Unidad:</span>
-              <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
+              <div class="flex items-center gap-1">
+                <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
+                <!-- Copy button -->
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button variant="ghost" size="icon" class="ml-1 h-6 w-6" @click="copyId">
+                      <Copy class="h-3 w-3" :class="{ 'text-emerald-500': copied }" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
             <!-- Status -->
             <div class="flex items-center justify-between gap-2">
