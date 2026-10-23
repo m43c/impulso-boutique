@@ -4,6 +4,12 @@ const NO_ROWS_RETURNED = 'PGRST116'
 
 export function getProductErrorMessage(error, fallback) {
   if (error?.code === UNIQUE_VIOLATION) {
+    const detail = (error.detail || error.message || '')
+
+    if (detail.includes('products_variant_group_color_size_uq')) {
+      return 'Ya existe una variante con ese color y talla'
+    }
+
     return 'Ya existe un producto idéntico y activo'
   }
 

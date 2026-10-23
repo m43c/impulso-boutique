@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useMediaQuery } from '@vueuse/core'
 import { PackagePlus } from '@lucide/vue'
@@ -17,14 +18,17 @@ import ProductsList from '@/components/products/ProductsList.vue'
 import { getProductErrorMessage } from '@/utils/productErrors'
 import { usePermissions } from '@/composables/usePermissions'
 
+const router = useRouter()
 const productsStore = useProductsStore()
+
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
 const isSheetOpen = ref(false)
 const fetchError = ref(null)
 const formError = ref(null)
-const editingProduct = ref(null)
+const formMode = ref('create')
+const formProduct = ref(null)
 
 async function loadProducts() {
   fetchError.value = null
@@ -46,7 +50,7 @@ function loadOptions() {
 onMounted(() => loadProducts())
 
 async function handleSubmit(formData) {
-  const isEditing = !!editingProduct.value
+  const mode = formMode.value
   formError.value = null
 
   try {
@@ -61,9 +65,21 @@ async function handleSubmit(formData) {
       min_stock: formData.minStock,
     }
 
-    if (isEditing) {
-      await productsStore.updateProduct({ ...payload, id: editingProduct.value.id }, formData.image)
+    if (mode === 'edit') {
+      await productsStore.updateProduct({ ...payload, id: formProduct.value.id }, formData.image)
       toast.success('Producto actualizado correctamente')
+    } else if (mode === 'variant') {
+      const imagePublicId = formData.image ? null : (formProduct.value?.image_public_id ?? null)
+
+      const newId = await productsStore.createProductVariant(
+        formProduct.value.id,
+        payload,
+        formData.image,
+        imagePublicId,
+      )
+      toast.success('Variante creada', {
+        action: { label: 'Ver producto', onClick: () => router.push('/products/' + newId) },
+      })
     } else {
       await productsStore.createProduct(payload, formData.image)
       toast.success('Producto creado correctamente')
@@ -72,32 +88,48 @@ async function handleSubmit(formData) {
     loadProducts()
 
     isSheetOpen.value = false
-    editingProduct.value = null
+    formMode.value = 'create'
+    formProduct.value = null
   } catch (error) {
     console.error('Error al guardar el producto:', error)
 
     formError.value = getProductErrorMessage(
       error,
-      isEditing ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto',
+      mode === 'edit'
+        ? 'No se pudo actualizar el producto'
+        : mode === 'variant'
+          ? 'No se pudo crear la variante'
+          : 'No se pudo crear el producto',
     )
   }
 }
 
 function handleCancel() {
   isSheetOpen.value = false
-  editingProduct.value = null
+  formMode.value = 'create'
+  formProduct.value = null
   formError.value = null
 }
 
 function handleAddProduct() {
-  editingProduct.value = null
+  formMode.value = 'create'
+  formProduct.value = null
   formError.value = null
   isSheetOpen.value = true
   loadOptions()
 }
 
 function handleEditProduct(product) {
-  editingProduct.value = product
+  formMode.value = 'edit'
+  formProduct.value = product
+  formError.value = null
+  isSheetOpen.value = true
+  loadOptions()
+}
+
+function handleCreateProductVariant(product) {
+  formMode.value = 'variant'
+  formProduct.value = product
   formError.value = null
   isSheetOpen.value = true
   loadOptions()
@@ -128,6 +160,7 @@ async function handleToggleStatus(product) {
         :error="fetchError"
         @add-product="handleAddProduct"
         @edit-product="handleEditProduct"
+        @create-variant="handleCreateProductVariant"
         @toggle-status="handleToggleStatus"
         @retry="loadProducts"
         @refresh="loadProducts"
@@ -149,18 +182,29 @@ async function handleToggleStatus(product) {
         class="w-full p-6 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
-        <SheetHeader class="p-0 pb-2">
-          <SheetTitle>{{ editingProduct ? 'Editar producto' : 'Crear producto' }}</SheetTitle>
+        <SheetHeader class="gap-0.5 p-0 pb-0">
+          <SheetTitle>
+            {{
+              formMode === 'edit'
+                ? 'Editar producto'
+                : formMode === 'variant'
+                  ? 'Crear variante'
+                  : 'Crear producto'
+            }}
+          </SheetTitle>
           <SheetDescription>
             {{
-              editingProduct
+              formMode === 'edit'
                 ? 'Actualiza la información del producto'
-                : 'Completa la información del nuevo producto'
+                : formMode === 'variant'
+                  ? 'Crea una nueva variante modificando los atributos que necesites'
+                  : 'Completa la información del nuevo producto'
             }}
           </SheetDescription>
         </SheetHeader>
         <ProductForm
-          :product="editingProduct"
+          :product="formProduct"
+          :mode="formMode"
           :is-loading="productsStore.isCreating || productsStore.isUpdating"
           :error-message="formError"
           :options="productsStore.options"

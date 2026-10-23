@@ -1,6 +1,14 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import { CircleAlert, EllipsisVertical, Eye, PackageCheck, PackageX, Pencil } from '@lucide/vue'
+import {
+  CircleAlert,
+  EllipsisVertical,
+  Eye,
+  LayersPlus,
+  PlusCircle,
+  XCircle,
+  Pencil,
+} from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -282,6 +290,7 @@ export const columns = [
       const isActive = product.is_active
       const can = info.table.options.meta?.can
 
+      const canCreate = can?.('products:create') ?? false
       const canUpdate = can?.('products:update') ?? false
       const canToggleStatus = can?.('products:toggle-status') ?? false
 
@@ -322,6 +331,22 @@ export const columns = [
               h('span', 'Ver detalles'),
             ],
           ),
+          // Create variant
+          canCreate &&
+            h(
+              DropdownMenuItem,
+              {
+                'aria-label': `Crear variante de ${product.name}`,
+                class: 'cursor-pointer',
+                onClick: () => info.table.options.meta?.onCreateVariant?.(product),
+              },
+              () => [
+                h(LayersPlus, {
+                  class: 'h-4 w-4',
+                }),
+                h('span', 'Crear variante'),
+              ],
+            ),
           // Edit product
           canUpdate &&
             h(
@@ -354,7 +379,7 @@ export const columns = [
                 onClick: () => info.table.options.meta?.onToggleStatus?.(product),
               },
               () => [
-                h(isActive ? PackageX : PackageCheck, {
+                h(isActive ? XCircle : PlusCircle, {
                   class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
                 }),
                 h('span', isActive ? 'Retirar' : 'Reponer'),

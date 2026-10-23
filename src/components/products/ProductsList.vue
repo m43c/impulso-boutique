@@ -9,15 +9,16 @@ import {
   CircleAlert,
   ChevronLeft,
   ChevronRight,
+  LayersPlus,
   EllipsisVertical,
   Eye,
   Loader2,
-  PackageCheck,
   PackagePlus,
-  PackageX,
+  PlusCircle,
   Pencil,
   RefreshCw,
   Search,
+  XCircle,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Card, CardContent } from '@/components/ui/card'
@@ -67,7 +68,14 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add-product', 'edit-product', 'toggle-status', 'retry', 'refresh'])
+const emit = defineEmits([
+  'add-product',
+  'edit-product',
+  'toggle-status',
+  'create-variant',
+  'retry',
+  'refresh',
+])
 
 const route = useRoute()
 const router = useRouter()
@@ -172,6 +180,7 @@ const table = useTable({
   meta: {
     can,
     onViewDetails: goToDetails,
+    onCreateVariant: (product) => emit('create-variant', product),
     onEdit: (product) => emit('edit-product', product),
     onToggleStatus: (product) => emit('toggle-status', product),
   },
@@ -364,6 +373,15 @@ function sortIcon(column) {
                       <Eye class="h-4 w-4" />
                       <span>Ver detalles</span>
                     </DropdownMenuItem>
+                    <!-- Create variant-->
+                    <DropdownMenuItem
+                      v-if="can('products:create')"
+                      class="cursor-pointer"
+                      @click="emit('create-variant', row.original)"
+                    >
+                      <LayersPlus class="h-4 w-4" />
+                      <span>Crear variante</span>
+                    </DropdownMenuItem>
                     <!-- Edit product -->
                     <DropdownMenuItem
                       v-if="can('products:update')"
@@ -373,6 +391,7 @@ function sortIcon(column) {
                       <Pencil class="h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
+
                     <template v-if="can('products:toggle-status')">
                       <DropdownMenuSeparator />
                       <!-- Toggle status -->
@@ -386,7 +405,7 @@ function sortIcon(column) {
                         @click="emit('toggle-status', row.original)"
                       >
                         <component
-                          :is="row.original.is_active ? PackageX : PackageCheck"
+                          :is="row.original.is_active ? XCircle : PlusCircle"
                           class="h-4 w-4"
                           :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
                         />

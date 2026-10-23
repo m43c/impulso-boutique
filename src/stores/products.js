@@ -13,19 +13,8 @@ export const useProductsStore = defineStore('products', () => {
   const isFetchingHistory = ref(false)
 
   const products = ref([])
-  const options = ref({
-    categories: [],
-    brands: [],
-    colors: [],
-    sizes: [],
-  })
-  const unitStats = ref({
-    available: 0,
-    sold: 0,
-    returned: 0,
-    unavailable: 0,
-    total: 0,
-  })
+  const options = ref({ categories: [], brands: [], colors: [], sizes: [] })
+  const unitStats = ref({ available: 0, sold: 0, returned: 0, unavailable: 0, total: 0 })
   const productUnits = ref([])
   const productHistory = ref([])
 
@@ -48,6 +37,44 @@ export const useProductsStore = defineStore('products', () => {
         })
         .select()
         .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } finally {
+      isCreating.value = false
+    }
+  }
+
+  async function createProductVariant(sourceId, payload, imageFile, imagePublicId = null) {
+    isCreating.value = true
+
+    try {
+      let publicId = null
+
+      if (imageFile) {
+        const result = await uploadImage(imageFile)
+        publicId = result.public_id
+      } else if (imagePublicId) {
+        publicId = imagePublicId
+      } else {
+        throw new Error('La imagen es obligatoria')
+      }
+
+      const { data, error } = await supabase.rpc('create_product_variant', {
+        p_source_id: sourceId,
+        p_name: payload.name,
+        p_description: payload.description,
+        p_category: payload.category,
+        p_brand: payload.brand,
+        p_color: payload.color,
+        p_size: payload.size,
+        p_price: payload.price,
+        p_min_stock: payload.min_stock,
+        p_image_public_id: publicId,
+      })
 
       if (error) {
         throw error
@@ -272,12 +299,7 @@ export const useProductsStore = defineStore('products', () => {
 
   function clear() {
     products.value = []
-    options.value = {
-      categories: [],
-      brands: [],
-      colors: [],
-      sizes: [],
-    }
+    options.value = { categories: [], brands: [], colors: [], sizes: [] }
     productUnits.value = []
   }
 
@@ -295,6 +317,7 @@ export const useProductsStore = defineStore('products', () => {
     productUnits,
     productHistory,
     createProduct,
+    createProductVariant,
     fetchProducts,
     fetchProductById,
     fetchOptions,

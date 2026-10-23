@@ -13,7 +13,7 @@ export async function getEdgeFunctionErrorMessage(error, fallback) {
         return body.error
       }
     } catch {
-      // El body no era JSON válido, seguimos al fallback
+      // Responde body is not valid JSON, continue to fallback message
     }
   }
 
