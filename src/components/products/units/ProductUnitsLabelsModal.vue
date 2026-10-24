@@ -18,6 +18,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import { buildUnitUrl } from '@/utils/urls'
 
 const props = defineProps({
   open: {
@@ -80,7 +81,7 @@ function handlePrint() {
               :key="id"
               class="border-border/60 flex flex-col items-center rounded-lg border p-3"
             >
-              <QrcodeVue :value="id" :size="160" level="H" render-as="svg" class="h-auto w-full" />
+              <QrcodeVue :value="buildUnitUrl(id)" :size="160" level="H" render-as="svg" class="h-auto w-full" />
               <p
                 class="text-muted-foreground mt-2 w-full truncate text-center font-mono text-[11px]"
               >
@@ -124,7 +125,7 @@ function handlePrint() {
               :key="id"
               class="border-border/60 flex flex-col items-center rounded-lg border p-3"
             >
-              <QrcodeVue :value="id" :size="160" level="H" render-as="svg" class="h-auto w-full" />
+              <QrcodeVue :value="buildUnitUrl(id)" :size="160" level="H" render-as="svg" class="h-auto w-full" />
               <p
                 class="text-muted-foreground mt-2 w-full truncate text-center font-mono text-[11px]"
               >
@@ -148,7 +149,7 @@ function handlePrint() {
   <Teleport to="body">
     <div class="product-labels-print">
       <div v-for="id in unitIds" :key="id" class="product-label-cell">
-        <QrcodeVue :value="id" :size="200" level="H" render-as="svg" />
+        <QrcodeVue :value="buildUnitUrl(id)" :size="200" level="H" render-as="svg" />
         <span class="product-label-id">{{ id.slice(0, 8) }}</span>
       </div>
     </div>
@@ -220,3 +221,4 @@ function handlePrint() {
   }
 }
 </style>
+

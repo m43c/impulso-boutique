@@ -11,12 +11,15 @@ export const useProductsStore = defineStore('products', () => {
   const isLoadingUnitStats = ref(false)
   const isFetchingUnits = ref(false)
   const isFetchingHistory = ref(false)
+  const isFetchingScannedUnit = ref(false)
 
   const products = ref([])
   const options = ref({ categories: [], brands: [], colors: [], sizes: [] })
   const unitStats = ref({ available: 0, sold: 0, returned: 0, unavailable: 0, total: 0 })
   const productUnits = ref([])
   const productHistory = ref([])
+  const scannedUnit = ref(null)
+  const scannedProduct = ref(null)
 
   async function createProduct(payload, imageFile) {
     isCreating.value = true
@@ -279,6 +282,66 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchScannedUnit(unitId) {
+    isFetchingScannedUnit.value = true
+
+    try {
+      const { data, error } = await supabase
+        .from('product_units')
+        .select('*, product:products(*)')
+        .eq('id', unitId)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error al obtener la unidad:', error)
+
+        if (error.code === '22P02') {
+          resetScannedUnit()
+          return null
+        }
+
+        throw error
+      }
+
+      if (!data) {
+        console.error('Unidad no encontrada:', unitId)
+
+        resetScannedUnit()
+        return null
+      }
+
+      const { product, ...unit } = data
+
+      const { data: firstMove, error: moveError } = await supabase
+        .from('inventory_moves')
+        .select('reason, note')
+        .eq('product_unit_id', unitId)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+
+      if (moveError) {
+        console.error('Error al obtener origen de la unidad:', moveError)
+      }
+
+      const finalUnit = {
+        ...unit,
+        origin_reason: firstMove?.reason ?? null,
+        note: firstMove?.note ?? null,
+      }
+
+      scannedUnit.value = finalUnit
+      scannedProduct.value = product
+
+      return { unit: finalUnit, product }
+    } catch (error) {
+      resetScannedUnit()
+      throw error
+    } finally {
+      isFetchingScannedUnit.value = false
+    }
+  }
+
   function resetUnitStats() {
     unitStats.value = {
       available: 0,
@@ -297,6 +360,11 @@ export const useProductsStore = defineStore('products', () => {
     productHistory.value = []
   }
 
+  function resetScannedUnit() {
+    scannedUnit.value = null
+    scannedProduct.value = null
+  }
+
   function clear() {
     products.value = []
     options.value = { categories: [], brands: [], colors: [], sizes: [] }
@@ -311,11 +379,14 @@ export const useProductsStore = defineStore('products', () => {
     isLoadingUnitStats,
     isFetchingUnits,
     isFetchingHistory,
+    isFetchingScannedUnit,
     products,
     options,
     unitStats,
     productUnits,
     productHistory,
+    scannedUnit,
+    scannedProduct,
     createProduct,
     createProductVariant,
     fetchProducts,
@@ -327,9 +398,11 @@ export const useProductsStore = defineStore('products', () => {
     fetchUnitStats,
     fetchProductUnits,
     fetchProductHistory,
+    fetchScannedUnit,
     resetUnitStats,
     resetProductUnits,
     resetProductHistory,
+    resetScannedUnit,
     clear,
   }
 })

@@ -37,8 +37,8 @@ const props = defineProps({
         :public-id="product.image_public_id"
         :alt="product.name"
         :size="IMAGE_SIZES.detail"
-        image-class="w-full h-full rounded-lg object-cover aspect-square"
-        fallback-class="bg-muted flex justify-center w-full h-full aspect-square items-center rounded-lg"
+        image-class="w-full h-full rounded-lg lg:rounded-sm object-cover aspect-square"
+        fallback-class="bg-muted flex justify-center w-full h-full aspect-square items-center rounded-lg lg:rounded-sm"
         icon-class="text-muted-foreground h-8 w-8"
       />
       <!-- Name + Status -->
@@ -245,7 +245,7 @@ const props = defineProps({
           >
             <span class="text-xs">Ver mas detalles</span>
           </AccordionTrigger>
-          <AccordionContent class="flex min-w-0 flex-col gap-2 text-sm pb-0!">
+          <AccordionContent class="flex min-w-0 flex-col gap-2 pb-0! text-sm">
             <!-- Description -->
             <p class="text-muted-foreground text-xs leading-relaxed">
               {{ product.description || 'Sin descripción' }}

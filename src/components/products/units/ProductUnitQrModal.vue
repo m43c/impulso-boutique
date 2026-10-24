@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import QrcodeVue from 'qrcode.vue'
-import { toast } from 'vue-sonner'
 import { useMediaQuery } from '@vueuse/core'
+import { toast } from 'vue-sonner'
 import { Copy, Download, Printer } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/u
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
+import { buildUnitUrl } from '@/utils/urls'
 
 const props = defineProps({
   open: {
@@ -54,7 +55,9 @@ const STATUS_STYLES = {
 }
 
 function downloadQr() {
-  if (!qrRef.value) return
+  if (!qrRef.value) {
+    return
+  }
 
   const svgElement = qrRef.value.$el || qrRef.value
   const svgString = new XMLSerializer().serializeToString(svgElement)
@@ -112,6 +115,7 @@ async function copyId() {
     await navigator.clipboard.writeText(props.unit.id)
     copied.value = true
     toast.success('ID de unidad copiado')
+
     setTimeout(() => {
       copied.value = false
     }, 1500)
@@ -137,7 +141,7 @@ async function copyId() {
           <div class="border-border mx-auto rounded-lg border-2 bg-white p-2 shadow-sm">
             <QrcodeVue
               ref="qrRef"
-              :value="unit.id"
+              :value="buildUnitUrl(unit.id)"
               :size="240"
               level="H"
               render-as="svg"
@@ -164,7 +168,12 @@ async function copyId() {
             <div class="flex items-center justify-between gap-2">
               <span class="text-muted-foreground">Unidad:</span>
               <div class="flex items-center gap-1">
-                <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
+                <!-- Chip del ID -->
+                <span
+                  class="bg-muted rounded px-1.5 py-0.5 font-mono text-xs font-medium shadow-sm"
+                >
+                  {{ unit.id.slice(0, 8) }}
+                </span>
                 <!-- Copy button -->
                 <Tooltip>
                   <TooltipTrigger as-child>
@@ -227,7 +236,7 @@ async function copyId() {
           <div class="border-border mx-auto rounded-lg border-2 bg-white p-2 shadow-sm">
             <QrcodeVue
               ref="qrRef"
-              :value="unit.id"
+              :value="buildUnitUrl(unit.id)"
               :size="200"
               level="H"
               render-as="svg"

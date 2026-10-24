@@ -56,6 +56,15 @@ const router = createRouter({
             breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
           },
         },
+        {
+          path: 'units/:unitId',
+          name: 'unit-details',
+          component: () => import('@/views/products/ProductUnitDetailsView.vue'),
+          meta: {
+            title: 'Detalle de unidad',
+            breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
+          },
+        },
       ],
     },
     // 404 not found

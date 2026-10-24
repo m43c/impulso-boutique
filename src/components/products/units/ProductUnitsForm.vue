@@ -85,8 +85,8 @@ const helperText = computed(() =>
 
 const notePlaceholder = computed(() =>
   values.reason === 'purchase'
-    ? 'Compra al provedor Marco'
-    : 'Prenda encontrada en bodega sin registrar',
+    ? 'Compra al proveedor / distribuidor'
+    : 'Prenda encontrada en estante sin registrar',
 )
 
 const onSubmit = handleSubmit(async (formValues) => {

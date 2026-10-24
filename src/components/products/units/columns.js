@@ -13,6 +13,7 @@ import {
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
+import { buildUnitUrl } from '@/utils/urls'
 
 const STATUS_STYLES = {
   available: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -38,7 +39,7 @@ export const columns = [
         { class: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white p-1' },
         [
           h(QrcodeVue, {
-            value: id,
+            value: buildUnitUrl(id),
             size: 40,
             level: 'H',
             renderAs: 'svg',

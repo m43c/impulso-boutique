@@ -1,13 +1,12 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
 import { isDark, toggleTheme } from '@/composables/useTheme'
 import { useMediaQuery } from '@vueuse/core'
 import { Bell, Moon, ScanQrCode, Sun } from '@lucide/vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,12 +16,32 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
+import QrScannerModal from '@/components/scan/QrScannerModal.vue'
+import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 
 const route = useRoute()
-const alertsStore = useAlertsStore()
+const router = useRouter()
 
+const alertsStore = useAlertsStore()
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { breadcrumbs } = useBreadcrumbs()
+
+const isScannerOpen = ref(false)
+
+function openScanner() {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur()
+  }
+
+  isScannerOpen.value = true
+}
+
+function handleQrDetected(rawId) {
+  const unitId = rawId.startsWith('/units/') ? rawId.split('/').pop() : rawId
+  router.push({ name: 'unit-details', params: { unitId } })
+}
 
 onMounted(() => {
   alertsStore.fetchLowStockAlerts()
@@ -54,8 +73,8 @@ onUnmounted(() => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator class="shrink-0" />
               </template>
-              <template v-if="route.meta.breadcrumb?.length">
-                <template v-for="(item, index) in route.meta.breadcrumb" :key="index">
+              <template v-if="breadcrumbs.value?.length">
+                <template v-for="(item, index) in breadcrumbs.value" :key="index">
                   <BreadcrumbItem class="shrink-0">
                     <BreadcrumbLink as-child>
                       <RouterLink :to="item.to">{{ item.title }}</RouterLink>
@@ -76,7 +95,14 @@ onUnmounted(() => {
         <!-- Icons -->
         <div class="flex shrink-0 items-center gap-0 md:gap-1">
           <!-- Scan QR code -->
-          <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            title="Escanear código QR"
+            aria-label="Escanear código QR"
+            @click="openScanner"
+          >
             <ScanQrCode class="size-5" />
           </Button>
           <!-- Notifications -->
@@ -151,5 +177,7 @@ onUnmounted(() => {
         <RouterView />
       </main>
     </SidebarInset>
+    <!-- QR scanner -->
+    <QrScannerModal v-model:open="isScannerOpen" @detected="handleQrDetected" />
   </SidebarProvider>
 </template>
