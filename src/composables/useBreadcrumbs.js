@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-const override = ref(null) // estado module-level, compartido
+const override = ref(null)
 
 export function useBreadcrumbs() {
   const route = useRoute()

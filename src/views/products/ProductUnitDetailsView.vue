@@ -69,10 +69,19 @@ async function loadUnit(unitId) {
       setBreadcrumbs([
         { title: 'Productos', to: { name: 'products' } },
         {
+          title: 'Detalles de unidad',
+          to: { name: 'unit-details', params: { unitId: result.unit.id } },
+        },
+        {
           title: result.product.name,
           to: { name: 'product-details', params: { id: result.product.id } },
+          truncate: true,
         },
-        { title: `Unidad ${result.unit.id.slice(0, 8)}` },
+        {
+          title: `Unidad ${result.unit.id.slice(0, 8)}`,
+          current: true,
+          tooltip: `UUID: ${result.unit.id}`,
+        },
       ])
 
       if (result.product.variant_group_id) {
@@ -330,7 +339,7 @@ onUnmounted(() => {
                   <div class="flex items-center gap-2">
                     <span class="text-muted-foreground">Unidad:</span>
                     <div class="flex items-center gap-1">
-                      <span class="bg-muted rounded px-1.5 py-0.5 font-mono text-xs font-medium">
+                      <span class="bg-muted rounded px-1.5 font-mono text-xs font-medium lg:pt-1">
                         {{ scannedUnit.id.slice(0, 8) }}
                       </span>
                       <!-- Copy button -->

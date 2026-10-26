@@ -1,8 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAlertsStore } from '@/stores/alerts'
-import { isDark, toggleTheme } from '@/composables/useTheme'
 import { useMediaQuery } from '@vueuse/core'
 import { Bell, Moon, ScanQrCode, Sun } from '@lucide/vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -17,15 +15,18 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import QrScannerModal from '@/components/scan/QrScannerModal.vue'
+import { useAlertsStore } from '@/stores/alerts'
+import { isDark, toggleTheme } from '@/composables/useTheme'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 
 const route = useRoute()
 const router = useRouter()
 
-const alertsStore = useAlertsStore()
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const alertsStore = useAlertsStore()
 const { breadcrumbs } = useBreadcrumbs()
 
 const isScannerOpen = ref(false)
@@ -57,12 +58,11 @@ onUnmounted(() => {
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset class="flex min-h-0 flex-col">
-      <!-- Desktop view -->
       <header class="flex h-14 shrink-0 items-center justify-between gap-2 px-6 md:gap-2">
         <div class="flex min-w-0 flex-1 items-center gap-2">
           <SidebarTrigger class="-ml-1 shrink-0" />
           <div class="bg-border mr-1.5 hidden h-4 w-px shrink-0 md:block" />
-          <!-- Breadcrumbs -->
+          <!-- Desktop view (Breadcrumbs) -->
           <Breadcrumb class="hidden min-w-0 flex-1 md:block">
             <BreadcrumbList class="flex-nowrap">
               <template v-if="route.name !== 'home'">
@@ -73,21 +73,64 @@ onUnmounted(() => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator class="shrink-0" />
               </template>
-              <template v-if="breadcrumbs.value?.length">
-                <template v-for="(item, index) in breadcrumbs.value" :key="index">
-                  <BreadcrumbItem class="shrink-0">
-                    <BreadcrumbLink as-child>
-                      <RouterLink :to="item.to">{{ item.title }}</RouterLink>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator class="shrink-0" />
+              <TooltipProvider :delay-duration="200">
+                <template v-if="breadcrumbs?.length">
+                  <template v-for="(item, index) in breadcrumbs" :key="index">
+                    <BreadcrumbItem
+                      :class="
+                        item.current || item.truncate ? 'min-w-0 overflow-hidden' : 'shrink-0'
+                      "
+                    >
+                      <!-- Current elemnt -->
+                      <template v-if="item.current">
+                        <Tooltip v-if="item.tooltip || item.truncate">
+                          <TooltipTrigger as-child>
+                            <BreadcrumbPage class="block truncate">{{ item.title }}</BreadcrumbPage>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{{ item.tooltip || item.title }}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <BreadcrumbPage v-else class="truncate">{{ item.title }}</BreadcrumbPage>
+                      </template>
+                      <!-- Elements witn links -->
+                      <template v-else>
+                        <Tooltip v-if="item.truncate">
+                          <TooltipTrigger as-child>
+                            <BreadcrumbLink as-child>
+                              <RouterLink
+                                :to="item.to"
+                                class="block max-w-37.5 truncate lg:max-w-62.5"
+                              >
+                                {{ item.title }}
+                              </RouterLink>
+                            </BreadcrumbLink>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{{ item.title }}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <BreadcrumbLink v-else as-child>
+                          <RouterLink :to="item.to">{{ item.title }}</RouterLink>
+                        </BreadcrumbLink>
+                      </template>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator
+                      v-if="index < breadcrumbs.length - 1 || !breadcrumbs.some((b) => b.current)"
+                      class="shrink-0"
+                    />
+                  </template>
                 </template>
-              </template>
-              <BreadcrumbItem class="min-w-0">
+              </TooltipProvider>
+              <BreadcrumbItem
+                v-if="!breadcrumbs?.some((b) => b.current)"
+                class="min-w-0 overflow-hidden"
+              >
                 <BreadcrumbPage class="truncate">{{ route.meta.title }}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <!-- Mobiel view -->
           <h1 class="min-w-0 flex-1 truncate text-base font-semibold md:hidden">
             {{ route.meta.title }}
           </h1>

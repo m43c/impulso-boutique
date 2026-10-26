@@ -61,7 +61,7 @@ const router = createRouter({
           name: 'unit-details',
           component: () => import('@/views/products/ProductUnitDetailsView.vue'),
           meta: {
-            title: 'Detalle de unidad',
+            title: 'Detalles de unidad',
             breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
           },
         },
