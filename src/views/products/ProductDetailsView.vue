@@ -247,6 +247,7 @@ watch(() => route.params.id, loadProduct)
       size="icon"
       class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg lg:hidden"
       aria-label="Agregar unidades"
+      :disabled="productsStore.isFetchingUnits"
       @click="openUnitsModal"
     >
       <Boxes class="size-5" />
