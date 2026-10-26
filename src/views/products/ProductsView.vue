@@ -70,13 +70,13 @@ async function handleSubmit(formData) {
       toast.success('Producto actualizado correctamente')
     } else if (mode === 'variant') {
       const imagePublicId = formData.image ? null : (formProduct.value?.image_public_id ?? null)
-
       const newId = await productsStore.createProductVariant(
         formProduct.value.id,
         payload,
         formData.image,
         imagePublicId,
       )
+      
       toast.success('Variante creada', {
         action: { label: 'Ver producto', onClick: () => router.push('/products/' + newId) },
       })
@@ -116,6 +116,7 @@ function handleAddProduct() {
   formProduct.value = null
   formError.value = null
   isSheetOpen.value = true
+
   loadOptions()
 }
 
@@ -124,6 +125,7 @@ function handleEditProduct(product) {
   formProduct.value = product
   formError.value = null
   isSheetOpen.value = true
+
   loadOptions()
 }
 
@@ -132,6 +134,7 @@ function handleCreateProductVariant(product) {
   formProduct.value = product
   formError.value = null
   isSheetOpen.value = true
+
   loadOptions()
 }
 

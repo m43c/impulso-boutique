@@ -214,7 +214,7 @@ function sortIcon(column) {
 
 <template>
   <TooltipProvider :delay-duration="200">
-    <div class="flex min-h-0 flex-1 flex-col gap-4">
+    <div class="flex w-full min-w-0 flex-col gap-4 lg:h-[calc(100dvh-5rem)] lg:overflow-hidden">
       <!-- Error -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
         <div class="bg-destructive/10 text-destructive mb-3 rounded-full p-3">
@@ -229,7 +229,7 @@ function sortIcon(column) {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex items-center justify-between gap-2">
+        <div class="flex shrink-0 items-center justify-between gap-2">
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -268,71 +268,77 @@ function sortIcon(column) {
           </Button>
         </div>
         <!-- Desktop view -->
-        <div v-if="isDesktop" class="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                <TableHead
-                  v-for="header in headerGroup.headers"
-                  :key="header.id"
-                  :class="[
-                    header.column.getCanSort() ? 'cursor-pointer select-none' : '',
-                    header.column.columnDef.meta?.cellClass || '',
-                  ]"
-                  @click="header.column.getToggleSortingHandler()?.($event)"
-                >
-                  <div
-                    class="flex items-center gap-1"
-                    :class="header.column.columnDef.meta?.headerClass || 'justify-start'"
+        <div
+          v-if="isDesktop"
+          class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-md border"
+        >
+          <div class="relative flex-1 overflow-auto isolate">
+            <Table class="border-separate border-spacing-0">
+              <TableHeader class="bg-background sticky top-0 z-10 shadow-sm">
+                <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                  <TableHead
+                    v-for="header in headerGroup.headers"
+                    :key="header.id"
+                    :class="[
+                      header.column.getCanSort() ? 'cursor-pointer select-none' : '',
+                      header.column.columnDef.meta?.cellClass || '',
+                      'bg-background border-b',
+                    ]"
+                    @click="header.column.getToggleSortingHandler()?.($event)"
                   >
-                    <FlexRender v-if="!header.isPlaceholder" :header="header" />
-                    <component
-                      :is="sortIcon(header.column)"
-                      v-if="sortIcon(header.column)"
-                      class="h-3.5 w-3.5"
-                    />
-                  </div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <!-- Skeleton -->
-              <template v-if="isLoading">
-                <TableRow v-for="row in 10" :key="`skeleton-${row}`">
-                  <TableCell
-                    v-for="column in columns"
-                    :key="column.accessorKey || column.id"
-                    :class="column.meta?.cellClass || ''"
-                  >
-                    <Skeleton :class="column.meta?.skeletonClass || 'h-4 w-16'" />
-                  </TableCell>
+                    <div
+                      class="flex items-center gap-1"
+                      :class="header.column.columnDef.meta?.headerClass || 'justify-start'"
+                    >
+                      <FlexRender v-if="!header.isPlaceholder" :header="header" />
+                      <component
+                        :is="sortIcon(header.column)"
+                        v-if="sortIcon(header.column)"
+                        class="h-3.5 w-3.5"
+                      />
+                    </div>
+                  </TableHead>
                 </TableRow>
-              </template>
-              <!-- Product data -->
-              <template v-else-if="table.getRowModel().rows?.length">
-                <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
-                  <TableCell
-                    v-for="cell in row.getAllCells()"
-                    :key="cell.id"
-                    :class="cell.column.columnDef.meta?.cellClass || ''"
-                  >
-                    <FlexRender :cell="cell" />
-                  </TableCell>
-                </TableRow>
-              </template>
-              <!-- Empty state -->
-              <template v-else>
-                <TableRow>
-                  <TableCell
-                    :colspan="columns.length"
-                    class="text-muted-foreground h-24 text-center"
-                  >
-                    No se encontraron productos
-                  </TableCell>
-                </TableRow>
-              </template>
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                <!-- Skeleton -->
+                <template v-if="isLoading">
+                  <TableRow v-for="row in 10" :key="`skeleton-${row}`">
+                    <TableCell
+                      v-for="column in columns"
+                      :key="column.accessorKey || column.id"
+                      :class="column.meta?.cellClass || ''"
+                    >
+                      <Skeleton :class="column.meta?.skeletonClass || 'h-4 w-16'" />
+                    </TableCell>
+                  </TableRow>
+                </template>
+                <!-- Product data -->
+                <template v-else-if="table.getRowModel().rows?.length">
+                  <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
+                    <TableCell
+                      v-for="cell in row.getAllCells()"
+                      :key="cell.id"
+                      :class="cell.column.columnDef.meta?.cellClass || ''"
+                    >
+                      <FlexRender :cell="cell" />
+                    </TableCell>
+                  </TableRow>
+                </template>
+                <!-- Empty state -->
+                <template v-else>
+                  <TableRow>
+                    <TableCell
+                      :colspan="columns.length"
+                      class="text-muted-foreground h-24 text-center"
+                    >
+                      No se encontraron productos
+                    </TableCell>
+                  </TableRow>
+                </template>
+              </TableBody>
+            </Table>
+          </div>
         </div>
         <!-- Mobile view -->
         <div v-else class="flex flex-col gap-4">
@@ -416,7 +422,7 @@ function sortIcon(column) {
                 </DropdownMenu>
               </div>
               <div
-                class="flex items-stretch gap-3"
+                class="flex items-stretch gap-4"
                 :class="row.original.description ? 'pb-1' : 'pb-2'"
               >
                 <!-- Image -->
@@ -458,7 +464,7 @@ function sortIcon(column) {
                     <span class="text-muted-foreground">Estado:</span>
                     <Badge
                       variant="outline"
-                      class="px-2 py-0 text-[11px]"
+                      class="px-1.5 py-0.5 text-[11px]"
                       :class="
                         row.original.is_active
                           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -480,7 +486,7 @@ function sortIcon(column) {
                   <span class="text-base font-semibold">
                     {{ formatCurrency(row.original.price) }}
                   </span>
-                  <!-- Stock + Min stock -->
+                  <!-- Stock -->
                   <div class="flex flex-col items-end gap-0.5">
                     <span
                       class="inline-flex items-center gap-1 text-xs font-medium tabular-nums"
@@ -498,6 +504,7 @@ function sortIcon(column) {
                         class="h-3 w-3"
                       />
                     </span>
+                    <!-- Stock min. -->
                     <span class="text-muted-foreground text-[11px]">
                       Stock mín.: {{ row.original.min_stock }}
                     </span>
@@ -523,29 +530,31 @@ function sortIcon(column) {
           </Card>
         </div>
         <!-- Pagination -->
-        <div class="flex items-center justify-between">
+        <div class="flex shrink-0 items-center justify-between pb-4 lg:pb-0">
           <p class="text-muted-foreground text-sm">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}
           </p>
-          <div class="flex gap-2">
+          <div class="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanPreviousPage()"
+              class="gap-0.5 text-[13px]"
               @click="table.previousPage()"
             >
-              <ChevronLeft class="h-4 w-4" />
-              Anterior
+              <ChevronLeft class="h-4 w-4 px-0 pt-0.5" />
+              <span class="mr-1">Anterior</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanNextPage()"
+              class="gap-0.5 text-[13px]"
               @click="table.nextPage()"
             >
-              Siguiente
-              <ChevronRight class="h-4 w-4" />
+              <span class="ml-1">Siguiente</span>
+              <ChevronRight class="h-4 w-4 pt-0.5" />
             </Button>
           </div>
         </div>

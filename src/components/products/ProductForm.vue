@@ -45,6 +45,7 @@ const currentMode = computed(() => {
 })
 
 const isImageRequired = computed(() => currentMode.value === 'create')
+const isVariantMode = computed(() => currentMode.value === 'variant')
 
 const formSchema = computed(() =>
   toTypedSchema(
@@ -173,7 +174,11 @@ function handleCancel() {
         <Field :data-invalid="!!errors.length">
           <ProductImageUploader
             :model-value="value"
-            :existing-image-id="(currentMode === 'edit' || currentMode === 'variant') ? (product?.image_public_id ?? null) : null"
+            :existing-image-id="
+              currentMode === 'edit' || currentMode === 'variant'
+                ? (product?.image_public_id ?? null)
+                : null
+            "
             @update:model-value="handleChange"
           />
           <FieldError v-if="errors.length" :errors="[errors[0]]" class="text-center" />
@@ -220,6 +225,7 @@ function handleCancel() {
               placeholder="Sin categoría"
               search-placeholder="Buscar o crear categoría..."
               :invalid="!!errors.length"
+              :disabled="isVariantMode"
               @update:model-value="handleChange"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
@@ -238,8 +244,10 @@ function handleCancel() {
               clearable
               clear-label="Sin marca"
               :invalid="!!errors.length"
+              :disabled="isVariantMode"
               @update:model-value="handleChange"
             />
+            <!-- <Input v-else id="brand" :model-value="value || 'Sin marca'" disabled class="text-sm" /> -->
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>
@@ -316,7 +324,7 @@ function handleCancel() {
       </div>
     </FieldGroup>
     <!-- Actions buttons -->
-    <div class="grid grid-cols-1 gap-2 md:gap-4 pt-6 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-2 pt-6 md:grid-cols-2 md:gap-4">
       <Button type="submit" class="w-full md:order-2" :disabled="isSubmitting || isLoading">
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
         {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}

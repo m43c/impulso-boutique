@@ -12,6 +12,7 @@ export const useProductsStore = defineStore('products', () => {
   const isFetchingUnits = ref(false)
   const isFetchingHistory = ref(false)
   const isFetchingScannedUnit = ref(false)
+  const isFetchingVariants = ref(false)
 
   const products = ref([])
   const options = ref({ categories: [], brands: [], colors: [], sizes: [] })
@@ -20,6 +21,7 @@ export const useProductsStore = defineStore('products', () => {
   const productHistory = ref([])
   const scannedUnit = ref(null)
   const scannedProduct = ref(null)
+  const productVariants = ref([])
 
   async function createProduct(payload, imageFile) {
     isCreating.value = true
@@ -293,7 +295,7 @@ export const useProductsStore = defineStore('products', () => {
         .maybeSingle()
 
       if (error) {
-        console.error('Error al obtener la unidad:', error)
+        console.warn('Error al obtener la unidad:', error)
 
         if (error.code === '22P02') {
           resetScannedUnit()
@@ -304,7 +306,7 @@ export const useProductsStore = defineStore('products', () => {
       }
 
       if (!data) {
-        console.error('Unidad no encontrada:', unitId)
+        console.warn('Unidad no encontrada:', unitId)
 
         resetScannedUnit()
         return null
@@ -342,6 +344,60 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function fetchProductVariants(variantGroupId) {
+    if (!variantGroupId) {
+      productVariants.value = []
+      return []
+    }
+
+    isFetchingVariants.value = true
+    try {
+      const { data: variants, error: varError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('variant_group_id', variantGroupId)
+        .eq('is_active', true)
+
+      if (varError) {
+        throw varError
+      }
+
+      if (!variants || variants.length === 0) {
+        productVariants.value = []
+        return []
+      }
+
+      const productIds = variants.map((v) => v.id)
+
+      const { data: units, error: unitsError } = await supabase
+        .from('product_units')
+        .select('product_id')
+        .in('product_id', productIds)
+        .eq('status', 'available')
+
+      if (unitsError) {
+        throw unitsError
+      }
+
+      const stockCounts = units.reduce((acc, unit) => {
+        acc[unit.product_id] = (acc[unit.product_id] || 0) + 1
+        return acc
+      }, {})
+
+      productVariants.value = variants.map((v) => ({
+        ...v,
+        available_stock: stockCounts[v.id] || 0,
+      }))
+
+      return productVariants.value
+    } catch (error) {
+      productVariants.value = []
+      throw error
+    } finally {
+      isFetchingVariants.value = false
+    }
+  }
+
   function resetUnitStats() {
     unitStats.value = {
       available: 0,
@@ -365,6 +421,10 @@ export const useProductsStore = defineStore('products', () => {
     scannedProduct.value = null
   }
 
+  function resetProductVariants() {
+    productVariants.value = []
+  }
+
   function clear() {
     products.value = []
     options.value = { categories: [], brands: [], colors: [], sizes: [] }
@@ -380,6 +440,7 @@ export const useProductsStore = defineStore('products', () => {
     isFetchingUnits,
     isFetchingHistory,
     isFetchingScannedUnit,
+    isFetchingVariants,
     products,
     options,
     unitStats,
@@ -387,6 +448,7 @@ export const useProductsStore = defineStore('products', () => {
     productHistory,
     scannedUnit,
     scannedProduct,
+    productVariants,
     createProduct,
     createProductVariant,
     fetchProducts,
@@ -399,10 +461,12 @@ export const useProductsStore = defineStore('products', () => {
     fetchProductUnits,
     fetchProductHistory,
     fetchScannedUnit,
+    fetchProductVariants,
     resetUnitStats,
     resetProductUnits,
     resetProductHistory,
     resetScannedUnit,
+    resetProductVariants,
     clear,
   }
 })

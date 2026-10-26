@@ -396,29 +396,31 @@ function sortIcon(column) {
           </Card>
         </div>
         <!-- Pagination -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between pb-4">
           <p class="text-muted-foreground text-sm">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}
           </p>
-          <div class="flex gap-2">
+          <div class="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanPreviousPage()"
+              class="gap-0.5 text-[13px]"
               @click="table.previousPage()"
             >
-              <ChevronLeft class="h-4 w-4" />
-              Anterior
+              <ChevronLeft class="h-4 w-4 p-0 px-0 pt-0.5" />
+              <span class="mr-1">Anterior</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanNextPage()"
+              class="gap-0.5 text-[13px]"
               @click="table.nextPage()"
             >
-              Siguiente
-              <ChevronRight class="h-4 w-4" />
+              <span class="ml-1">Siguiente</span>
+              <ChevronRight class="h-4 w-4 pt-0.5" />
             </Button>
           </div>
         </div>
