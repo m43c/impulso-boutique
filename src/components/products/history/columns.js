@@ -23,7 +23,7 @@ export const columns = [
   {
     accessorKey: 'product_unit_id',
     header: 'Unidad',
-    meta: { skeletonClass: 'h-4 w-40' },
+    meta: { skeletonClass: 'h-4 w-14' },
     cell: (info) => {
       const unit = info.getValue()
 
@@ -37,17 +37,16 @@ export const columns = [
             h(
               'span',
               { class: 'truncate max-w-40 block font-mono text-[13px] font-medium cursor-default' },
-              unit,
+              unit.slice(0, 8),
             ),
           ),
-          h(TooltipContent, () => h('p', unit)),
+          h(TooltipContent, () => h('p', { class: 'break-all max-w-xs' }, unit)),
         ]),
       )
     },
   },
   {
     id: 'type',
-    // Label directo: el filtro facetado mostrará "Entrada", "Salida", "Ajuste"
     accessorFn: (row) => formatMoveType(row.type),
     header: 'Tipo',
     filterFn: filterFn_arrHas,
@@ -76,18 +75,25 @@ export const columns = [
   {
     id: 'profile_name',
     accessorFn: (row) => row.profile_name || 'Sin usuario',
-    header: 'Usuario',
+    header: 'Responsable',
     filterFn: filterFn_arrHas,
     meta: { skeletonClass: 'h-4 w-40' },
     cell: (info) => {
-      const name = info.getValue()
+      const fullName = info.getValue()
+      const parts = fullName.trim().split(/\s+/)
+
+      const shortName = !parts.length
+        ? 'Usuario'
+        : parts.length <= 2
+          ? parts.join(' ')
+          : `${parts[0]} ${parts.at(-2)}`
 
       return h(TooltipProvider, { delayDuration: 200 }, () =>
         h(Tooltip, () => [
           h(TooltipTrigger, { asChild: true }, () =>
-            h('span', { class: 'truncate max-w-40 block cursor-default' }, name),
+            h('span', { class: 'truncate max-w-40 block cursor-default' }, shortName),
           ),
-          h(TooltipContent, () => h('p', name)),
+          h(TooltipContent, () => h('p', fullName)),
         ]),
       )
     },

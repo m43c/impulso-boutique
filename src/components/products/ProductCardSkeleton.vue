@@ -14,18 +14,33 @@ import { Skeleton } from '@/components/ui/skeleton'
       </div>
       <div class="flex items-stretch gap-3 pb-2">
         <!-- Image -->
-        <Skeleton class="h-28 w-28 shrink-0 rounded-md" />
+        <Skeleton class="aspect-5/5 w-32 shrink-0 rounded-md" />
         <div class="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-          <!-- Brand -->
-          <Skeleton class="h-3.5 w-24" />
-          <!-- Size -->
-          <Skeleton class="h-3.5 w-24" />
-          <!-- Color -->
-          <Skeleton class="h-3.5 w-24" />
           <!-- Category -->
-          <Skeleton class="h-3.5 w-24" />
+          <div class="flex items-center justify-between gap-2">
+            <Skeleton class="h-3 w-14" />
+            <Skeleton class="h-3 w-16" />
+          </div>
+          <!-- Brand -->
+          <div class="flex items-center justify-between gap-2">
+            <Skeleton class="h-3 w-10" />
+            <Skeleton class="h-3 w-16" />
+          </div>
+          <!-- Color -->
+          <div class="flex items-center justify-between gap-2">
+            <Skeleton class="h-3 w-10" />
+            <Skeleton class="h-3 w-12" />
+          </div>
+          <!-- Size -->
+          <div class="flex items-center justify-between gap-2">
+            <Skeleton class="h-3 w-12" />
+            <Skeleton class="h-5 w-5 rounded-full" />
+          </div>
           <!-- Status -->
-          <Skeleton class="h-3.5 w-24" />
+          <div class="flex items-center justify-between gap-2">
+            <Skeleton class="h-3 w-12" />
+            <Skeleton class="h-4 w-14" />
+          </div>
         </div>
       </div>
       <div class="flex flex-col gap-2 border-t pt-3">

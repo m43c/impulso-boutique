@@ -272,7 +272,7 @@ function sortIcon(column) {
           v-if="isDesktop"
           class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-md border"
         >
-          <div class="relative flex-1 overflow-auto isolate">
+          <div class="relative isolate flex-1 overflow-auto">
             <Table class="border-separate border-spacing-0">
               <TableHeader class="bg-background sticky top-0 z-10 shadow-sm">
                 <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -421,6 +421,7 @@ function sortIcon(column) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+              <!-- Details -->
               <div
                 class="flex items-stretch gap-4"
                 :class="row.original.description ? 'pb-1' : 'pb-2'"
@@ -430,37 +431,53 @@ function sortIcon(column) {
                   :public-id="row.original.image_public_id"
                   :alt="row.original.name"
                   :size="IMAGE_SIZES.card"
-                  image-class="h-28 w-28 shrink-0 rounded-md object-cover"
-                  fallback-class="bg-muted flex h-28 w-28 shrink-0 items-center justify-center rounded-md"
+                  image-class="aspect-5/5 w-32 shrink-0 rounded-md object-cover"
+                  fallback-class="bg-muted flex aspect-5/5 w-32 shrink-0 items-center justify-center rounded-md"
                   icon-class="text-muted-foreground h-6 w-6"
                 />
                 <div class="flex min-w-0 flex-1 flex-col justify-between text-xs">
-                  <!-- Brand -->
-                  <div class="flex items-baseline gap-1 truncate">
-                    <span class="text-muted-foreground">Marca:</span>
-                    <span class="truncate font-medium">
-                      {{ row.original.brand || 'Sin marca' }}
-                    </span>
+                  <!-- Category -->
+                  <div class="flex min-w-0 justify-between gap-2">
+                    <span class="text-muted-foreground shrink-0">Categoria</span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button class="min-w-0 cursor-default truncate">
+                          {{ row.original.category }}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{{ row.original.category }}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                  <!-- Size -->
-                  <div class="flex items-baseline gap-1 truncate">
-                    <span class="text-muted-foreground">Talla:</span>
-                    <span class="truncate font-medium">{{ row.original.size || 'Sin talla' }}</span>
+                  <!-- Brand -->
+                  <div class="item-center flex justify-between gap-2">
+                    <span class="text-muted-foreground">Marca</span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button class="min-w-0 cursor-default truncate">
+                          {{ row.original.brand || 'Sin marca' }}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{{ row.original.brand || 'Sin marca' }}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <!-- Color -->
-                  <div class="flex items-baseline gap-1 truncate">
+                  <div class="item-center flex justify-between gap-2">
                     <span class="text-muted-foreground">Color:</span>
-                    <span class="truncate font-medium">
+                    <span>
                       {{ row.original.color || 'Sin color' }}
                     </span>
                   </div>
-                  <!-- Category -->
-                  <div class="flex items-baseline gap-1 truncate">
-                    <span class="text-muted-foreground">Categoría:</span>
-                    <span class="truncate font-medium">{{ row.original.category }}</span>
+                  <!-- Size -->
+                  <div class="item-center flex justify-between gap-2">
+                    <span class="text-muted-foreground">Talla:</span>
+                    <span>{{ row.original.size || 'Sin talla' }}</span>
                   </div>
                   <!-- Status -->
-                  <div class="flex items-center gap-1.5 pt-0.5">
+                  <div class="flex items-center justify-between gap-2">
                     <span class="text-muted-foreground">Estado:</span>
                     <Badge
                       variant="outline"
@@ -543,7 +560,7 @@ function sortIcon(column) {
               class="gap-0.5 text-[13px]"
               @click="table.previousPage()"
             >
-              <ChevronLeft class="h-4 w-4 px-0 pt-0.5" />
+              <ChevronLeft class="h-4 w-4 px-0 pt-0.5 lg:pt-0" />
               <span class="mr-1">Anterior</span>
             </Button>
             <Button
@@ -554,7 +571,7 @@ function sortIcon(column) {
               @click="table.nextPage()"
             >
               <span class="ml-1">Siguiente</span>
-              <ChevronRight class="h-4 w-4 pt-0.5" />
+              <ChevronRight class="h-4 w-4 pt-0.5 lg:pt-0" />
             </Button>
           </div>
         </div>

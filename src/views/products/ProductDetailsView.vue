@@ -119,12 +119,14 @@ watch(() => route.params.id, loadProduct)
 
 <template>
   <div class="w-full px-6 pb-6 lg:pb-0">
-    <div
+     <div
       v-if="isLoading"
-      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[320px_minmax(0,1fr)]"
+      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[470px_minmax(0,1fr)]"
     >
       <!-- Skeleton (Left column) -->
-      <ProductDetailsSkeleton />
+      <div class="flex w-full flex-col lg:max-h-[calc(100vh-5rem)] lg:self-start">
+        <ProductDetailsSkeleton />
+      </div>
       <!-- Skeleton (Right column) -->
       <ProductUnitsSkeleton />
     </div>
@@ -145,17 +147,15 @@ watch(() => route.params.id, loadProduct)
     <!-- Columns -->
     <div
       v-else-if="product"
-      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[320px_minmax(0,1fr)]"
+      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[470px_minmax(0,1fr)]"
     >
       <!-- Left column (Product details) -->
-      <div class="lg:min-h-0">
+      <div class="flex w-full flex-col lg:max-h-[calc(100vh-5rem)] lg:self-start">
         <div
-          class="bg-card lg:bg-background flex w-full flex-col rounded-xl border p-4 shadow-sm lg:h-full lg:rounded-md lg:shadow-none"
+          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 lg:px-6 lg:py-4 shadow-sm lg:max-h-full lg:rounded-md lg:shadow-none"
         >
-          <div class="w-full min-w-0 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
-            <div class="lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-              <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
-            </div>
+          <div class="w-full min-w-0 flex-1 overflow-y-auto">
+            <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
           </div>
         </div>
       </div>

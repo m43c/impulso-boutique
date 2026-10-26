@@ -402,23 +402,23 @@ function isHighlighted(unit) {
           <Button
             variant="outline"
             size="sm"
-            class="gap-1"
+            class="gap-0.5"
             :disabled="!table.getCanPreviousPage()"
             @click="table.previousPage()"
           >
-            <ChevronLeft class="h-4 w-4" />
-            <span class="text-xs pb-0.5 lg:text-sm">Anterior</span>
+            <ChevronLeft class="h-4 w-4 px-0 mt-0.5 lg:mt-0" />
+            <span class="mr-0.5 text-xs pb-0.5 lg:text-sm">Anterior</span>
           </Button>
           <!-- Next -->
           <Button
             variant="outline"
             size="sm"
-            class="gap-1"
+            class="gap-0.5"
             :disabled="!table.getCanNextPage()"
             @click="table.nextPage()"
           >
-            <span class="text-xs pb-0.5 lg:text-sm">Siguiente</span>
-            <ChevronRight class="h-4 w-4" />
+            <span class="ml-0.5 text-xs pb-0.5 lg:text-sm">Siguiente</span>
+            <ChevronRight class="h-4 w-4 px-0 mt-0.5 lg:p-0 lg:mt-0" />
           </Button>
         </div>
       </div>
