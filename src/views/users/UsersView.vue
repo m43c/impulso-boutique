@@ -7,13 +7,19 @@ import { UserPlus } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 import UserForm from '@/components/users/UserForm.vue'
 import UsersList from '@/components/users/UsersList.vue'
 import { getEdgeFunctionErrorMessage } from '@/utils/edgeFunctionErrors'
@@ -23,7 +29,7 @@ const usersStore = useUsersStore()
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
-const isSheetOpen = ref(false)
+const isFormOpen = ref(false)
 const editingUser = ref(null)
 const fetchError = ref(null)
 const formError = ref(null)
@@ -38,7 +44,7 @@ async function loadUsers() {
     await usersStore.fetchUsers()
   } catch (error) {
     console.error('Error al cargar usuarios:', error)
-    fetchError.value = 'No se puedieron cargar los usuarios'
+    fetchError.value = 'No se pudieron cargar los usuarios'
   }
 }
 
@@ -74,7 +80,7 @@ async function handleSubmit(formData) {
     }
 
     usersStore.fetchUsers()
-    isSheetOpen.value = false
+    isFormOpen.value = false
     editingUser.value = null
   } catch (error) {
     console.error('Error al guardar al usuario:', error)
@@ -88,7 +94,7 @@ async function handleSubmit(formData) {
 }
 
 function handleCancel() {
-  isSheetOpen.value = false
+  isFormOpen.value = false
   editingUser.value = null
   formError.value = null
 }
@@ -96,13 +102,13 @@ function handleCancel() {
 function handleAddUser() {
   editingUser.value = null
   formError.value = null
-  isSheetOpen.value = true
+  isFormOpen.value = true
 }
 
 function handleEditUser(user) {
   editingUser.value = user
   formError.value = null
-  isSheetOpen.value = true
+  isFormOpen.value = true
 }
 
 async function handleToggleStatus(user) {
@@ -112,6 +118,7 @@ async function handleToggleStatus(user) {
   }
 
   const isDeactivating = user.is_active
+  const actionText = isDeactivating ? 'desactivar' : 'activar'
 
   try {
     await usersStore.toggleUserStatus(user.id, !isDeactivating)
@@ -127,49 +134,43 @@ async function handleToggleStatus(user) {
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
-    <Sheet v-model:open="isSheetOpen">
-      <!-- Users list -->
-      <UsersList
-        :users="usersStore.users"
-        :is-loading="usersStore.isFetching"
-        :is-updating-status="usersStore.isTogglingStatus"
-        :error="fetchError"
-        :current-user-id="currentUserId"
-        @add-user="handleAddUser"
-        @edit-user="handleEditUser"
-        @toggle-status="handleToggleStatus"
-        @retry="loadUsers"
-        @refresh="loadUsers"
-      />
-      <!-- Floating add user button -->
-      <SheetTrigger v-if="!fetchError" as-child class="md:hidden">
-        <Button
-          size="icon"
-          class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full"
-          aria-label="Agregar usuario"
-          @click="handleAddUser"
-        >
-          <UserPlus class="size-5" />
-        </Button>
-      </SheetTrigger>
-      <!-- User form -->
-      <SheetContent
-        :side="isDesktop ? 'right' : 'bottom'"
-        class="w-full p-6 sm:max-w-md"
-        :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
-      >
-        <!-- Title and description -->
-        <SheetHeader class="p-0 pb-2">
-          <SheetTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</SheetTitle>
-          <SheetDescription>
+    <!-- Users list -->
+    <UsersList
+      :users="usersStore.users"
+      :is-loading="usersStore.isFetching"
+      :is-updating-status="usersStore.isTogglingStatus"
+      :error="fetchError"
+      :current-user-id="currentUserId"
+      @add-user="handleAddUser"
+      @edit-user="handleEditUser"
+      @toggle-status="handleToggleStatus"
+      @retry="loadUsers"
+      @refresh="loadUsers"
+    />
+    <!-- Floating add user button (mobile) -->
+    <Button
+      v-if="!fetchError"
+      size="icon"
+      class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
+      aria-label="Agregar usuario"
+      :disabled="usersStore.isFetching"
+      @click="handleAddUser"
+    >
+      <UserPlus class="size-5" />
+    </Button>
+    <!-- Dialog (desktop) -->
+    <Dialog v-if="isDesktop" v-model:open="isFormOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DialogTitle>
+          <DialogDescription>
             {{
               editingUser
                 ? 'Actualiza la información del usuario'
                 : 'Completa la información del nuevo usuario'
             }}
-          </SheetDescription>
-        </SheetHeader>
-        <!-- Form -->
+          </DialogDescription>
+        </DialogHeader>
         <UserForm
           :user="editingUser"
           :is-self="isSelf"
@@ -178,7 +179,32 @@ async function handleToggleStatus(user) {
           @submit="handleSubmit"
           @cancel="handleCancel"
         />
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
+    <!-- Drawer (mobile) -->
+    <Drawer v-else v-model:open="isFormOpen">
+      <DrawerContent class="h-[90dvh]">
+        <DrawerHeader class="text-left">
+          <DrawerTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DrawerTitle>
+          <DrawerDescription>
+            {{
+              editingUser
+                ? 'Actualiza la información del usuario'
+                : 'Completa la información del nuevo usuario'
+            }}
+          </DrawerDescription>
+        </DrawerHeader>
+        <div class="flex min-h-0 flex-1 flex-col px-4 pb-4">
+          <UserForm
+            :user="editingUser"
+            :is-self="isSelf"
+            :is-loading="usersStore.isCreating || usersStore.isUpdating"
+            :error-message="formError"
+            @submit="handleSubmit"
+            @cancel="handleCancel"
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
   </div>
 </template>

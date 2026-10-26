@@ -214,7 +214,7 @@ function sortIcon(column) {
           <!-- Sorting button (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add user button -->
-          <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
+          <Button class="hidden gap-2 md:flex" :disabled="isLoading" @click="emit('add-user')">
             <UserPlus class="h-4 w-4" />
             Agregar usuario
           </Button>

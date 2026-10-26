@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -19,24 +20,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const props = defineProps({
-  user: {
-    type: Object,
-    default: null,
-  },
-  isSelf: {
-    type: Boolean,
-    default: false,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  errorMessage: {
-    type: String,
-    default: null,
-  },
+  user: { type: Object, default: null },
+  isSelf: { type: Boolean, default: false },
+  isLoading: { type: Boolean, default: false },
+  errorMessage: { type: String, default: null },
 })
 const emit = defineEmits(['submit', 'cancel'])
+
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const showPassword = ref(false)
 const isEditMode = computed(() => !!props.user)
@@ -138,7 +129,7 @@ function handleCancel() {
           <FieldError v-if="errors.length" :errors="[errors[0]]" />
         </Field>
       </VeeField>
-      <!-- email -->
+      <!-- Email -->
       <VeeField v-slot="{ componentField, errors }" name="email">
         <Field :data-invalid="!!errors.length">
           <FieldLabel for="email">Correo electrónico</FieldLabel>
@@ -188,7 +179,12 @@ function handleCancel() {
           <FieldLegend variant="label" :class="errors.length ? 'text-destructive' : ''">
             Rol
           </FieldLegend>
-          <RadioGroup v-bind="componentField" :disabled="isSelf" :aria-invalid="!!errors.length">
+          <RadioGroup
+            v-bind="componentField"
+            :disabled="isSelf"
+            :aria-invalid="!!errors.length"
+            class="flex flex-wrap gap-x-6 gap-y-2"
+          >
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="admin" value="admin" :aria-invalid="!!errors.length" />
               <Label for="admin" class="cursor-pointer font-normal">Administrador</Label>
@@ -207,12 +203,19 @@ function handleCancel() {
       </VeeField>
     </FieldGroup>
     <!-- Actions -->
-    <div class="flex flex-col gap-2 pt-6">
-      <Button type="submit" :disabled="isSubmitting">
+    <div class="flex gap-2 pt-6" :class="isDesktop ? 'flex-row justify-end' : 'flex-col'">
+      <Button
+        type="button"
+        variant="outline"
+        :class="!isDesktop ? 'order-2' : ''"
+        @click="handleCancel"
+      >
+        Cancelar
+      </Button>
+      <Button type="submit" :disabled="isSubmitting" :class="!isDesktop ? 'order-1' : ''">
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
         {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}
       </Button>
-      <Button type="button" variant="outline" @click="handleCancel">Cancelar</Button>
     </div>
   </form>
 </template>
