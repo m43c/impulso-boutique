@@ -9,30 +9,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  NumberField,
+  NumberFieldContent,
+  NumberFieldDecrement,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import ProductImageUploader from '@/components/products/ProductImageUploader.vue'
 import CreatableCombobox from '@/components/common/CreatableCombobox.vue'
 
 const props = defineProps({
-  product: {
-    type: Object,
-    default: null,
-  },
-  mode: {
-    type: String,
-    default: null,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  errorMessage: {
-    type: String,
-    default: null,
-  },
-  options: {
-    type: Object,
-    default: () => ({ categories: [], brands: [], colors: [], sizes: [] }),
-  },
+  product: { type: Object, default: null },
+  mode: { type: String, default: null },
+  isLoading: { type: Boolean, default: false },
+  errorMessage: { type: String, default: null },
+  options: { type: Object, default: () => ({ categories: [], brands: [], colors: [], sizes: [] }) },
 })
 const emit = defineEmits(['submit', 'cancel'])
 
@@ -87,21 +79,19 @@ const formSchema = computed(() =>
         .max(20, 'La talla no puede superar 20 caracteres')
         .transform((value) => (value.length === 0 ? null : value)),
       price: z
-        .string()
-        .trim()
-        .min(1, 'Ingresa el precio')
-        .transform((value) => value.replace(',', '.'))
-        .refine((value) => /^-?\d+(\.\d{1,2})?$/.test(value), {
-          message: 'Ingresa un precio válido (máx. 2 decimales)',
+        .number({
+          required_error: 'Ingresa el precio',
+          invalid_type_error: 'Ingresa un precio válido',
         })
-        .transform(Number)
-        .refine((value) => value > 0, 'El precio debe ser mayor a 0'),
+        .positive('El precio debe ser mayor a 0')
+        .refine((value) => Math.abs(value - Number(value.toFixed(2))) < 1e-9, 'Máximo 2 decimales'),
       minStock: z
-        .string()
-        .trim()
-        .transform((value) => (value.length === 0 ? '0' : value))
-        .refine((value) => /^\d+$/.test(value), 'Ingresa un número entero válido')
-        .transform(Number),
+        .number({
+          required_error: 'Ingresa el stock mínimo',
+          invalid_type_error: 'Ingresa un stock válido',
+        })
+        .int('Debe ser un número entero')
+        .min(0, 'No puede ser negativo'),
     }),
   ),
 )
@@ -116,8 +106,8 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
     brand: '',
     color: '',
     size: '',
-    price: '',
-    minStock: '',
+    price: null,
+    minStock: 0,
   },
 })
 
@@ -132,8 +122,8 @@ function populateForm(product) {
           brand: product.brand ?? '',
           color: product.color ?? '',
           size: product.size ?? '',
-          price: Number(product.price).toFixed(2),
-          minStock: String(product.min_stock),
+          price: Number(product.price),
+          minStock: product.min_stock,
         }
       : {
           image: null,
@@ -143,8 +133,8 @@ function populateForm(product) {
           brand: '',
           color: '',
           size: '',
-          price: '',
-          minStock: '',
+          price: null,
+          minStock: 0,
         },
   })
 }
@@ -292,32 +282,57 @@ function handleCancel() {
       </div>
       <!-- Price -->
       <div class="grid grid-cols-2 gap-4">
-        <VeeField v-slot="{ componentField, errors }" name="price">
+        <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="price">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="price">Precio</FieldLabel>
-            <Input
-              id="price"
-              v-bind="componentField"
-              type="text"
-              inputmode="decimal"
-              placeholder="0.00"
-              :aria-invalid="!!errors.length"
-            />
+            <NumberField
+              :model-value="value"
+              :min="0.01"
+              :step="0.01"
+              :format-options="{ maximumFractionDigits: 2 }"
+              @update:model-value="setValue"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput
+                  id="price"
+                  placeholder="0.00"
+                  class="text-sm"
+                  :aria-invalid="!!errors.length"
+                  @blur="handleBlur"
+                />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>
+
         <!-- Min stock -->
-        <VeeField v-slot="{ componentField, errors }" name="minStock">
+        <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="minStock">
           <Field :data-invalid="!!errors.length">
             <FieldLabel for="minStock">Stock mínimo</FieldLabel>
-            <Input
-              id="minStock"
-              v-bind="componentField"
-              type="text"
-              inputmode="numeric"
-              placeholder="0"
-              :aria-invalid="!!errors.length"
-            />
+            <NumberField
+              :model-value="value"
+              :min="0"
+              :step="1"
+              :allow-empty="false"
+              :default-value="0"
+              :format-options="{ maximumFractionDigits: 0 }"
+              @update:model-value="setValue"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput
+                  id="minStock"
+                  placeholder="0"
+                  class="text-sm"
+                  :aria-invalid="!!errors.length"
+                  @blur="handleBlur"
+                />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>

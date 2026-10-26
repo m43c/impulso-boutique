@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { EllipsisVertical, Home, Package, LogOut, Store, User, Users } from '@lucide/vue'
@@ -24,6 +24,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useSidebar } from '@/components/ui/sidebar'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -36,6 +37,7 @@ const items = [
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { openMobile } = useSidebar()
 
 const nameParts = computed(() => authStore.profile?.full_name?.trim().split(/\s+/) ?? [])
 const displayName = computed(() => {
@@ -65,6 +67,16 @@ async function handleLogout() {
     router.push({ name: 'login' })
   }
 }
+
+watch(
+  openMobile,
+  (isOpen) => {
+    if (isOpen && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+  },
+  { flush: 'sync' },
+)
 </script>
 
 <template>
