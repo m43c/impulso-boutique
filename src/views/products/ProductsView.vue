@@ -174,6 +174,7 @@ async function handleToggleStatus(product) {
         size="icon"
         class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
         aria-label="Agregar producto"
+        :disabled="productsStore.isFetching"
         @click="handleAddProduct"
       >
         <PackagePlus class="size-5" />

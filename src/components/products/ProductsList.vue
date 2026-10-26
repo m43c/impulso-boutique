@@ -54,18 +54,9 @@ import ProductImage from '@/components/products/ProductImage.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
-  products: {
-    type: Array,
-    default: () => [],
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  error: {
-    type: String,
-    default: null,
-  },
+  products: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
+  error: { type: String, default: null },
 })
 
 const emit = defineEmits([
@@ -84,77 +75,22 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
 const sortOptions = [
-  {
-    label: 'Nombre: A-Z',
-    columnId: 'name',
-    desc: false,
-  },
-  {
-    label: 'Nombre: Z-A',
-    columnId: 'name',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Precio: más bajo',
-    columnId: 'price',
-    desc: false,
-  },
-  {
-    label: 'Precio: más alto',
-    columnId: 'price',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Stock: menor primero',
-    columnId: 'stock',
-    desc: false,
-  },
-  {
-    label: 'Stock: mayor primero',
-    columnId: 'stock',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Fecha: más recientes',
-    columnId: 'updated_at',
-    desc: true,
-  },
-  {
-    label: 'Fecha: más antiguos',
-    columnId: 'updated_at',
-    desc: false,
-  },
+  { label: 'Nombre: A-Z', columnId: 'name', desc: false },
+  { label: 'Nombre: Z-A', columnId: 'name', desc: true, separator: true },
+  { label: 'Precio: más bajo', columnId: 'price', desc: false },
+  { label: 'Precio: más alto', columnId: 'price', desc: true, separator: true },
+  { label: 'Stock: menor primero', columnId: 'stock', desc: false },
+  { label: 'Stock: mayor primero', columnId: 'stock', desc: true, separator: true },
+  { label: 'Fecha: más recientes', columnId: 'updated_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'updated_at', desc: false },
 ]
 
 const filterableColumns = [
-  {
-    columnId: 'category',
-    label: 'Categoría',
-    useOriginalCasing: true,
-  },
-  {
-    columnId: 'brand',
-    label: 'Marca',
-    useOriginalCasing: true,
-    emptyLabel: 'Sin marca',
-  },
-  {
-    columnId: 'color',
-    label: 'Color',
-    useOriginalCasing: true,
-  },
-  {
-    columnId: 'size',
-    label: 'Talla',
-    useOriginalCasing: true,
-  },
-  {
-    columnId: 'stock_status',
-    label: 'Stock',
-  },
+  { columnId: 'category', label: 'Categoría', useOriginalCasing: true },
+  { columnId: 'brand', label: 'Marca', useOriginalCasing: true, emptyLabel: 'Sin marca' },
+  { columnId: 'color', label: 'Color', useOriginalCasing: true },
+  { columnId: 'size', label: 'Talla', useOriginalCasing: true },
+  { columnId: 'stock_status', label: 'Stock' },
 ]
 
 function goToDetails(product) {
@@ -261,6 +197,7 @@ function sortIcon(column) {
           <Button
             v-if="can('products:create')"
             class="hidden gap-2 md:flex"
+            :disabled="isLoading"
             @click="emit('add-product')"
           >
             <PackagePlus class="h-4 w-4" />
