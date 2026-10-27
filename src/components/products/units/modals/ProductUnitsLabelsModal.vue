@@ -21,18 +21,9 @@ import {
 import { buildUnitUrl } from '@/utils/urls'
 
 const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
-  product: {
-    type: Object,
-    default: null,
-  },
-  unitIds: {
-    type: Array,
-    default: () => [],
-  },
+  open: { type: Boolean, default: false },
+  product: { type: Object, default: null },
+  unitIds: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:open'])
@@ -81,7 +72,13 @@ function handlePrint() {
               :key="id"
               class="border-border/60 flex flex-col items-center rounded-lg border p-3"
             >
-              <QrcodeVue :value="buildUnitUrl(id)" :size="160" level="H" render-as="svg" class="h-auto w-full" />
+              <QrcodeVue
+                :value="buildUnitUrl(id)"
+                :size="160"
+                level="H"
+                render-as="svg"
+                class="h-auto w-full"
+              />
               <p
                 class="text-muted-foreground mt-2 w-full truncate text-center font-mono text-[11px]"
               >
@@ -125,7 +122,13 @@ function handlePrint() {
               :key="id"
               class="border-border/60 flex flex-col items-center rounded-lg border p-3"
             >
-              <QrcodeVue :value="buildUnitUrl(id)" :size="160" level="H" render-as="svg" class="h-auto w-full" />
+              <QrcodeVue
+                :value="buildUnitUrl(id)"
+                :size="160"
+                level="H"
+                render-as="svg"
+                class="h-auto w-full"
+              />
               <p
                 class="text-muted-foreground mt-2 w-full truncate text-center font-mono text-[11px]"
               >
@@ -181,7 +184,7 @@ function handlePrint() {
     gap: 4mm;
     background: #fff;
     color: #000;
-    align-content: start; 
+    align-content: start;
   }
 
   .product-label-cell {
@@ -221,4 +224,3 @@ function handlePrint() {
   }
 }
 </style>
-

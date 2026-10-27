@@ -16,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card'
         <CardContent class="flex flex-col gap-4 p-4 lg:px-6 lg:pb-6">
           <!-- Name & description -->
           <div class="flex w-full flex-col gap-2">
-            <Skeleton class="h-5 w-3/4" />
+            <Skeleton class="h-5 w-full" />
             <Skeleton class="h-3 w-full" />
             <Skeleton class="h-3 w-5/6" />
             <Skeleton class="h-3 w-2/3" />
@@ -24,36 +24,34 @@ import { Card, CardContent } from '@/components/ui/card'
           <!-- Image and details -->
           <div class="flex w-full flex-wrap items-stretch gap-4 lg:gap-5">
             <!-- Image -->
-            <Skeleton
-              class="mx-auto aspect-square w-32 shrink-0 rounded-lg lg:w-52 lg:rounded-sm"
-            />
+            <Skeleton class="mx-auto aspect-5/5 w-32 shrink-0 rounded-lg lg:w-52 lg:rounded-sm" />
             <!-- Details -->
-            <div class="flex flex-1 flex-col justify-between">
-              <div class="flex flex-col gap-1.5">
+            <div class="flex min-w-0 flex-1 flex-col justify-between">
+              <div class="flex flex-col gap-3">
                 <!-- Category -->
                 <div class="flex justify-between gap-2">
-                  <Skeleton class="h-3 w-16" />
-                  <Skeleton class="h-3 w-24" />
+                  <Skeleton class="h-3 w-16 shrink-0" />
+                  <Skeleton class="h-3 w-full max-w-25" />
                 </div>
                 <!-- Brand -->
                 <div class="flex justify-between gap-2">
-                  <Skeleton class="h-3 w-12" />
-                  <Skeleton class="h-3 w-20" />
+                  <Skeleton class="h-3 w-12 shrink-0" />
+                  <Skeleton class="h-3 w-full max-w-20" />
                 </div>
                 <!-- Color -->
                 <div class="flex justify-between gap-2">
-                  <Skeleton class="h-3 w-12" />
-                  <Skeleton class="h-3 w-16" />
+                  <Skeleton class="h-3 w-12 shrink-0" />
+                  <Skeleton class="h-3 w-full max-w-17.5" />
                 </div>
                 <!-- Size -->
                 <div class="flex justify-between gap-2">
-                  <Skeleton class="h-3 w-10" />
-                  <Skeleton class="h-3 w-12" />
+                  <Skeleton class="h-3 w-10 shrink-0" />
+                  <Skeleton class="h-3 w-full max-w-12.5" />
                 </div>
                 <!-- Price -->
                 <div class="flex justify-between gap-2">
-                  <Skeleton class="h-3 w-14" />
-                  <Skeleton class="h-3 w-20" />
+                  <Skeleton class="h-3 w-14 shrink-0" />
+                  <Skeleton class="h-3 w-full max-w-20" />
                 </div>
               </div>
             </div>
@@ -79,8 +77,11 @@ import { Card, CardContent } from '@/components/ui/card'
               </div>
             </div>
           </div>
-          <!-- View full product button -->
-          <Skeleton class="mt-2 h-9 w-full rounded-md lg:w-44 lg:self-end" />
+          <!-- Action buttons -->
+          <div class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Skeleton class="h-9 w-full rounded-md sm:w-36" />
+            <Skeleton class="h-9 w-full rounded-md sm:w-44" />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -97,20 +98,22 @@ import { Card, CardContent } from '@/components/ui/card'
           <Skeleton class="h-8 w-8 rounded-md" />
         </div>
         <!-- Variants table -->
-        <div class="w-full overflow-x-auto">
-          <!-- Table header -->
-          <div class="bg-muted flex items-center gap-4 border-b px-4 py-3">
-            <Skeleton class="h-3 w-16 shrink-0" />
-            <Skeleton v-for="i in 5" :key="i" class="h-3 flex-1" />
-          </div>
-          <!-- Table rows -->
-          <div
-            v-for="row in 4"
-            :key="row"
-            class="flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
-          >
-            <Skeleton class="h-3 w-16 shrink-0" />
-            <Skeleton v-for="i in 5" :key="i" class="h-4 flex-1" />
+        <div class="relative w-full overflow-x-auto">
+          <div class="min-w-150">
+            <!-- Table header -->
+            <div class="bg-muted flex items-center gap-4 border-b px-4 py-3">
+              <Skeleton class="h-3 w-16 shrink-0" />
+              <Skeleton v-for="i in 5" :key="i" class="h-3 flex-1" />
+            </div>
+            <!-- Table rows -->
+            <div
+              v-for="row in 4"
+              :key="row"
+              class="flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+            >
+              <Skeleton class="h-3 w-16 shrink-0" />
+              <Skeleton v-for="i in 5" :key="i" class="h-4 flex-1" />
+            </div>
           </div>
         </div>
         <!-- Legend -->

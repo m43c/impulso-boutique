@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
-import { EllipsisVertical, Eye } from '@lucide/vue'
+import { EllipsisVertical, Eye, RotateCcw, XCircle } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -115,7 +115,51 @@ export const columns = [
     },
     cell: (info) => {
       const unit = info.row.original
+      const meta = info.table.options.meta ?? {}
 
+      const showExit = unit.status === 'available' && !!meta.canRegisterExit?.()
+      const showReactivate = unit.status === 'unavailable' && !!meta.canReactivateUnit?.()
+
+      const items = [
+        // Show QR
+        h(
+          DropdownMenuItem,
+          {
+            'aria-label': `Ver QR de unidad ${unit.id.slice(0, 8)}`,
+            class: 'cursor-pointer',
+            onClick: () => meta.onViewQr?.(unit),
+          },
+          () => [h(Eye, { class: 'h-4 w-4' }), h('span', 'Ver QR')],
+        ),
+      ]
+      // Register exit
+      if (showExit) {
+        items.push(
+          h(
+            DropdownMenuItem,
+            {
+              'aria-label': `Registrar salida de unidad ${unit.id.slice(0, 8)}`,
+              class: 'cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10',
+              onClick: () => meta.onRegisterExit?.(unit),
+            },
+            () => [h(XCircle, { class: 'h-4 w-4 text-destructive' }), h('span', 'Registrar salida')],
+          ),
+        )
+      }
+      // Reactive unit
+      if (showReactivate) {
+        items.push(
+          h(
+            DropdownMenuItem,
+            {
+              'aria-label': `Reactivar unidad ${unit.id.slice(0, 8)}`,
+              class: 'cursor-pointer text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+              onClick: () => meta.onReactivateUnit?.(unit),
+            },
+            () => [h(RotateCcw, { class: 'h-4 w-4 text-emerald-500' }), h('span', 'Reactivar unidad')],
+          ),
+        )
+      }
       return h(DropdownMenu, () => [
         h(DropdownMenuTrigger, { asChild: true }, () =>
           h(
@@ -129,18 +173,7 @@ export const columns = [
             () => h(EllipsisVertical, { class: 'h-4 w-4' }),
           ),
         ),
-        // Show QR
-        h(DropdownMenuContent, { align: 'end' }, () => [
-          h(
-            DropdownMenuItem,
-            {
-              'aria-label': `Ver QR de unidad ${unit.id.slice(0, 8)}`,
-              class: 'cursor-pointer',
-              onClick: () => info.table.options.meta?.onViewQr?.(unit),
-            },
-            () => [h(Eye, { class: 'h-4 w-4' }), h('span', 'Ver QR')],
-          ),
-        ]),
+        h(DropdownMenuContent, { align: 'end' }, () => items),
       ])
     },
   },

@@ -3,9 +3,8 @@ import { computed, ref, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { storeToRefs } from 'pinia'
-import { useMediaQuery } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import { CheckCircle2, Copy, Loader2, Minus, RefreshCw, XCircle } from '@lucide/vue'
+import { CheckCircle2, Copy, Loader2, Minus, RefreshCw, RotateCcw, XCircle } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,18 +24,24 @@ import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 import ProductImage from '@/components/products/ProductImage.vue'
-import ProductUnitDetailsSkeleton from '@/components/products/units/ProductUnitDetailsSkeleton.vue'
+import ProductUnitDetailsSkeleton from '@/components/products/units/skeletons/ProductUnitDetailsSkeleton.vue'
+import { usePermissions } from '@/composables/usePermissions'
+import ProductUnitExitModal from '@/components/products/units/modals/ProductUnitExitModal.vue'
+import ProductUnitReactivateModal from '@/components/products/units/modals/ProductUnitReactivateModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const productsStore = useProductsStore()
 const { setBreadcrumbs, clearBreadcrumbs } = useBreadcrumbs()
-const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const { scannedUnit, scannedProduct, productVariants, isFetchingVariants } =
   storeToRefs(productsStore)
+
 const copied = ref(false)
+const isExitModalOpen = ref(false)
+const isReactivateModalOpen = ref(false)
 
 const STATUS_SUFFIX = {
   available: 'para la venta',
@@ -57,6 +62,17 @@ const fullStatusText = computed(() => {
 
   return `${mainText} ${suffix}`.trim()
 })
+
+const viewProductVariant = computed(() => {
+  return showExitButton.value || showReactivateButton.value ? 'outline' : 'default'
+})
+
+const showExitButton = computed(
+  () => scannedUnit.value?.status === 'available' && can('inventory:register-exit'),
+)
+const showReactivateButton = computed(
+  () => scannedUnit.value?.status === 'unavailable' && can('inventory:reactivate-unit'),
+)
 
 async function loadUnit(unitId) {
   try {
@@ -194,6 +210,16 @@ async function refreshVariants() {
     console.error('Error al actualizar variantes:', error)
     toast.error('Error al actualizar las variantes')
   }
+}
+
+async function handleExitSuccess() {
+  toast.success('Unidad marcada como no disponible')
+  await loadUnit(route.params.unitId)
+}
+
+async function handleReactivateSuccess() {
+  toast.success('Unidad reactivada')
+  await loadUnit(route.params.unitId)
 }
 
 watch(
@@ -401,13 +427,36 @@ onUnmounted(() => {
                   </Tooltip>
                 </div>
               </div>
-              <!-- View full product button -->
-              <Button
-                class="mt-2 w-full lg:w-auto lg:self-end"
-                @click="router.push({ name: 'product-details', params: { id: scannedProduct.id } })"
-              >
-                Ver producto completo
-              </Button>
+              <!-- Action buttons -->
+              <div class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <!-- View full product -->
+                <Button
+                  :variant="viewProductVariant"
+                  class="w-full sm:w-auto"
+                  @click="
+                    router.push({ name: 'product-details', params: { id: scannedProduct.id } })
+                  "
+                >
+                  Ver producto completo
+                </Button>
+                <!-- Register exit -->
+                <Button
+                  v-if="showExitButton"
+                  class="w-full sm:w-auto"
+                  @click="isExitModalOpen = true"
+                >
+                  Registrar salida
+                </Button>
+                <!-- Reactive unit -->
+                <Button
+                  v-if="showReactivateButton"
+                  class="w-full sm:w-auto"
+                  @click="isReactivateModalOpen = true"
+                >
+                  <RotateCcw class="h-4 w-4" />
+                  Reactivar unidad
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -456,11 +505,11 @@ onUnmounted(() => {
             <!-- Matrix -->
             <template v-else>
               <div class="relative w-full overflow-x-auto">
-                <Table class="w-full text-left text-sm whitespace-nowrap">
-                  <TableHeader class="bg-muted border-b text-xs uppercase">
+                <Table class="w-full text-left text-sm whitespace-nowrap lg:table-fixed">
+                  <TableHeader class="bg-muted lg:bg-card border-b">
                     <TableRow>
                       <TableHead
-                        class="bg-muted after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px"
+                        class="after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px lg:w-28"
                       >
                         Color
                       </TableHead>
@@ -480,7 +529,7 @@ onUnmounted(() => {
                       class="divide-x-0"
                     >
                       <TableCell
-                        class="bg-card lg:bg-background after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px"
+                        class="bg-card lg:bg-background after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px lg:w-28"
                       >
                         {{ row.color }}
                       </TableCell>
@@ -552,5 +601,19 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+    <!-- Register exit -->
+    <ProductUnitExitModal
+      v-model:open="isExitModalOpen"
+      :unit="scannedUnit"
+      :product="scannedProduct"
+      @success="handleExitSuccess"
+    />
+    <!-- Reactive unit -->
+    <ProductUnitReactivateModal
+      v-model:open="isReactivateModalOpen"
+      :unit="scannedUnit"
+      :product="scannedProduct"
+      @success="handleReactivateSuccess"
+    />
   </TooltipProvider>
 </template>

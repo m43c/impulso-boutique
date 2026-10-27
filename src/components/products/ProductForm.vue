@@ -290,6 +290,7 @@ function handleCancel() {
               :min="0.01"
               :step="0.01"
               :format-options="{ maximumFractionDigits: 2 }"
+              :disabled="isVariantMode"
               @update:model-value="setValue"
             >
               <NumberFieldContent>
@@ -307,7 +308,6 @@ function handleCancel() {
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
         </VeeField>
-
         <!-- Min stock -->
         <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="minStock">
           <Field :data-invalid="!!errors.length">
@@ -319,6 +319,7 @@ function handleCancel() {
               :allow-empty="false"
               :default-value="0"
               :format-options="{ maximumFractionDigits: 0 }"
+              :disabled="isVariantMode"
               @update:model-value="setValue"
             >
               <NumberFieldContent>

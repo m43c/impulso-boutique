@@ -21,18 +21,9 @@ import { formatMoveReason } from '@/utils/inventoryMoves'
 import { buildUnitUrl } from '@/utils/urls'
 
 const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
-  unit: {
-    type: Object,
-    default: null,
-  },
-  product: {
-    type: Object,
-    default: null,
-  },
+  open: { type: Boolean, default: false },
+  unit: { type: Object, default: null },
+  product: { type: Object, default: null },
 })
 
 const emit = defineEmits(['update:open', 'reprint'])

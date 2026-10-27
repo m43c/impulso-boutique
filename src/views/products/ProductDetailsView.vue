@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { toast } from 'vue-sonner'
@@ -8,20 +8,40 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ProductDetailsBody from '@/components/products/details/ProductDetailsBody.vue'
 import ProductDetailsSkeleton from '@/components/products/details/ProductDetailsSkeleton.vue'
-import ProductUnitsModal from '@/components/products/units/ProductUnitsModal.vue'
-import ProductUnitsLabelsModal from '@/components/products/units/ProductUnitsLabelsModal.vue'
+import ProductUnitsModal from '@/components/products/units/modals/ProductUnitsModal.vue'
+import ProductUnitsLabelsModal from '@/components/products/units/modals/ProductUnitsLabelsModal.vue'
 import ProductUnitsList from '@/components/products/units/ProductUnitsList.vue'
-import ProductUnitsSkeleton from '@/components/products/units/ProductUnitsSkeleton.vue'
-import ProductUnitQrModal from '@/components/products/units/ProductUnitQrModal.vue'
+import ProductUnitsSkeleton from '@/components/products/units/skeletons/ProductUnitsSkeleton.vue'
+import ProductUnitQrModal from '@/components/products/units/modals/ProductUnitQrModal.vue'
 import ProductHistoryList from '@/components/products/history/ProductHistoryList.vue'
+import { usePermissions } from '@/composables/usePermissions'
+import ProductUnitExitModal from '@/components/products/units/modals/ProductUnitExitModal.vue'
+import ProductUnitReactivateModal from '@/components/products/units/modals/ProductUnitReactivateModal.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
+const { can } = usePermissions()
 
 const product = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
-const activeTab = ref('units')
+
+const availableTabs = computed(() => {
+  const tabs = []
+  if (can('inventory:view-units')) tabs.push('units')
+  if (can('inventory:view-history')) tabs.push('history')
+  return tabs
+})
+
+const showTabs = computed(() => availableTabs.value.length > 1)
+
+const activeTab = ref(availableTabs.value[0] ?? 'units')
+
+watch(availableTabs, (tabs) => {
+  if (!tabs.includes(activeTab.value) && tabs.length > 0) {
+    activeTab.value = tabs[0]
+  }
+})
 
 const isUnitsModalOpen = ref(false)
 const isLabelsModalOpen = ref(false)
@@ -29,6 +49,10 @@ const registeredUnitIds = ref([])
 
 const isQrModalOpen = ref(false)
 const selectedUnitForQr = ref(null)
+
+const isExitModalOpen = ref(false)
+const isReactivateModalOpen = ref(false)
+const selectedUnitForAction = ref(null)
 
 async function loadProduct() {
   isLoading.value = true
@@ -106,6 +130,36 @@ function handleQrReprint(unit) {
   isLabelsModalOpen.value = true
 }
 
+function handleRegisterExit(unit) {
+  selectedUnitForAction.value = unit
+  isExitModalOpen.value = true
+}
+
+function handleReactivate(unit) {
+  selectedUnitForAction.value = unit
+  isReactivateModalOpen.value = true
+}
+
+async function handleExitSuccess() {
+  toast.success('Unidad marcada como no disponible')
+
+  await Promise.all([
+    productsStore.fetchUnitStats(product.value.id),
+    productsStore.fetchProductUnits(product.value.id),
+    productsStore.fetchProductHistory(product.value.id),
+  ])
+}
+
+async function handleReactivateSuccess() {
+  toast.success('Unidad reactivada')
+
+  await Promise.all([
+    productsStore.fetchUnitStats(product.value.id),
+    productsStore.fetchProductUnits(product.value.id),
+    productsStore.fetchProductHistory(product.value.id),
+  ])
+}
+
 onMounted(loadProduct)
 
 onBeforeUnmount(() => {
@@ -119,7 +173,7 @@ watch(() => route.params.id, loadProduct)
 
 <template>
   <div class="w-full px-6 pb-6 lg:pb-0">
-     <div
+    <div
       v-if="isLoading"
       class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[470px_minmax(0,1fr)]"
     >
@@ -152,7 +206,7 @@ watch(() => route.params.id, loadProduct)
       <!-- Left column (Product details) -->
       <div class="flex w-full flex-col lg:max-h-[calc(100vh-5rem)] lg:self-start">
         <div
-          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 lg:px-6 lg:py-4 shadow-sm lg:max-h-full lg:rounded-md lg:shadow-none"
+          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-6 lg:py-4 lg:shadow-none"
         >
           <div class="w-full min-w-0 flex-1 overflow-y-auto">
             <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
@@ -162,13 +216,13 @@ watch(() => route.params.id, loadProduct)
       <!-- Right column (Units and history) -->
       <div class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-col lg:gap-4">
         <!-- header -->
-        <div class="mb-2 flex shrink-0 flex-col items-center justify-between gap-4">
+        <div v-if="showTabs" class="mb-1 flex shrink-0 flex-col items-center justify-between gap-4">
           <!-- Tabs -->
           <div
             class="border-border/60 inline-flex w-full rounded-md border p-0.5 lg:w-auto lg:self-start"
           >
-            <!-- Units tab -->
             <button
+              v-if="can('inventory:view-units')"
               type="button"
               class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition lg:flex-none"
               :class="
@@ -180,8 +234,8 @@ watch(() => route.params.id, loadProduct)
             >
               Unidades
             </button>
-            <!-- History tab -->
             <button
+              v-if="can('inventory:view-history')"
               type="button"
               class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition lg:flex-none"
               :class="
@@ -202,17 +256,19 @@ watch(() => route.params.id, loadProduct)
           <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
             <!-- Units tab -->
             <ProductUnitsList
-              v-if="activeTab === 'units'"
+              v-if="activeTab === 'units' && can('inventory:view-units')"
               :units="productsStore.productUnits"
               :is-loading="productsStore.isFetchingUnits"
               :highlight-ids="registeredUnitIds"
               @add-units="openUnitsModal"
               @view-qr="handleUnitViewQr"
               @refresh="handleUnitsRefresh"
+              @register-exit="handleRegisterExit"
+              @reactivate-unit="handleReactivate"
             />
             <!-- History tab -->
             <ProductHistoryList
-              v-else
+              v-else-if="activeTab === 'history' && can('inventory:view-history')"
               :history="productsStore.productHistory"
               :is-loading="productsStore.isFetchingHistory"
               @refresh="() => productsStore.fetchProductHistory(product.id)"
@@ -221,29 +277,43 @@ watch(() => route.params.id, loadProduct)
         </div>
       </div>
     </div>
-    <!-- Units modal/drawer -->
+    <!-- Register units -->
     <ProductUnitsModal
       v-model:open="isUnitsModalOpen"
       :product="product"
       @submit="handleUnitsSubmit"
     />
-    <!-- Unit code QR -->
+    <!-- Code QR view -->
     <ProductUnitsLabelsModal
       :open="isLabelsModalOpen"
       :product="product"
       :unit-ids="registeredUnitIds"
       @update:open="handleLabelsClose"
     />
-    <!-- QR view -->
+    <!-- Show QR -->
     <ProductUnitQrModal
       v-model:open="isQrModalOpen"
       :unit="selectedUnitForQr"
       :product="product"
       @reprint="handleQrReprint"
     />
+    <!-- Register exit -->
+    <ProductUnitExitModal
+      v-model:open="isExitModalOpen"
+      :unit="selectedUnitForAction"
+      :product="product"
+      @success="handleExitSuccess"
+    />
+    <!-- Reactive unit -->
+    <ProductUnitReactivateModal
+      v-model:open="isReactivateModalOpen"
+      :unit="selectedUnitForAction"
+      :product="product"
+      @success="handleReactivateSuccess"
+    />
     <!-- Floating add units button -->
     <Button
-      v-if="activeTab === 'units' && product"
+      v-if="activeTab === 'units' && product && can('inventory:register-entry')"
       size="icon"
       class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg lg:hidden"
       aria-label="Agregar unidades"

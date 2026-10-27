@@ -13,7 +13,9 @@ import {
   Eye,
   Package,
   RefreshCw,
+  RotateCcw,
   Search,
+  XCircle,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Card, CardContent } from '@/components/ui/card'
@@ -41,28 +43,21 @@ import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
 import { columns } from '@/components/products/units/columns'
 import { features } from '@/components/products/features'
-import ProductUnitsCardSkeleton from '@/components/products/units/ProductUnitsCardSkeleton.vue'
+import ProductUnitsCardSkeleton from '@/components/products/units/skeletons/ProductUnitsCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
-  units: {
-    type: Array,
-    default: () => [],
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  highlightIds: {
-    type: Array,
-    default: () => [],
-  },
+  units: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
+  highlightIds: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['add-units', 'view-qr', 'refresh'])
+const emit = defineEmits(['add-units', 'view-qr', 'refresh', 'register-exit', 'reactivate-unit'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const STATUS_STYLES = {
   available: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -72,50 +67,17 @@ const STATUS_STYLES = {
 }
 
 const sortOptions = [
-  {
-    label: 'Unidad: A-Z',
-    columnId: 'code',
-    desc: false,
-  },
-  {
-    label: 'Unidad: Z-A',
-    columnId: 'code',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Fecha: más recientes',
-    columnId: 'created_at',
-    desc: true,
-  },
-  {
-    label: 'Fecha: más antiguos',
-    columnId: 'created_at',
-    desc: false,
-    separator: true,
-  },
-  {
-    label: 'Origen: A-Z',
-    columnId: 'origin',
-    desc: false,
-  },
-  {
-    label: 'Origen: Z-A',
-    columnId: 'origin',
-    desc: true,
-  },
+  { label: 'Unidad: A-Z', columnId: 'code', desc: false },
+  { label: 'Unidad: Z-A', columnId: 'code', desc: true, separator: true },
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Origen: A-Z', columnId: 'origin', desc: false },
+  { label: 'Origen: Z-A', columnId: 'origin', desc: true },
 ]
 
 const filterableColumns = [
-  {
-    columnId: 'status',
-    label: 'Estado',
-    getOptionLabel: formatUnitStatus,
-  },
-  {
-    columnId: 'origin',
-    label: 'Origen',
-  },
+  { columnId: 'status', label: 'Estado', getOptionLabel: formatUnitStatus },
+  { columnId: 'origin', label: 'Origen' },
 ]
 
 const table = useTable({
@@ -134,6 +96,11 @@ const table = useTable({
   },
   meta: {
     onViewQr: (unit) => emit('view-qr', unit),
+    onRegisterExit: (unit) => emit('register-exit', unit),
+    onReactivateUnit: (unit) => emit('reactivate-unit', unit),
+    // Permissions
+    canRegisterExit: () => can('inventory:register-exit'),
+    canReactivateUnit: () => can('inventory:reactivate-unit'),
   },
 })
 
@@ -205,6 +172,7 @@ function isHighlighted(unit) {
         <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
         <!-- Add product units button -->
         <Button
+          v-if="can('inventory:register-entry')"
           class="hidden gap-2 pb-0.5 md:flex"
           size="sm"
           :disabled="isLoading"
@@ -316,7 +284,7 @@ function isHighlighted(unit) {
                   <span class="text-muted-foreground">Estado:</span>
                   <Badge
                     variant="outline"
-                    class="px-1.5 py-0 text-[10px]"
+                    class="px-1.5 py-0.5 text-[11px] lg:py-0"
                     :class="STATUS_STYLES[row.original.status] ?? ''"
                   >
                     {{ formatUnitStatus(row.original.status) }}
@@ -352,9 +320,28 @@ function isHighlighted(unit) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <!-- Show QR -->
                   <DropdownMenuItem class="cursor-pointer" @click="emit('view-qr', row.original)">
                     <Eye class="h-4 w-4" />
-                    <span>Ver Qr</span>
+                    <span>Ver QR</span>
+                  </DropdownMenuItem>
+                  <!-- Register exit -->
+                  <DropdownMenuItem
+                    v-if="row.original.status === 'available' && can('inventory:register-exit')"
+                    class="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                    @click="emit('register-exit', row.original)"
+                  >
+                    <XCircle class="text-destructive h-4 w-4" />
+                    <span>Registrar salida</span>
+                  </DropdownMenuItem>
+                  <!-- Reactive unit -->
+                  <DropdownMenuItem
+                    v-if="row.original.status === 'unavailable' && can('inventory:reactivate-unit')"
+                    class="cursor-pointer text-emerald-500 focus:text-emerald-500"
+                    @click="emit('reactivate-unit', row.original)"
+                  >
+                    <RotateCcw class="h-4 w-4 text-emerald-500" />
+                    <span>Reactivar unidad</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -406,8 +393,8 @@ function isHighlighted(unit) {
             :disabled="!table.getCanPreviousPage()"
             @click="table.previousPage()"
           >
-            <ChevronLeft class="h-4 w-4 px-0 mt-0.5 lg:mt-0" />
-            <span class="mr-0.5 text-xs pb-0.5 lg:text-sm">Anterior</span>
+            <ChevronLeft class="mt-0.5 h-4 w-4 px-0 lg:mt-0" />
+            <span class="mr-0.5 pb-0.5 text-xs lg:text-sm">Anterior</span>
           </Button>
           <!-- Next -->
           <Button
@@ -417,8 +404,8 @@ function isHighlighted(unit) {
             :disabled="!table.getCanNextPage()"
             @click="table.nextPage()"
           >
-            <span class="ml-0.5 text-xs pb-0.5 lg:text-sm">Siguiente</span>
-            <ChevronRight class="h-4 w-4 px-0 mt-0.5 lg:p-0 lg:mt-0" />
+            <span class="ml-0.5 pb-0.5 text-xs lg:text-sm">Siguiente</span>
+            <ChevronRight class="mt-0.5 h-4 w-4 px-0 lg:mt-0 lg:p-0" />
           </Button>
         </div>
       </div>

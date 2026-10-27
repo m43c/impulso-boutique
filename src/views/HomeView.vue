@@ -1,19 +1,28 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
+import { useAuthStore } from '@/stores/auth'
 import { CircleAlert, CheckCircle2 } from '@lucide/vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton' // <-- 1. Importar Skeleton
+import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { hasPermission } from '@/utils/permissions' 
 
 const router = useRouter()
 const alertsStore = useAlertsStore()
+const authStore = useAuthStore()
+
+const canViewLowStock = computed(() =>
+  hasPermission(authStore.role, 'dashboard:view-low-stock-alerts'),
+)
 
 onMounted(() => {
-  alertsStore.fetchLowStockAlerts()
+  if (canViewLowStock.value) {
+    alertsStore.fetchLowStockAlerts()
+  }
 })
 
 function goToLowStock() {
@@ -23,7 +32,7 @@ function goToLowStock() {
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 p-2 px-6">
-    <div class="flex flex-col items-start gap-4">
+    <div v-if="canViewLowStock" class="flex flex-col items-start gap-4">
       <!-- Skeleton -->
       <Card
         v-if="alertsStore.isLoading"
@@ -40,11 +49,11 @@ function goToLowStock() {
             <Skeleton class="h-4 w-3/4" />
             <Skeleton class="h-5 w-16 rounded-full" />
           </div>
-          <Skeleton class="h-4 w-1/3 mx-auto"/>
+          <Skeleton class="mx-auto h-4 w-1/3" />
           <Skeleton class="mt-2 h-6 w-full rounded-md" />
         </CardContent>
       </Card>
-      <!-- Alert -->
+      <!-- Alerts -->
       <Card
         v-else-if="alertsStore.lowStockCount > 0"
         class="w-full max-w-md gap-3 rounded-md border-amber-500/20 p-0 shadow-sm lg:max-w-sm"

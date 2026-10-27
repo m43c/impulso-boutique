@@ -271,7 +271,7 @@ function getReferenceText(row) {
                 <div class="flex min-w-0 items-baseline gap-1">
                   <span class="text-muted-foreground shrink-0">Unidad:</span>
                   <span class="min-w-0 flex-1 truncate font-mono">
-                    {{ row.original.product_unit_id || '—' }}
+                    {{ row.original.product_unit_id || '-' }}
                   </span>
                 </div>
                 <!-- Move type -->
@@ -279,15 +279,15 @@ function getReferenceText(row) {
                   <span class="text-muted-foreground shrink-0">Tipo:</span>
                   <Badge
                     variant="outline"
-                    class="text-[10px]"
+                    class="text-[11px]"
                     :class="TYPE_STYLES[row.original.type] ?? ''"
                   >
                     {{ formatMoveType(row.original.type) }}
                   </Badge>
                 </div>
-                <!-- User -->
+                <!-- Assignee -->
                 <div class="flex min-w-0 items-baseline gap-1">
-                  <span class="text-muted-foreground shrink-0">Usuario:</span>
+                  <span class="text-muted-foreground shrink-0">Responsable:</span>
                   <Tooltip v-if="row.original.profile_name">
                     <TooltipTrigger as-child>
                       <span class="min-w-0 flex-1 cursor-default truncate">

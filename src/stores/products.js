@@ -13,6 +13,8 @@ export const useProductsStore = defineStore('products', () => {
   const isFetchingHistory = ref(false)
   const isFetchingScannedUnit = ref(false)
   const isFetchingVariants = ref(false)
+  const isRegisteringExit = ref(false)
+  const isReactivatingUnit = ref(false)
 
   const products = ref([])
   const options = ref({ categories: [], brands: [], colors: [], sizes: [] })
@@ -398,6 +400,41 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function registerUnitExit({ unit_id, reason, note = null }) {
+    isRegisteringExit.value = true
+
+    try {
+      const { error } = await supabase.rpc('register_exit', {
+        p_unit_id: unit_id,
+        p_reason: reason,
+        p_note: note,
+      })
+
+      if (error) {
+        throw error
+      }
+    } finally {
+      isRegisteringExit.value = false
+    }
+  }
+
+  async function reactivateUnit({ unit_id, note = null }) {
+    isReactivatingUnit.value = true
+
+    try {
+      const { error } = await supabase.rpc('reactivate_unit', {
+        p_unit_id: unit_id,
+        p_note: note,
+      })
+
+      if (error) {
+        throw error
+      }
+    } finally {
+      isReactivatingUnit.value = false
+    }
+  }
+
   function resetUnitStats() {
     unitStats.value = {
       available: 0,
@@ -441,6 +478,8 @@ export const useProductsStore = defineStore('products', () => {
     isFetchingHistory,
     isFetchingScannedUnit,
     isFetchingVariants,
+    isRegisteringExit,
+    isReactivatingUnit,
     products,
     options,
     unitStats,
@@ -462,6 +501,8 @@ export const useProductsStore = defineStore('products', () => {
     fetchProductHistory,
     fetchScannedUnit,
     fetchProductVariants,
+    registerUnitExit,
+    reactivateUnit,
     resetUnitStats,
     resetProductUnits,
     resetProductHistory,
