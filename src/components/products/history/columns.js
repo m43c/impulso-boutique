@@ -75,7 +75,7 @@ export const columns = [
   {
     id: 'profile_name',
     accessorFn: (row) => row.profile_name || 'Sin usuario',
-    header: 'Responsable',
+    header: 'Usuario',
     filterFn: filterFn_arrHas,
     meta: { skeletonClass: 'h-4 w-40' },
     cell: (info) => {

@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   Boxes,
   ChevronLeft,
+  ClipboardCheck,
   ChevronRight,
   EllipsisVertical,
   Eye,
@@ -54,10 +55,21 @@ const props = defineProps({
   highlightIds: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['add-units', 'view-qr', 'refresh', 'register-exit', 'reactivate-unit'])
+const emit = defineEmits([
+  'add-units',
+  'view-qr',
+  'refresh',
+  'register-exit',
+  'reactivate-unit',
+  'count-units',
+])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
+
+const availableUnitsCount = computed(
+  () => props.units.filter((u) => u.status === 'available').length,
+)
 
 const STATUS_STYLES = {
   available: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -166,10 +178,32 @@ function isHighlighted(unit) {
             <p>Actualizar unidades</p>
           </TooltipContent>
         </Tooltip>
-        <!-- Filters (NUEVO) -->
+        <!-- Filters -->
         <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
         <!-- Sort Dropdown (Mobile) -->
         <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
+        <!-- Conteo físico -->
+        <Tooltip v-if="can('inventory:count')">
+          <TooltipTrigger as-child>
+            <span>
+              <Button
+                variant="outline"
+                :disabled="isLoading || availableUnitsCount === 0"
+                :aria-label="
+                  availableUnitsCount === 0 ? 'No hay unidades disponibles' : 'Conteo físico'
+                "
+                @click="emit('count-units')"
+              >
+                <ClipboardCheck class="h-4 w-4" />
+                <span class="hidden md:inline">Conteo físico</span>
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p v-if="availableUnitsCount === 0">No hay unidades disponibles para contar</p>
+            <p v-else>Verificar conteo físico</p>
+          </TooltipContent>
+        </Tooltip>
         <!-- Add product units button -->
         <Button
           v-if="can('inventory:register-entry')"

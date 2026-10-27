@@ -56,53 +56,18 @@ const TYPE_STYLES = {
 }
 
 const sortOptions = [
-  {
-    label: 'Fecha: más recientes',
-    columnId: 'created_at',
-    desc: true,
-  },
-  {
-    label: 'Fecha: más antiguos',
-    columnId: 'created_at',
-    desc: false,
-    separator: true,
-  },
-  {
-    label: 'Tipo: A-Z',
-    columnId: 'type',
-    desc: false,
-  },
-  {
-    label: 'Tipo: Z-A',
-    columnId: 'type',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Responsable: A-Z',
-    columnId: 'profile_name',
-    desc: false,
-  },
-  {
-    label: 'Responsable: Z-A',
-    columnId: 'profile_name',
-    desc: true,
-  },
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Tipo: A-Z', columnId: 'type', desc: false },
+  { label: 'Tipo: Z-A', columnId: 'type', desc: true, separator: true },
+  { label: 'Usuario: A-Z', columnId: 'profile_name', desc: false },
+  { label: 'Usuario: Z-A', columnId: 'profile_name', desc: true },
 ]
 
 const filterableColumns = [
-  {
-    columnId: 'type',
-    label: 'Tipo',
-  },
-  {
-    columnId: 'reason',
-    label: 'Razón',
-  },
-  {
-    columnId: 'profile_name',
-    label: 'Responsable',
-  },
+  { columnId: 'type', label: 'Tipo' },
+  { columnId: 'reason', label: 'Razón' },
+  { columnId: 'profile_name', label: 'Responsable' },
 ]
 
 const table = useTable({
@@ -285,9 +250,9 @@ function getReferenceText(row) {
                     {{ formatMoveType(row.original.type) }}
                   </Badge>
                 </div>
-                <!-- Assignee -->
+                <!-- User -->
                 <div class="flex min-w-0 items-baseline gap-1">
-                  <span class="text-muted-foreground shrink-0">Responsable:</span>
+                  <span class="text-muted-foreground shrink-0">Usuario:</span>
                   <Tooltip v-if="row.original.profile_name">
                     <TooltipTrigger as-child>
                       <span class="min-w-0 flex-1 cursor-default truncate">

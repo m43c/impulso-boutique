@@ -17,6 +17,7 @@ import ProductHistoryList from '@/components/products/history/ProductHistoryList
 import { usePermissions } from '@/composables/usePermissions'
 import ProductUnitExitModal from '@/components/products/units/modals/ProductUnitExitModal.vue'
 import ProductUnitReactivateModal from '@/components/products/units/modals/ProductUnitReactivateModal.vue'
+import ProductUnitsCountModal from '@/components/products/units/modals/ProductUnitsCountModal.vue'
 
 const route = useRoute()
 const productsStore = useProductsStore()
@@ -53,6 +54,12 @@ const selectedUnitForQr = ref(null)
 const isExitModalOpen = ref(false)
 const isReactivateModalOpen = ref(false)
 const selectedUnitForAction = ref(null)
+
+const isCountModalOpen = ref(false)
+
+const availableUnitsForCount = computed(() =>
+  productsStore.productUnits.filter((u) => u.status === 'available'),
+)
 
 async function loadProduct() {
   isLoading.value = true
@@ -152,6 +159,23 @@ async function handleExitSuccess() {
 
 async function handleReactivateSuccess() {
   toast.success('Unidad reactivada')
+
+  await Promise.all([
+    productsStore.fetchUnitStats(product.value.id),
+    productsStore.fetchProductUnits(product.value.id),
+    productsStore.fetchProductHistory(product.value.id),
+  ])
+}
+
+function handleCountUnits() {
+  isCountModalOpen.value = true
+}
+
+async function handleCountSuccess({ missing }) {
+  const noun = missing === 1 ? 'unidad marcada' : 'unidades marcadas'
+  const suffix = missing === 1 ? '' : 's'
+
+  toast.success(`Conteo registrado: ${missing} ${noun} como no disponible${suffix}`)
 
   await Promise.all([
     productsStore.fetchUnitStats(product.value.id),
@@ -265,6 +289,7 @@ watch(() => route.params.id, loadProduct)
               @refresh="handleUnitsRefresh"
               @register-exit="handleRegisterExit"
               @reactivate-unit="handleReactivate"
+              @count-units="handleCountUnits"
             />
             <!-- History tab -->
             <ProductHistoryList
@@ -310,6 +335,13 @@ watch(() => route.params.id, loadProduct)
       :unit="selectedUnitForAction"
       :product="product"
       @success="handleReactivateSuccess"
+    />
+    <!-- Count modal -->
+    <ProductUnitsCountModal
+      v-model:open="isCountModalOpen"
+      :product="product"
+      :units="availableUnitsForCount"
+      @success="handleCountSuccess"
     />
     <!-- Floating add units button -->
     <Button

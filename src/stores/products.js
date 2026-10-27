@@ -15,6 +15,7 @@ export const useProductsStore = defineStore('products', () => {
   const isFetchingVariants = ref(false)
   const isRegisteringExit = ref(false)
   const isReactivatingUnit = ref(false)
+  const isRegisteringCount = ref(false)
 
   const products = ref([])
   const options = ref({ categories: [], brands: [], colors: [], sizes: [] })
@@ -435,6 +436,23 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
+  async function registerCountMissing({ unit_ids, note = null }) {
+    isRegisteringCount.value = true
+
+    try {
+      const { error } = await supabase.rpc('register_count_missing', {
+        p_unit_ids: unit_ids,
+        p_note: note,
+      })
+
+      if (error) {
+        throw error
+      }
+    } finally {
+      isRegisteringCount.value = false
+    }
+  }
+
   function resetUnitStats() {
     unitStats.value = {
       available: 0,
@@ -480,6 +498,7 @@ export const useProductsStore = defineStore('products', () => {
     isFetchingVariants,
     isRegisteringExit,
     isReactivatingUnit,
+    isRegisteringCount,
     products,
     options,
     unitStats,
@@ -503,6 +522,7 @@ export const useProductsStore = defineStore('products', () => {
     fetchProductVariants,
     registerUnitExit,
     reactivateUnit,
+    registerCountMissing,
     resetUnitStats,
     resetProductUnits,
     resetProductHistory,
