@@ -232,9 +232,9 @@ async function handleToggleStatus(product) {
     <Drawer v-else v-model:open="isSheetOpen">
       <DrawerContent
         v-if="can('products:create') || can('products:update')"
-        class="flex h-[90dvh] flex-col pb-1.5"
+        class="flex h-[90dvh] flex-col pb-1"
       >
-        <DrawerHeader class="px-5 pt-4 pb-2 text-left">
+        <DrawerHeader class="px-5 pt-3 pb-2 text-left">
           <DrawerTitle class="text-sm">{{ formTitle }}</DrawerTitle>
           <DrawerDescription class="text-xs">{{ formDescription }}</DrawerDescription>
         </DrawerHeader>

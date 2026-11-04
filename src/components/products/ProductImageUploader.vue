@@ -166,22 +166,28 @@ onBeforeUnmount(() => {
     <!-- Mobile view -->
     <div v-if="!isDesktop" class="relative">
       <div
-        class="border-muted-foreground/25 relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-dashed transition-all duration-300"
-        :class="hasImage ? 'h-52' : 'h-40'"
+        class="border-muted-foreground/25 relative mx-auto flex aspect-square w-full max-w-52 items-center justify-center overflow-hidden rounded-lg border border-dashed transition-all duration-300"
+        :class="
+          hasImage
+            ? 'border-border bg-muted border'
+            : 'border-muted-foreground/25 border border-dashed'
+        "
       >
         <!-- Image preview -->
         <template v-if="hasImage">
           <img
             :src="displayUrl"
             alt="Vista previa"
-            class="h-full w-full cursor-pointer rounded-lg object-cover"
+            class="h-full w-full object-cover"
             @click="openFileDialog"
           />
-          <!-- Image hint -->
+          <!-- hint -->
           <div
-            class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-linear-to-t from-black/60 to-transparent pt-6 pb-2"
+            class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-linear-to-t from-black/60 to-transparent px-3 pt-8 pb-2.5"
           >
-            <span class="text-xs font-medium text-white">Toca para cambiar la imagen</span>
+            <span class="truncate pr-8 text-[11px] font-medium text-white">
+              Toca la imagen para cambiar
+            </span>
           </div>
           <!-- Remove image button -->
           <Button
@@ -200,10 +206,10 @@ onBeforeUnmount(() => {
         <template v-else>
           <div class="text-muted-foreground flex flex-col items-center justify-center text-center">
             <ImagePlus class="size-8 stroke-[1.5]" />
-            <p class="mt-2 text-xs">
+            <p class="mt-2 text-xs leading-relaxed">
               <button
                 type="button"
-                class="text-primary hover:text-primary/80"
+                class="text-primary hover:text-primary/80 text-[11px]"
                 @click="openFileDialog"
               >
                 Toca para seleccionar una imagen
