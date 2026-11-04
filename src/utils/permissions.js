@@ -1,6 +1,6 @@
 export const PERMISSIONS = {
-   // dashboard
-  'dashboard:view-low-stock-alerts': ['admin'],  
+  // dashboard
+  'dashboard:view-low-stock-alerts': ['admin'],
   // products
   'products:view': ['admin', 'advisor', 'cashier'],
   'products:create': ['admin'],
@@ -9,6 +9,7 @@ export const PERMISSIONS = {
   // inventory
   'inventory:view-units': ['admin', 'advisor', 'cashier'],
   'inventory:view-history': ['admin'],
+  'inventory:view-movements': ['admin'],
   'inventory:register-entry': ['admin'],
   'inventory:register-exit': ['admin'],
   'inventory:reactivate-unit': ['admin'],

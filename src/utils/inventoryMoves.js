@@ -6,7 +6,7 @@ const moveReasonLabels = {
   loss: 'Pérdida',
   damage: 'Daño',
   count: 'Conteo',
-  correction: 'Ajuste',
+  correction: 'Corrección',
 }
 
 export function formatMoveReason(reason) {

@@ -2,7 +2,16 @@
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
-import { EllipsisVertical, Home, Package, LogOut, Store, User, Users } from '@lucide/vue'
+import {
+  ArrowLeftRight,
+  EllipsisVertical,
+  Home,
+  Package,
+  LogOut,
+  Store,
+  User,
+  Users,
+} from '@lucide/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -34,6 +43,7 @@ const items = [
   { title: 'Inicio', url: '/home', icon: Home },
   { title: 'Usuarios', url: '/users', icon: Users, roles: ['admin'] },
   { title: 'Productos', url: '/products', icon: Package, roles: ['admin', 'advisor', 'cashier'] },
+  { title: 'Movimientos', url: '/moves', icon: ArrowLeftRight, roles: ['admin'] },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -86,7 +96,7 @@ watch(
         <SidebarMenuItem>
           <SidebarMenuButton>
             <Store />
-            <span class="font-semibold">Impulso Boutique</span>
+            <span class="font-semibold text-base">Impulso Boutique</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -99,7 +109,7 @@ watch(
               <SidebarMenuButton as-child>
                 <RouterLink :to="item.url">
                   <component :is="item.icon" />
-                  <span>{{ item.title }}</span>
+                  <span class="lg:text-[13px]">{{ item.title }}</span>
                 </RouterLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -119,7 +129,7 @@ watch(
               </AvatarFallback>
             </Avatar>
             <div class="flex flex-1 flex-col overflow-hidden">
-              <span class="truncate text-sm font-medium">
+              <span class="truncate text-sm lg:text-xs font-medium">
                 {{ displayName }}
               </span>
               <span class="text-muted-foreground truncate text-xs">
@@ -139,18 +149,18 @@ watch(
                 :side="isDesktop ? 'right' : 'top'"
                 :side-offset="isDesktop ? 4 : 12"
                 align="end"
-                class="w-56"
+                class="w-56 lg:w-40"
               >
                 <DropdownMenuItem as-child>
                   <RouterLink to="/profile">
                     <User />
-                    <span>Ver Perfil</span>
+                    <span class="text-sm lg:text-xs">Ver Perfil</span>
                   </RouterLink>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem :disabled="authStore.isLoading" @click="handleLogout">
                   <LogOut />
-                  <span>Cerrar sesión</span>
+                  <span class="text-sm lg:text-xs">Cerrar sesión</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

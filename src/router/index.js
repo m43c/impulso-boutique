@@ -56,6 +56,7 @@ const router = createRouter({
             breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
           },
         },
+        // Inventary routes
         {
           path: 'units/:unitId',
           name: 'unit-details',
@@ -64,6 +65,12 @@ const router = createRouter({
             title: 'Detalles de unidad',
             breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
           },
+        },
+        {
+          path: 'moves',
+          name: 'moves',
+          component: () => import('@/views/MovesView.vue'),
+          meta: { title: 'Movimientos', roles: ['admin'] },
         },
       ],
     },
