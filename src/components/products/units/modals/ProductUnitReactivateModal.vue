@@ -82,36 +82,36 @@ function handleCancel() {
 </script>
 
 <template>
-  <!-- Desktop -->
+  <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
-    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-md">
-      <DialogHeader class="border-border/60 px-6 pt-6">
-        <DialogTitle>Reactivar unidad</DialogTitle>
-        <DialogDescription v-if="unit" class="pb-2">
+    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
+      <DialogHeader class="border-border/60 gap-1 px-6 pt-6">
+        <DialogTitle class="text-sm">Reactivar unidad</DialogTitle>
+        <DialogDescription v-if="unit" class="pb-2.5 text-xs">
           Unidad {{ unit.id.slice(0, 8) }}
           <span v-if="product">- {{ product.name }}</span>
         </DialogDescription>
       </DialogHeader>
       <div class="flex flex-col gap-4 px-6">
-        <!-- Error alert -->
+        <!-- Error message -->
         <Alert v-if="errorMessage" variant="destructive">
-          <AlertDescription>{{ errorMessage }}</AlertDescription>
+          <AlertDescription class="text-sm">{{ errorMessage }}</AlertDescription>
         </Alert>
         <!-- Note -->
         <Field>
-          <FieldLabel for="reactivate-note">Nota (opcional)</FieldLabel>
+          <FieldLabel for="reactivate-note" class="text-xs">Nota (opcional)</FieldLabel>
           <Textarea
             id="reactivate-note"
             v-model="note"
             :maxlength="NOTE_MAX"
             placeholder="Revisada, vuelve al estante"
             rows="3"
-            class="text-sm"
+            class="text-xs!"
           />
         </Field>
         <!-- Info -->
         <p class="text-muted-foreground text-xs">
-          Al confirmar, la unidad volverá a estar disponible para la venta.
+          La unidad volverá a estar disponible y conservará su QR.
         </p>
       </div>
       <!-- Action buttons -->
@@ -121,24 +121,32 @@ function handleCancel() {
         <Button
           type="button"
           variant="outline"
+          size="sm"
           :disabled="productsStore.isReactivatingUnit"
           @click="handleCancel"
         >
-          Cancelar
+          <span class="text-xs">Cancelar</span>
         </Button>
-        <Button type="button" :disabled="productsStore.isReactivatingUnit" @click="handleSubmit">
+        <Button
+          type="button"
+          size="sm"
+          :disabled="productsStore.isReactivatingUnit"
+          @click="handleSubmit"
+        >
           <Loader2 v-if="productsStore.isReactivatingUnit" class="mr-2 h-4 w-4 animate-spin" />
-          {{ productsStore.isReactivatingUnit ? 'Reactivando…' : 'Reactivar unidad' }}
+          <span class="text-xs">
+            {{ productsStore.isReactivatingUnit ? 'Reactivando…' : 'Reactivar unidad' }}
+          </span>
         </Button>
       </div>
     </DialogContent>
   </Dialog>
-  <!-- Mobile -->
+  <!-- Mobile view -->
   <Drawer v-else v-model:open="openModel">
     <DrawerContent class="max-h-[85vh]">
       <DrawerHeader class="border-border/60 px-6 pb-2 text-left">
         <DrawerTitle>Reactivar unidad</DrawerTitle>
-        <DrawerDescription v-if="unit" >
+        <DrawerDescription v-if="unit">
           Unidad {{ unit.id.slice(0, 8) }}
           <span v-if="product">- {{ product.name }}</span>
         </DrawerDescription>

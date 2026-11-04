@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -26,7 +27,10 @@ const props = defineProps({
   errorMessage: { type: String, default: null },
   options: { type: Object, default: () => ({ categories: [], brands: [], colors: [], sizes: [] }) },
 })
+
 const emit = defineEmits(['submit', 'cancel'])
+
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const currentMode = computed(() => {
   if (props.mode) {
@@ -153,15 +157,16 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
-    <!-- Error -->
+    <!-- Error message -->
     <Alert v-if="errorMessage" variant="destructive" class="mb-4">
-      <AlertDescription>{{ errorMessage }}</AlertDescription>
+      <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
     </Alert>
     <!-- Fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Image -->
       <VeeField v-slot="{ value, handleChange, errors }" name="image">
         <Field :data-invalid="!!errors.length">
+          <FieldLabel for="image" class="lg:text-xs">Imagen del producto</FieldLabel>
           <ProductImageUploader
             :model-value="value"
             :existing-image-id="
@@ -171,43 +176,45 @@ function handleCancel() {
             "
             @update:model-value="handleChange"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" class="text-center" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="text-center lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Name -->
       <VeeField v-slot="{ componentField, errors }" name="name">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="name">Nombre</FieldLabel>
+          <FieldLabel for="name" class="lg:text-xs">Nombre</FieldLabel>
           <Input
             id="name"
             v-bind="componentField"
             type="text"
             placeholder="Camisa manga larga"
             :aria-invalid="!!errors.length"
-            class="text-sm"
+            aria-required="true"
+            class="text-sm lg:text-xs!"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Description -->
       <VeeField v-slot="{ componentField, errors }" name="description">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="description">Descripción (opcional)</FieldLabel>
+          <FieldLabel for="description" class="lg:text-xs">Descripción (opcional)</FieldLabel>
           <Textarea
             id="description"
             v-bind="componentField"
             placeholder="Camisa de manga larga, algodón 100%, corte slim fit..."
             :aria-invalid="!!errors.length"
-            class="text-sm"
+            class="text-sm lg:text-xs!"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
+      <!-- Details -->
       <div class="grid grid-cols-2 gap-4">
         <!-- Category -->
         <VeeField v-slot="{ value, handleChange, errors }" name="category">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="category">Categoría</FieldLabel>
+            <FieldLabel for="category" class="lg:text-xs">Categoría</FieldLabel>
             <CreatableCombobox
               id="category"
               :model-value="value"
@@ -216,15 +223,16 @@ function handleCancel() {
               search-placeholder="Buscar o crear categoría..."
               :invalid="!!errors.length"
               :disabled="isVariantMode"
+              aria-required="true"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
         <!-- Brand -->
         <VeeField v-slot="{ value, handleChange, errors }" name="brand">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="brand">Marca</FieldLabel>
+            <FieldLabel for="brand" class="lg:text-xs">Marca (opcional)</FieldLabel>
             <CreatableCombobox
               id="brand"
               :model-value="value"
@@ -237,8 +245,7 @@ function handleCancel() {
               :disabled="isVariantMode"
               @update:model-value="handleChange"
             />
-            <!-- <Input v-else id="brand" :model-value="value || 'Sin marca'" disabled class="text-sm" /> -->
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
@@ -246,7 +253,7 @@ function handleCancel() {
       <div class="grid grid-cols-2 gap-4">
         <VeeField v-slot="{ value, handleChange, errors }" name="color">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="color">Color</FieldLabel>
+            <FieldLabel for="color" class="lg:text-xs">Color (opcional)</FieldLabel>
             <CreatableCombobox
               id="color"
               :model-value="value"
@@ -258,13 +265,13 @@ function handleCancel() {
               :invalid="!!errors.length"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
         <!-- Size -->
         <VeeField v-slot="{ value, handleChange, errors }" name="size">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="size">Talla</FieldLabel>
+            <FieldLabel for="size" class="lg:text-xs">Talla (opcional)</FieldLabel>
             <CreatableCombobox
               id="size"
               :model-value="value"
@@ -276,7 +283,7 @@ function handleCancel() {
               :invalid="!!errors.length"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
@@ -284,7 +291,7 @@ function handleCancel() {
       <div class="grid grid-cols-2 gap-4">
         <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="price">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="price">Precio</FieldLabel>
+            <FieldLabel for="price" class="lg:text-xs">Precio</FieldLabel>
             <NumberField
               :model-value="value"
               :min="0.01"
@@ -298,20 +305,21 @@ function handleCancel() {
                 <NumberFieldInput
                   id="price"
                   placeholder="0.00"
-                  class="text-sm"
+                  class="text-xs!"
                   :aria-invalid="!!errors.length"
+                  aria-required="true"
                   @blur="handleBlur"
                 />
                 <NumberFieldIncrement />
               </NumberFieldContent>
             </NumberField>
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
         <!-- Min stock -->
         <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="minStock">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="minStock">Stock mínimo</FieldLabel>
+            <FieldLabel for="minStock" class="lg:text-xs">Stock mínimo</FieldLabel>
             <NumberField
               :model-value="value"
               :min="0"
@@ -327,26 +335,38 @@ function handleCancel() {
                 <NumberFieldInput
                   id="minStock"
                   placeholder="0"
-                  class="text-sm"
+                  class="text-xs!"
                   :aria-invalid="!!errors.length"
+                  aria-required="true"
                   @blur="handleBlur"
                 />
                 <NumberFieldIncrement />
               </NumberFieldContent>
             </NumberField>
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
     </FieldGroup>
     <!-- Actions buttons -->
     <div class="grid grid-cols-1 gap-2 pt-6 md:grid-cols-2 md:gap-4">
-      <Button type="submit" class="w-full md:order-2" :disabled="isSubmitting || isLoading">
+      <Button
+        type="submit"
+        :size="isDesktop ? 'sm' : ''"
+        :disabled="isSubmitting || isLoading"
+        class="w-full md:order-2"
+      >
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
-        {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}
+        <span class="lg:text-xs">{{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}</span>
       </Button>
-      <Button type="button" variant="outline" class="w-full md:order-1" @click="handleCancel">
-        Cancelar
+      <Button
+        type="button"
+        :size="isDesktop ? 'sm' : ''"
+        variant="outline"
+        class="w-full md:order-1"
+        @click="handleCancel"
+      >
+        <span class="lg:text-xs">Cancelar</span>
       </Button>
     </div>
   </form>

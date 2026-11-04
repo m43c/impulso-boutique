@@ -3,8 +3,18 @@ import { computed, ref, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { storeToRefs } from 'pinia'
+import { useMediaQuery } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import { CheckCircle2, Copy, Loader2, Minus, RefreshCw, RotateCcw, XCircle } from '@lucide/vue'
+import {
+  CheckCircle2,
+  Check,
+  Copy,
+  Loader2,
+  Minus,
+  RefreshCw,
+  RotateCcw,
+  XCircle,
+} from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,6 +45,7 @@ const router = useRouter()
 const productsStore = useProductsStore()
 const { setBreadcrumbs, clearBreadcrumbs } = useBreadcrumbs()
 const { can } = usePermissions()
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const { scannedUnit, scannedProduct, productVariants, isFetchingVariants } =
   storeToRefs(productsStore)
@@ -212,13 +223,14 @@ async function refreshVariants() {
   }
 }
 
-async function handleExitSuccess() {
-  toast.success('Unidad marcada como no disponible')
+async function handleExitSuccess({ reason }) {
+  const label = reason === 'damage' ? 'daño' : 'pérdida'
+  toast.success(`Unidad dada de baja por ${label}`)
   await loadUnit(route.params.unitId)
 }
 
 async function handleReactivateSuccess() {
-  toast.success('Unidad reactivada')
+  toast.success('Unidad reactivada (mismo QR)')
   await loadUnit(route.params.unitId)
 }
 
@@ -247,17 +259,17 @@ onUnmounted(() => {
       v-else-if="!scannedUnit"
       class="flex min-h-[calc(100vh-5rem)] w-full flex-col items-center justify-center px-4 pb-6 text-center lg:px-6 lg:pb-0"
     >
-      <Card class="w-full max-w-md">
+      <Card class="w-full max-w-sm">
         <CardContent class="flex flex-col items-center justify-center p-8">
           <div class="bg-muted/50 mb-3 flex h-12 w-12 items-center justify-center rounded-full">
             <Loader2 class="text-muted-foreground h-6 w-6 animate-spin" />
           </div>
-          <h3 class="text-base font-semibold">Unidad no encontrada</h3>
-          <p class="text-muted-foreground mt-1 mb-4 max-w-sm text-sm">
-            Este código no existe en el sistema
+          <h3 class="text-sm font-semibold lg:text-[13px]">Unidad no encontrada</h3>
+          <p class="text-muted-foreground mb-3 max-w-sm text-sm lg:text-xs">
+            Este código no existe en el sistema.
           </p>
           <Button variant="outline" size="sm" @click="router.push({ name: 'home' })">
-            Volver al inicio
+            <span class="lg:text-xs">Volver al inicio</span>
           </Button>
         </CardContent>
       </Card>
@@ -269,7 +281,7 @@ onUnmounted(() => {
         <div class="flex min-w-0 flex-col gap-4 lg:col-span-5 lg:h-full lg:min-h-0">
           <!-- Status banner -->
           <div
-            class="flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold tracking-wider lg:rounded-sm"
+            class="flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-semibold tracking-wider lg:rounded-sm lg:text-xs"
             :class="statusBannerClasses"
           >
             <CheckCircle2 v-if="scannedUnit.status === 'available'" class="h-4 w-4" />
@@ -277,24 +289,22 @@ onUnmounted(() => {
             {{ fullStatusText }}
           </div>
           <!-- Product -->
-          <Card
-            class="overflow-hidden p-0 shadow-sm lg:overflow-y-auto lg:rounded-md lg:border lg:bg-transparent lg:shadow-none"
-          >
-            <CardContent class="flex flex-col gap-4 p-4 lg:px-6 lg:pb-6">
+          <Card class="overflow-hidden p-0 shadow-sm lg:overflow-y-auto lg:rounded-md">
+            <CardContent class="flex flex-col gap-4 p-4 lg:px-5 lg:py-4">
               <div class="flex w-full flex-col gap-2">
                 <!-- Name -->
-                <h3 class="line-clamp-2 text-base leading-tight font-semibold">
+                <h3 class="line-clamp-2 text-sm leading-tight font-semibold lg:text-[13px]">
                   {{ scannedProduct.name }}
                 </h3>
                 <!-- Description -->
-                <p class="text-muted-foreground line-clamp-3 text-xs leading-relaxed lg:text-sm">
+                <p class="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
                   {{ scannedProduct.description || 'Sin descripción' }}
                 </p>
               </div>
-              <div class="flex w-full flex-wrap items-stretch gap-4 lg:gap-5">
+              <div class="flex w-full items-stretch gap-4">
                 <!-- Image -->
                 <div
-                  class="mx-auto aspect-5/5 w-32 shrink-0 overflow-hidden rounded-lg lg:w-52 lg:rounded-sm"
+                  class="mx-auto aspect-square w-32 shrink-0 overflow-hidden rounded-lg lg:w-44 lg:rounded-sm"
                 >
                   <ProductImage
                     :public-id="scannedProduct.image_public_id"
@@ -306,16 +316,18 @@ onUnmounted(() => {
                   />
                 </div>
                 <!-- Details -->
-                <div class="flex flex-1 flex-col justify-between">
-                  <div class="flex flex-col gap-1.5 text-xs sm:text-sm">
+                <div class="-mt-0.5 flex min-w-0 flex-1 flex-col justify-between lg:-mt-1">
+                  <div class="flex flex-col gap-2.5 text-xs leading-none lg:leading-tight">
                     <!-- Category -->
-                    <div class="flex justify-between gap-2">
-                      <span class="text-muted-foreground shrink-0">Categoría</span>
+                    <div class="flex min-w-0 gap-2">
+                      <span class="text-muted-foreground shrink-0">Categoría:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <span class="min-w-0 cursor-default truncate text-right">
+                          <button
+                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                          >
                             {{ scannedProduct.category || 'Sin categoría' }}
-                          </span>
+                          </button>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>{{ scannedProduct.category || 'Sin categoría' }}</p>
@@ -323,25 +335,44 @@ onUnmounted(() => {
                       </Tooltip>
                     </div>
                     <!-- Brand -->
-                    <div class="flex justify-between gap-2">
-                      <span class="text-muted-foreground">Marca</span>
-                      <span>{{ scannedProduct.brand || 'Sin marca' }}</span>
+                    <div class="flex min-w-0 items-center gap-2">
+                      <span class="text-muted-foreground shrink-0">Marca:</span>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <button
+                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                          >
+                            {{ scannedProduct.brand || 'Sin marca' }}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{{ scannedProduct.brand || 'Sin marca' }}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <!-- Color -->
-                    <div class="flex justify-between gap-2">
-                      <span class="text-muted-foreground">Color</span>
-                      <span>{{ scannedProduct.color || 'Sin color' }}</span>
+                    <div class="flex min-w-0 items-center gap-2">
+                      <span class="text-muted-foreground shrink-0">Color:</span>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <button
+                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                          >
+                            {{ scannedProduct.color || 'Sin color' }}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{{ scannedProduct.color || 'Sin color' }}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <!-- Size -->
-                    <div class="flex justify-between gap-2">
-                      <span class="text-muted-foreground">Talla</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-muted-foreground">Talla:</span>
                       <span>{{ scannedProduct.size || 'Sin talla' }}</span>
                     </div>
                     <!-- Status -->
-                    <div
-                      v-if="!scannedProduct.is_active"
-                      class="flex items-center justify-between gap-2"
-                    >
+                    <div v-if="!scannedProduct.is_active" class="flex items-center gap-2">
                       <span class="text-muted-foreground">Estado</span>
                       <Badge
                         variant="outline"
@@ -351,40 +382,36 @@ onUnmounted(() => {
                       </Badge>
                     </div>
                     <!-- Price -->
-                    <div class="flex justify-between gap-2">
-                      <span class="text-muted-foreground">Precio</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-muted-foreground">Precio:</span>
                       <span class="font-bold">{{ formatCurrency(scannedProduct.price) }}</span>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Unit -->
-              <div class="flex flex-col gap-1.5 border-t pt-3 text-xs lg:text-sm">
+              <div class="flex flex-col gap-1.5 border-t pt-3 text-xs">
                 <div class="flex flex-wrap justify-between gap-2">
                   <!-- Id -->
                   <div class="flex items-center gap-2">
                     <span class="text-muted-foreground">Unidad:</span>
-                    <div class="flex items-center gap-1">
-                      <span class="bg-muted rounded px-1.5 font-mono text-xs font-medium lg:pt-1">
-                        {{ scannedUnit.id.slice(0, 8) }}
-                      </span>
-                      <!-- Copy button -->
-                      <Tooltip>
-                        <TooltipTrigger as-child>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            class="h-6 w-6"
-                            @click="handleCopyUnitId(scannedUnit.id)"
-                          >
-                            <Copy class="h-3 w-3" :class="{ 'text-emerald-500': copied }" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button
+                          @click="handleCopyUnitId(scannedUnit.id)"
+                          class="bg-muted/80 hover:bg-muted active:bg-muted/60 group flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-xs shadow-sm transition-colors"
+                        >
+                          <span :class="{ 'text-emerald-500': copied, 'text-foreground': !copied }">
+                            {{ scannedUnit.id.slice(0, 8) }}
+                          </span>
+                          <Check v-if="copied" class="h-3.5 w-3.5 text-emerald-500" />
+                          <Copy v-else class="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <!-- Origin -->
                   <div class="flex min-w-0 items-center gap-1.5">
@@ -410,18 +437,18 @@ onUnmounted(() => {
                     <span>{{ formatDate(scannedUnit.updated_at) }}</span>
                   </div>
                 </div>
-                <!-- Note -->
+                <!-- Ref/note -->
                 <div v-if="scannedUnit.note" class="mt-1.5 flex items-start gap-1.5 border-t pt-2">
                   <span class="text-muted-foreground shrink-0">Nota:</span>
                   <Tooltip>
                     <TooltipTrigger as-child>
-                      <span class="line-clamp-1 cursor-default text-left italic">
-                        {{ scannedUnit.note || 'Sin referencia / nota' }}
-                      </span>
+                      <button class="line-clamp-1 text-left italic lg:cursor-help">
+                        {{ scannedUnit.note || 'Sin referencia/nota' }}
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent class="max-w-xs">
                       <p class="whitespace-pre-wrap">
-                        {{ scannedUnit.note || 'Sin referencia / nota' }}
+                        {{ scannedUnit.note || 'Sin referencia/nota' }}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -432,29 +459,32 @@ onUnmounted(() => {
                 <!-- View full product -->
                 <Button
                   :variant="viewProductVariant"
+                  :size="isDesktop ? 'sm' : ''"
                   class="w-full sm:w-auto"
                   @click="
                     router.push({ name: 'product-details', params: { id: scannedProduct.id } })
                   "
                 >
-                  Ver producto completo
+                  <span class="lg:text-xs">Ver producto completo</span>
                 </Button>
                 <!-- Register exit -->
                 <Button
                   v-if="showExitButton"
+                  :size="isDesktop ? 'sm' : ''"
                   class="w-full sm:w-auto"
                   @click="isExitModalOpen = true"
                 >
-                  Registrar salida
+                  <span class="lg:text-xs">Dar de baja</span>
                 </Button>
                 <!-- Reactive unit -->
                 <Button
                   v-if="showReactivateButton"
+                  :size="isDesktop ? 'sm' : ''"
                   class="w-full sm:w-auto"
                   @click="isReactivateModalOpen = true"
                 >
                   <RotateCcw class="h-4 w-4" />
-                  Reactivar unidad
+                  <span class="lg:text-xs">Reactivar</span>
                 </Button>
               </div>
             </CardContent>
@@ -467,16 +497,18 @@ onUnmounted(() => {
           <Card
             class="gap-0 overflow-hidden border p-0 shadow-sm lg:rounded-md lg:border lg:bg-transparent lg:shadow-none"
           >
-            <div class="flex items-center justify-between border-b px-4 py-2">
+            <div
+              class="lg:dark:bg-card flex items-center justify-between border-b bg-zinc-100 px-4 py-2 dark:bg-zinc-800"
+            >
               <!-- Title -->
-              <h2 class="text-base font-semibold">Otras variantes disponibles</h2>
+              <h2 class="text-sm font-semibold lg:text-[13px]">Otras variantes disponibles</h2>
               <Tooltip>
                 <!-- Refresh button -->
                 <TooltipTrigger as-child>
                   <Button
                     variant="outline"
-                    size="icon"
-                    class="h-8 w-8"
+                    size="sm"
+                    class="h-8 w-8 p-2!"
                     :disabled="isFetchingVariants || !scannedProduct?.variant_group_id"
                     aria-label="Actualizar variantes"
                     @click="refreshVariants"
@@ -498,25 +530,25 @@ onUnmounted(() => {
               v-else-if="!variantMatrix"
               class="flex h-40 flex-col items-center justify-center p-6 text-center"
             >
-              <p class="text-muted-foreground text-sm">
-                Este producto no tiene otras variantes registradas
+              <p class="text-muted-foreground text-xs">
+                Este producto no tiene otras variantes registradas.
               </p>
             </div>
-            <!-- Matrix -->
+            <!-- Variant table -->
             <template v-else>
               <div class="relative w-full overflow-x-auto">
-                <Table class="w-full text-left text-sm whitespace-nowrap lg:table-fixed">
-                  <TableHeader class="bg-muted lg:bg-card border-b">
+                <Table class="w-full text-left text-sm whitespace-nowrap">
+                  <TableHeader class="lg:dark:bg-card border-b bg-zinc-100 dark:bg-zinc-800">
                     <TableRow>
                       <TableHead
-                        class="after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px lg:w-28"
+                        class="lg:dark:bg-card sticky left-0 z-30 bg-zinc-100 px-4 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-28 lg:text-xs dark:bg-zinc-800"
                       >
-                        Color
+                        Color/Talla
                       </TableHead>
                       <TableHead
                         v-for="size in variantMatrix.sizes"
                         :key="size"
-                        class="px-4 py-3 text-center font-medium"
+                        class="lg:dark:bg-card bg-zinc-100 px-4 py-3 text-center font-medium lg:text-xs dark:bg-zinc-800"
                       >
                         {{ size }}
                       </TableHead>
@@ -529,14 +561,14 @@ onUnmounted(() => {
                       class="divide-x-0"
                     >
                       <TableCell
-                        class="bg-card lg:bg-background after:bg-border/50 sticky left-0 z-20 px-4 py-3 font-medium after:absolute after:inset-y-0 after:right-0 after:w-px lg:w-28"
+                        class="lg:dark:bg-card sticky left-0 z-30 bg-zinc-100 px-4 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-28 lg:text-xs dark:bg-zinc-800"
                       >
                         {{ row.color }}
                       </TableCell>
                       <TableCell
                         v-for="size in variantMatrix.sizes"
                         :key="size"
-                        class="px-4 py-3 text-center transition-colors"
+                        class="px-4 py-3 text-center transition-colors lg:text-xs"
                         :class="{
                           'border border-emerald-500/30 bg-emerald-500/10 font-bold text-emerald-600':
                             row.cells[size]?.id === scannedProduct.id,
@@ -563,7 +595,7 @@ onUnmounted(() => {
                         <!-- Cell with stock -->
                         <span v-else class="flex items-center justify-center gap-1">
                           <span
-                            :class="row.cells[size].available_stock === 0 ? 'text-rose-500/70' : ''"
+                            :class="row.cells[size].available_stock === 0 ? 'text-destructive' : ''"
                           >
                             {{ row.cells[size].available_stock }}
                           </span>
@@ -584,7 +616,7 @@ onUnmounted(() => {
               >
                 <div class="flex gap-4">
                   <div>
-                    <strong class="text-rose-500/70">0</strong>
+                    <span class="text-destructive">0</span>
                     = agotado
                   </div>
                   <div class="flex items-center">

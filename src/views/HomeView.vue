@@ -36,7 +36,7 @@ function goToLowStock() {
       <!-- Skeleton -->
       <Card
         v-if="alertsStore.isLoading"
-        class="border-border/50 w-full max-w-md gap-3 rounded-md p-0 shadow-sm lg:max-w-sm"
+        class="border-border/50 w-full max-w-md gap-3 rounded-md p-0 shadow-sm lg:max-w-xs"
       >
         <CardHeader class="px-4 pt-4">
           <CardTitle class="flex items-center gap-2">
@@ -56,12 +56,12 @@ function goToLowStock() {
       <!-- Alerts -->
       <Card
         v-else-if="alertsStore.lowStockCount > 0"
-        class="w-full max-w-md gap-3 rounded-md border-amber-500/20 p-0 shadow-sm lg:max-w-sm"
+        class="w-full max-w-md gap-3 rounded-md border-amber-500/20 p-0 shadow-sm lg:max-w-xs"
       >
         <CardHeader class="px-4 pt-4">
           <CardTitle class="flex items-center gap-2 text-amber-500">
-            <CircleAlert class="h-5 w-5" />
-            <span class="text-sm">Productos con stock bajo ({{ alertsStore.lowStockCount }})</span>
+            <CircleAlert class="h-4 w-4" />
+            <span class="text-[13px]">Productos con stock bajo ({{ alertsStore.lowStockCount }})</span>
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-2 px-4 pb-4">
@@ -73,7 +73,7 @@ function goToLowStock() {
             >
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <span class="truncate pr-4 text-xs font-medium">
+                  <span class="truncate pr-4 text-xs">
                     {{ item.product.name }}
                   </span>
                 </TooltipTrigger>
@@ -83,7 +83,7 @@ function goToLowStock() {
               </Tooltip>
               <Badge
                 variant="outline"
-                class="shrink-0 text-xs"
+                class="shrink-0 text-[11px]"
                 :class="
                   item.stock_available === 0
                     ? 'border-rose-500/30 bg-rose-500/10 text-rose-400'
@@ -103,17 +103,17 @@ function goToLowStock() {
           <Button
             variant="secondary"
             size="sm"
-            class="mt-2 w-full py-4 text-xs"
+            class="mt-2 w-full"
             @click="goToLowStock"
           >
-            Ver todos los productos
+            <span class="text-[13px] lg:text-xs">Ver todos los productos</span>
           </Button>
         </CardContent>
       </Card>
       <Card v-else class="w-full max-w-md rounded-md p-0 shadow-sm lg:max-w-sm">
-        <CardContent class="flex items-center gap-2 p-4">
-          <CheckCircle2 class="h-5 w-5" />
-          <p class="font-medium">Todo el inventario está en niveles óptimos</p>
+        <CardContent class="flex items-start gap-2 p-4">
+          <CheckCircle2 class="h-5 w-5 lg:h-4 lg:w-4" />
+          <p class="text-sm lg:text-xs font-medium">Todo el inventario está en niveles óptimos</p>
         </CardContent>
       </Card>
     </div>

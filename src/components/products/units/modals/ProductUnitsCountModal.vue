@@ -85,7 +85,7 @@ const description = computed(() => {
   }
 
   if (step.value === 'confirm') {
-    return 'Revisa las unidades que se marcarán como no disponibles.'
+    return 'Revisa las unidades que se marcarán como faltantes (no disponibles).'
   }
 
   return 'Las unidades disponibles están todas presentes.'
@@ -148,13 +148,13 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
     <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
       <DialogHeader class="border-border/60 gap-0 px-6 pt-6 pb-3">
         <!-- Title -->
-        <DialogTitle>{{ title }}</DialogTitle>
+        <DialogTitle class="text-sm">{{ title }}</DialogTitle>
         <!-- Product name -->
         <TooltipProvider v-if="product" :delay-duration="200">
           <Tooltip>
             <TooltipTrigger as-child>
               <div
-                class="my-1.5 line-clamp-2 w-full cursor-default text-left text-sm font-medium wrap-break-word"
+                class="line-clamp-2 w-full cursor-default pt-1 pb-2.5 text-left text-xs font-medium wrap-break-word"
               >
                 {{ product.name }}
               </div>
@@ -165,12 +165,12 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           </Tooltip>
         </TooltipProvider>
         <!-- Description -->
-        <DialogDescription>{{ description }}</DialogDescription>
+        <DialogDescription class="text-xs">{{ description }}</DialogDescription>
       </DialogHeader>
       <!-- Step 1: Checking -->
       <template v-if="step === 'checking'">
         <div class="flex flex-col gap-3 px-6">
-          <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center justify-between text-xs">
             <span class="text-muted-foreground">Encontradas</span>
             <span class="font-semibold">{{ foundCount }} de {{ total }}</span>
           </div>
@@ -178,7 +178,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           <div
             role="group"
             aria-label="Lista de unidades disponibles"
-            class="border-border/60 max-h-[45vh] overflow-y-auto rounded-md border"
+            class="border-border/60 max-h-48 overflow-y-auto rounded-md border"
           >
             <button
               v-for="unit in frozenUnits"
@@ -192,19 +192,17 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
                 tabindex="-1"
                 class="pointer-events-none"
               />
-              <span class="font-mono text-sm font-medium">{{ unit.id.slice(0, 8) }}</span>
+              <span class="font-mono text-xs font-medium">{{ unit.id.slice(0, 8) }}</span>
               <span class="text-muted-foreground ml-auto text-xs">
                 Ingresó {{ formatDate(unit.created_at) }}
               </span>
             </button>
           </div>
           <!-- Hint -->
-          <div class="text-muted-foreground flex items-start gap-2 text-xs">
+          <div class="text-muted-foreground flex flex-col items-start gap-2 text-xs">
             <p>
-              ¿Encontraste una unidad no registrada? Usa
-              <strong class="font-medium">Agregar unidades</strong>
-              con motivo
-              <em>Ajuste por conteo.</em>
+              ¿La unidad nunca se registró? Agrégala con "Ajuste por conteo". Si ya estaba
+              registrada, reactívala desde la tabla.
             </p>
           </div>
         </div>
@@ -212,41 +210,42 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
         <div
           class="border-border/60 mt-4 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end"
         >
-          <Button type="button" variant="outline" @click="handleClose">Cancelar</Button>
-          <Button type="button" @click="handleFinalize">Finalizar conteo</Button>
+          <Button type="button" size="sm" variant="outline" @click="handleClose">
+            <span class="text-xs">Cancelar</span>
+          </Button>
+          <Button type="button" size="sm" @click="handleFinalize">
+            <span class="text-xs">Finalizar conteo</span>
+          </Button>
         </div>
       </template>
       <!-- Step 2: Confirm -->
       <template v-else-if="step === 'confirm'">
-        <div class="flex flex-col gap-4 px-6">
+        <div class="flex flex-col gap-2 px-6">
           <!-- Error message -->
           <Alert v-if="errorMessage" variant="destructive">
-            <AlertDescription>{{ errorMessage }}</AlertDescription>
+            <AlertDescription class="text-xs">{{ errorMessage }}</AlertDescription>
           </Alert>
           <!-- Info -->
-          <div class="grid grid-cols-3 gap-2 rounded-md border p-3 text-center text-sm">
+          <div class="grid grid-cols-3 gap-2 rounded-md border p-3 text-center">
             <div class="flex flex-col">
               <span class="text-muted-foreground text-xs">Esperadas</span>
-              <span class="text-base font-semibold">{{ total }}</span>
+              <span class="text-sm font-semibold">{{ total }}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-muted-foreground text-xs">Encontradas</span>
-              <span class="text-base font-semibold text-emerald-500">{{ foundCount }}</span>
+              <span class="text-sm font-semibold text-emerald-500">{{ foundCount }}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-muted-foreground text-xs">Faltan</span>
-              <span class="text-destructive text-base font-semibold">
+              <span class="text-destructive text-sm font-semibold">
                 {{ missingUnits.length }}
               </span>
             </div>
           </div>
+          <!-- Missing unit list -->
           <div>
-            <p class="mb-1.5 text-sm font-medium">
-              Se marcarán como
-              <span class="text-destructive">No disponible</span>
-              :
-            </p>
-            <div class="border-border/60 max-h-40 overflow-y-auto rounded-md border p-2">
+            <p class="mb-1.5 text-xs font-medium">Unidades faltantes:</p>
+            <div class="border-border/60 max-h-28 overflow-y-auto rounded-md border p-2">
               <ul class="flex flex-col gap-1">
                 <li v-for="unit in missingUnits" :key="unit.id" class="font-mono text-xs">
                   <div class="flex gap-1.5">
@@ -259,37 +258,38 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           </div>
           <!-- Note -->
           <Field>
-            <FieldLabel for="count-note">Nota (opcional)</FieldLabel>
+            <FieldLabel for="count-note" class="text-xs">Nota (opcional)</FieldLabel>
             <Textarea
               id="count-note"
               v-model="note"
               :maxlength="NOTE_MAX"
               placeholder="Conteo de fin de mes"
               rows="2"
-              class="text-sm"
+              class="text-xs!"
             />
           </Field>
           <!-- Hint -->
           <p class="text-muted-foreground text-xs">
-            Al confirmar,
-            {{
-              missingUnits.length === 1
-                ? 'esta unidad dejará de estar disponible.'
-                : 'estas unidades dejarán de estar disponibles.'
-            }}
-            Quedará registrado en el historial de cada una.
+            Las faltantes quedarán como "No disponible". Si las encuentras después, reactívalas para
+            conservar su QR.
           </p>
         </div>
         <!-- Action buttons -->
         <div
           class="border-border/60 mt-4 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end"
         >
-          <Button type="button" variant="outline" :disabled="isSubmitting" @click="handleBack">
-            Volver
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            :disabled="isSubmitting"
+            @click="handleBack"
+          >
+            <span class="text-xs">Volver</span>
           </Button>
-          <Button type="button" :disabled="isSubmitting" @click="handleConfirm">
+          <Button type="button" size="sm" :disabled="isSubmitting" @click="handleConfirm">
             <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-            {{ isSubmitting ? 'Confirmando…' : 'Confirmar ajuste' }}
+            <span class="text-xs">{{ isSubmitting ? 'Confirmando…' : 'Confirmar ajuste' }}</span>
           </Button>
         </div>
       </template>
@@ -320,7 +320,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
   <!-- Mobile view -->
   <Drawer v-else v-model:open="openModel">
     <DrawerContent class="max-h-[90vh]">
-      <DrawerHeader class="border-border/60 gap-0 px-6 pb-2 text-left">
+      <DrawerHeader class="border-border/60 gap-0 px-6 pb-2.5 text-left">
         <!-- Title -->
         <DrawerTitle>{{ title }}</DrawerTitle>
         <!-- Product name -->
@@ -328,7 +328,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           <Tooltip>
             <TooltipTrigger as-child>
               <div
-                class="mb-1.5 line-clamp-2 w-full cursor-default text-left text-sm font-medium wrap-break-word"
+                class="mb-2.5 line-clamp-2 w-full cursor-default text-left text-sm font-medium wrap-break-word"
               >
                 {{ product.name }}
               </div>
@@ -353,7 +353,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
             <div
               role="group"
               aria-label="Lista de unidades disponibles"
-              class="border-border/60 max-h-[50vh] overflow-y-auto rounded-md border"
+              class="border-border/60 max-h-52 overflow-y-auto rounded-md border"
             >
               <button
                 v-for="unit in frozenUnits"
@@ -376,10 +376,8 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
             <!-- Hint -->
             <div class="text-muted-foreground flex items-start gap-2 text-xs">
               <p>
-                ¿Encontraste una unidad no registrada? Usa
-                <strong class="font-medium">Agregar unidades</strong>
-                con motivo
-                <em>Ajuste por conteo.</em>
+                ¿La unidad nunca se registró? Agrégala con "Ajuste por conteo". Si ya estaba
+                registrada, reactívala desde la tabla.
               </p>
             </div>
           </div>
@@ -414,12 +412,8 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
               </div>
             </div>
             <div>
-              <p class="mb-1.5 text-sm font-medium">
-                Se marcarán como
-                <span class="text-destructive">No disponible</span>
-                :
-              </p>
-              <div class="border-border/60 max-h-40 overflow-y-auto rounded-md border p-2">
+              <p class="mb-1.5 text-sm font-medium">Unidades faltantes:</p>
+              <div class="border-border/60 max-h-28 overflow-y-auto rounded-md border p-2">
                 <ul class="flex flex-col gap-1">
                   <li v-for="unit in missingUnits" :key="unit.id" class="font-mono text-xs">
                     <div class="flex gap-1.5">
@@ -444,13 +438,8 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
             </Field>
             <!-- Hint -->
             <p class="text-muted-foreground text-xs">
-              Al confirmar,
-              {{
-                missingUnits.length === 1
-                  ? 'esta unidad dejará de estar disponible.'
-                  : 'estas unidades dejarán de estar disponibles.'
-              }}
-              Quedará registrado en el historial de cada una.
+              Las faltantes quedarán como "No disponible". Si las encuentras después, reactívalas
+              para conservar su QR.
             </p>
           </div>
           <!-- Action buttons -->

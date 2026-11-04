@@ -51,26 +51,28 @@ function handlePrint() {
   <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
     <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-xl">
-      <DialogHeader class="border-border/60 border-b px-6 pt-6 pb-4">
+      <DialogHeader class="border-border/60 gap-0 border-b px-5 pt-4 pb-3">
         <!-- Title -->
-        <DialogTitle class="flex items-center gap-2">
-          <CheckCircle2 class="h-5 w-5 shrink-0 text-emerald-500" />
+        <DialogTitle class="flex items-center gap-2 text-sm">
+          <CheckCircle2 class="h-4 w-4 shrink-0 text-emerald-400" />
           <span>{{ title }}</span>
         </DialogTitle>
         <!-- Product name -->
-        <DialogDescription v-if="productName">
+        <DialogDescription v-if="productName" class="pt-0.5 text-xs">
           {{ productName }}
         </DialogDescription>
       </DialogHeader>
       <!-- QR codes -->
-      <div class="flex flex-col gap-4 p-4 px-6">
-        <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada prenda</p>
-        <div class="max-h-[55vh] overflow-y-auto pr-1">
+      <div class="flex flex-col gap-4 px-5">
+        <p class="text-muted-foreground pt-2 text-xs">
+          Imprime las etiquetas y pégalas en cada prenda
+        </p>
+        <div class="max-h-[55vh] overflow-y-auto pr-0 pb-4">
           <div class="grid grid-cols-4 gap-3">
             <div
               v-for="id in unitIds"
               :key="id"
-              class="border-border/60 flex flex-col items-center rounded-lg border p-3"
+              class="border-border flex flex-col items-center rounded-lg border p-3 lg:rounded-md"
             >
               <QrcodeVue
                 :value="buildUnitUrl(id)"
@@ -79,9 +81,7 @@ function handlePrint() {
                 render-as="svg"
                 class="h-auto w-full"
               />
-              <p
-                class="text-muted-foreground mt-2 w-full truncate text-center font-mono text-[11px]"
-              >
+              <p class="dark:text-muted-foreground mt-2 w-full text-center font-mono text-xs">
                 {{ id.slice(0, 8) }}
               </p>
             </div>
@@ -89,11 +89,13 @@ function handlePrint() {
         </div>
       </div>
       <!-- Action buttons -->
-      <div class="border-border/60 flex shrink-0 justify-end gap-2 border-t p-4 px-6">
-        <Button variant="outline" @click="openModel = false">Cerrar</Button>
-        <Button @click="handlePrint">
+      <div class="border-border/60 flex shrink-0 justify-end gap-2 border-t p-4 px-5">
+        <Button variant="outline" size="sm" @click="openModel = false">
+          <span class="text-xs">Cerrar</span>
+        </Button>
+        <Button size="sm" @click="handlePrint">
           <Printer class="h-4 w-4" />
-          Imprimir etiquetas
+          <span class="text-xs">Imprimir etiquetas</span>
         </Button>
       </div>
     </DialogContent>
@@ -101,10 +103,10 @@ function handlePrint() {
   <!-- Mobile view -->
   <Drawer v-else v-model:open="openModel">
     <DrawerContent class="flex flex-col">
-      <DrawerHeader class="border-border/60 border-b px-6 pb-4 text-left">
+      <DrawerHeader class="border-border/60 border-b px-6 pb-3 text-left">
         <!-- Title -->
         <DrawerTitle class="flex items-center gap-2">
-          <CheckCircle2 class="h-5 w-5 shrink-0 text-emerald-500" />
+          <CheckCircle2 class="h-5 w-5 shrink-0 text-emerald-400" />
           <span>{{ title }}</span>
         </DrawerTitle>
         <!-- Product name -->
@@ -113,7 +115,7 @@ function handlePrint() {
         </DrawerDescription>
       </DrawerHeader>
       <!-- QR codes -->
-      <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-4 pb-6">
+      <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-3 pb-6">
         <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada prenda</p>
         <div class="min-h-0 flex-1 overflow-y-auto">
           <div class="grid grid-cols-2 gap-3">

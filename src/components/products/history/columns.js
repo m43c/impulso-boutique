@@ -16,33 +16,35 @@ export const columns = [
     accessorKey: 'created_at',
     header: 'Fecha',
     enableGlobalFilter: false,
-    meta: { skeletonClass: 'h-4 w-32' },
+    meta: { skeletonClass: 'h-4 w-32', cellClass: 'text-xs max-w-[80px]' },
     cell: (info) =>
       h('span', { class: 'text-xs whitespace-nowrap' }, formatDateTime(info.getValue())),
   },
   {
     accessorKey: 'product_unit_id',
     header: 'Unidad',
-    meta: { skeletonClass: 'h-4 w-14' },
+    enableSorting: false,
+    meta: { skeletonClass: 'h-4 w-14', cellClass: 'text-xs max-w-[40px]' },
     cell: (info) => {
       const unit = info.getValue()
 
       if (!unit) {
-        return h('span', { class: 'text-muted-foreground' }, 'Sin unidad')
+        return h('span', { class: 'italic text-muted-foreground text-xs' }, 'Sin unidad')
       }
 
-      return h(TooltipProvider, { delayDuration: 200 }, () =>
-        h(Tooltip, () => [
-          h(TooltipTrigger, { asChild: true }, () =>
-            h(
-              'span',
-              { class: 'truncate max-w-40 block font-mono text-[13px] font-medium cursor-default' },
-              unit.slice(0, 8),
-            ),
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed  block font-mono text-xs ',
+            },
+            unit.slice(0, 8),
           ),
-          h(TooltipContent, () => h('p', { class: 'break-all max-w-xs' }, unit)),
-        ]),
-      )
+        ),
+        h(TooltipContent, () => h('p', unit)),
+      ])
     },
   },
   {
@@ -52,14 +54,16 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-5 w-20 rounded-full',
+      cellClass: 'text-center text-xs max-w-[40px]',
+      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
     },
     cell: (info) => {
       const rawType = info.row.original.type
 
-      return h(Badge, { variant: 'outline', class: TYPE_STYLES[rawType] ?? '' }, () =>
-        formatMoveType(rawType),
+      return h(
+        Badge,
+        { variant: 'outline', class: `text-[11px] ${TYPE_STYLES[rawType]} ?? ''` },
+        () => formatMoveType(rawType),
       )
     },
   },
@@ -68,7 +72,7 @@ export const columns = [
     accessorFn: (row) => (row.reason ? formatMoveReason(row.reason) : 'Sin razón'),
     header: 'Razón',
     filterFn: filterFn_arrHas,
-    meta: { skeletonClass: 'h-4 w-20' },
+    meta: { skeletonClass: 'h-4 w-14', cellClass: 'text-xs max-w-[45px]' },
     cell: (info) =>
       info.row.original.reason ? formatMoveReason(info.row.original.reason) : 'Sin razón',
   },
@@ -77,9 +81,15 @@ export const columns = [
     accessorFn: (row) => row.profile_name || 'Sin usuario',
     header: 'Usuario',
     filterFn: filterFn_arrHas,
-    meta: { skeletonClass: 'h-4 w-40' },
+    meta: { skeletonClass: 'h-4 w-20', cellClass: 'text-xs max-w-[60px]' },
     cell: (info) => {
-      const fullName = info.getValue()
+      const row = info.row.original
+      const fullName = row.profile_name
+
+      if (!fullName) {
+        return h('span', { class: 'italic text-muted-foreground' }, 'Sin usuario')
+      }
+
       const parts = fullName.trim().split(/\s+/)
 
       const shortName = !parts.length
@@ -88,18 +98,23 @@ export const columns = [
           ? parts.join(' ')
           : `${parts[0]} ${parts.at(-2)}`
 
-      return h(TooltipProvider, { delayDuration: 200 }, () =>
-        h(Tooltip, () => [
-          h(TooltipTrigger, { asChild: true }, () =>
-            h('span', { class: 'truncate max-w-40 block cursor-default' }, shortName),
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline-block max-w-full truncate text-left border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+            },
+            shortName,
           ),
-          h(TooltipContent, () => h('p', fullName)),
-        ]),
-      )
+        ),
+        h(TooltipContent, () => h('p', { class: 'max-w-xs break-words' }, fullName)),
+      ])
     },
   },
   {
-    id: 'reference',
+    id: 'referenceNote',
     accessorFn: (row) => {
       if (row.sale_id) {
         return `Venta #${row.sale_id.slice(0, 8)}`
@@ -113,25 +128,34 @@ export const columns = [
         return row.note
       }
 
-      return 'Sin referencia / nota'
+      return 'Sin referencia/nota'
     },
-    header: 'Referencia / Nota',
-    meta: { skeletonClass: 'h-4 w-[180px]' },
+    header: 'Referencia/Nota',
+    enableSorting: false,
+    meta: { skeletonClass: 'h-4 w-30', cellClass: 'text-xs max-w-[90px]' },
     cell: (info) => {
+      const row = info.row.original
       const text = info.getValue()
 
-      return h(TooltipProvider, { delayDuration: 200 }, () =>
-        h(Tooltip, () => [
-          h(TooltipTrigger, { asChild: true }, () =>
-            h(
-              'span',
-              { class: 'text-muted-foreground truncate max-w-[180px] block cursor-default' },
-              text,
-            ),
+      const hasRefNote = !!(row.sale_id || row.return_id || row.note)
+
+      if (!hasRefNote) {
+        return h('span', { class: 'italic text-muted-foreground' }, text)
+      }
+
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline-block max-w-full truncate text-left border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+            },
+            text,
           ),
-          h(TooltipContent, () => h('p', text)),
-        ]),
-      )
+        ),
+        h(TooltipContent, () => h('p', { class: 'max-w-xs break-words' }, text)),
+      ])
     },
   },
 ]

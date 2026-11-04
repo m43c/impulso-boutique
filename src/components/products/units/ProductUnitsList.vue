@@ -39,6 +39,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
@@ -79,17 +80,17 @@ const STATUS_STYLES = {
 }
 
 const sortOptions = [
-  { label: 'Unidad: A-Z', columnId: 'code', desc: false },
-  { label: 'Unidad: Z-A', columnId: 'code', desc: true, separator: true },
-  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
-  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Estado: A-Z', columnId: 'status', desc: false },
+  { label: 'Estado: Z-A', columnId: 'status', desc: true, separator: true },
   { label: 'Origen: A-Z', columnId: 'origin', desc: false },
-  { label: 'Origen: Z-A', columnId: 'origin', desc: true },
+  { label: 'Origen: Z-A', columnId: 'origin', desc: true, separator: true },
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false },
 ]
 
 const filterableColumns = [
   { columnId: 'status', label: 'Estado', getOptionLabel: formatUnitStatus },
-  { columnId: 'origin', label: 'Origen' },
+  { columnId: 'origin', label: 'Origen', getOptionLabel: formatMoveReason },
 ]
 
 const table = useTable({
@@ -101,6 +102,7 @@ const table = useTable({
   enableMultiSort: false,
   globalFilterFn: 'includesStringNormalized',
   initialState: {
+    sorting: [{ id: 'created_at', desc: true }],
     pagination: {
       pageIndex: 0,
       pageSize: isDesktop.value ? 10 : 5,
@@ -110,7 +112,6 @@ const table = useTable({
     onViewQr: (unit) => emit('view-qr', unit),
     onRegisterExit: (unit) => emit('register-exit', unit),
     onReactivateUnit: (unit) => emit('reactivate-unit', unit),
-    // Permissions
     canRegisterExit: () => can('inventory:register-exit'),
     canReactivateUnit: () => can('inventory:reactivate-unit'),
   },
@@ -150,25 +151,51 @@ function isHighlighted(unit) {
   <TooltipProvider :delay-duration="200">
     <div class="flex h-full min-h-0 flex-1 flex-col">
       <!-- Toolbar -->
-      <div class="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
-        <!-- Search -->
-        <div class="relative w-full">
-          <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+      <div class="lg:bg-card flex shrink-0 items-center justify-between gap-2 border-b p-2">
+        <!-- Search (Desktop) -->
+        <div v-if="isDesktop" class="relative w-full">
+          <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
           <Input
             v-model="search"
             placeholder="Buscar unidad..."
-            class="pl-8 text-sm"
+            class="h-8 pl-8 text-[13px]! lg:text-xs!"
             :disabled="isLoading"
           />
         </div>
+        <!-- Search (Mobile) -->
+        <Popover v-else>
+          <PopoverTrigger as-child>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="isLoading"
+              class="shrink-0 p-2!"
+              aria-label="Buscar unidad"
+            >
+              <Search class="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent class="w-64 p-2" align="start">
+            <div class="relative">
+              <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                v-model="search"
+                placeholder="Buscar unidad..."
+                class="pl-8 text-[13px] lg:text-xs!"
+                :disabled="isLoading"
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
         <!-- Refresh button -->
         <Tooltip>
           <TooltipTrigger as-child>
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               :disabled="isLoading"
               aria-label="Actualizar unidades"
+              class="p-2!"
               @click="emit('refresh')"
             >
               <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
@@ -182,20 +209,22 @@ function isHighlighted(unit) {
         <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
         <!-- Sort Dropdown (Mobile) -->
         <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
-        <!-- Conteo físico -->
+        <!-- Physical count button -->
         <Tooltip v-if="can('inventory:count')">
           <TooltipTrigger as-child>
             <span>
               <Button
                 variant="outline"
+                size="sm"
                 :disabled="isLoading || availableUnitsCount === 0"
+                class="p-2! lg:p-2.5!"
                 :aria-label="
                   availableUnitsCount === 0 ? 'No hay unidades disponibles' : 'Conteo físico'
                 "
                 @click="emit('count-units')"
               >
                 <ClipboardCheck class="h-4 w-4" />
-                <span class="hidden md:inline">Conteo físico</span>
+                <span class="hidden text-xs md:inline">Conteo físico</span>
               </Button>
             </span>
           </TooltipTrigger>
@@ -207,20 +236,20 @@ function isHighlighted(unit) {
         <!-- Add product units button -->
         <Button
           v-if="can('inventory:register-entry')"
-          class="hidden gap-2 pb-0.5 md:flex"
           size="sm"
           :disabled="isLoading"
+          class="hidden text-xs md:flex"
           @click="emit('add-units')"
         >
           <Boxes class="h-4 w-4" />
           Agregar unidades
         </Button>
       </div>
-      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <div class="bg-background flex min-h-0 flex-1 flex-col overflow-y-auto">
         <!-- Desktop view -->
         <template v-if="isDesktop">
-          <Table>
-            <TableHeader class="bg-background/95 sticky top-0 z-10 backdrop-blur">
+          <Table class="border-separate border-spacing-0 bg-transparent">
+            <TableHeader class="sticky top-0 z-10">
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                 <TableHead
                   v-for="header in headerGroup.headers"
@@ -228,6 +257,7 @@ function isHighlighted(unit) {
                   :class="[
                     header.column.getCanSort() ? 'cursor-pointer select-none' : '',
                     header.column.columnDef.meta?.cellClass || '',
+                    'bg-card border-b backdrop-blur',
                   ]"
                   @click="header.column.getToggleSortingHandler()?.($event)"
                 >
@@ -252,9 +282,13 @@ function isHighlighted(unit) {
                   <TableCell
                     v-for="column in columns"
                     :key="column.id || column.accessorKey"
-                    :class="column.meta?.cellClass || ''"
+                    :class="[column.meta?.cellClass || '', 'border-b']"
                   >
-                    <Skeleton :class="column.meta?.skeletonClass || 'h-4 w-16'" />
+                    <div v-if="column.id === 'code'" class="flex items-center gap-3">
+                      <Skeleton class="h-10 w-10 shrink-0 rounded-sm" />
+                      <Skeleton class="h-4 w-14" />
+                    </div>
+                    <Skeleton v-else :class="column.meta?.skeletonClass || 'h-4 w-16'" />
                   </TableCell>
                 </TableRow>
               </template>
@@ -263,12 +297,15 @@ function isHighlighted(unit) {
                 <TableRow
                   v-for="row in table.getRowModel().rows"
                   :key="row.id"
-                  :class="isHighlighted(row.original) ? 'bg-zinc-500/6' : ''"
+                  :class="isHighlighted(row.original) ? 'bg-zinc-500/10' : ''"
                 >
                   <TableCell
                     v-for="cell in row.getAllCells()"
                     :key="cell.id"
-                    :class="cell.column.columnDef.meta?.cellClass || ''"
+                    :class="[
+                      cell.column.columnDef.meta?.cellClass || '',
+                      'border-b bg-transparent',
+                    ]"
                   >
                     <FlexRender :cell="cell" />
                   </TableCell>
@@ -291,7 +328,7 @@ function isHighlighted(unit) {
             class="py-0"
             :class="isHighlighted(row.original) ? 'bg-zinc-500/6' : ''"
           >
-            <CardContent class="flex gap-3 p-2">
+            <CardContent class="flex gap-4 p-4">
               <!-- QR -->
               <div
                 class="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-white p-1"
@@ -305,34 +342,34 @@ function isHighlighted(unit) {
                 />
               </div>
               <!-- Info -->
-              <div class="flex min-w-0 flex-1 flex-col gap-1.5 text-xs">
+              <div class="flex min-w-0 flex-1 flex-col gap-1 text-xs">
                 <!-- Unit -->
-                <div class="flex items-baseline gap-1">
+                <div class="flex gap-2">
                   <span class="text-muted-foreground">Unidad:</span>
-                  <span class="truncate font-mono font-medium">
+                  <span class="truncate font-mono">
                     {{ row.original.id.slice(0, 8) }}
                   </span>
                 </div>
                 <!-- Status -->
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2">
                   <span class="text-muted-foreground">Estado:</span>
                   <Badge
                     variant="outline"
-                    class="px-1.5 py-0.5 text-[11px] lg:py-0"
+                    class="text-[11px]"
                     :class="STATUS_STYLES[row.original.status] ?? ''"
                   >
                     {{ formatUnitStatus(row.original.status) }}
                   </Badge>
                 </div>
                 <!-- Entry date -->
-                <div class="flex items-baseline gap-1">
+                <div class="flex items-baseline gap-2">
                   <span class="text-muted-foreground">Ingreso:</span>
-                  <span class="font-medium">{{ formatDate(row.original.created_at) }}</span>
+                  <span>{{ formatDate(row.original.created_at) }}</span>
                 </div>
                 <!-- Origin -->
-                <div class="flex items-baseline gap-1">
+                <div class="flex items-baseline gap-2">
                   <span class="text-muted-foreground">Origen:</span>
-                  <span class="font-medium">
+                  <span>
                     {{
                       row.original.origin_reason
                         ? formatMoveReason(row.original.origin_reason)
@@ -347,7 +384,7 @@ function isHighlighted(unit) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    class="-mt-1 -mr-2 h-8 w-8 shrink-0 rounded-full"
+                    class="-mt-1 -mr-2.5 h-8 w-8 shrink-0 rounded-full"
                     :aria-label="`Opciones para unidad ${row.original.id.slice(0, 8)}`"
                   >
                     <EllipsisVertical class="h-4 w-4" />
@@ -366,7 +403,7 @@ function isHighlighted(unit) {
                     @click="emit('register-exit', row.original)"
                   >
                     <XCircle class="text-destructive h-4 w-4" />
-                    <span>Registrar salida</span>
+                    <span>Dar de baja</span>
                   </DropdownMenuItem>
                   <!-- Reactive unit -->
                   <DropdownMenuItem
@@ -375,36 +412,36 @@ function isHighlighted(unit) {
                     @click="emit('reactivate-unit', row.original)"
                   >
                     <RotateCcw class="h-4 w-4 text-emerald-500" />
-                    <span>Reactivar unidad</span>
+                    <span>Reactivar</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardContent>
           </Card>
-          <!-- Empty -->
+          <!-- Empty state (Mobile) -->
           <div
             v-if="!isLoading && !table.getRowModel().rows?.length"
             class="flex flex-1 flex-col items-center justify-center px-6 text-center"
           >
-            <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
+            <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
               <Package class="h-9 w-9" />
             </div>
             <h3 class="text-sm font-semibold">Aún no hay unidades</h3>
-            <p class="text-muted-foreground mt-1 max-w-xs text-xs">
+            <p class="text-muted-foreground max-w-xs text-xs">
               Registra la primera compra para generar QR
             </p>
           </div>
         </div>
-        <!-- Desktop empty -->
+        <!-- Empty state (Desktop) -->
         <div
           v-if="isDesktop && !isLoading && !table.getRowModel().rows?.length"
           class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
         >
-          <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
+          <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
             <Package class="h-9 w-9" />
           </div>
-          <h3 class="text-sm font-semibold">Aún no hay unidades</h3>
-          <p class="text-muted-foreground mt-1 max-w-xs text-xs">
+          <h3 class="text-[13px] font-semibold">Aún no hay unidades</h3>
+          <p class="text-muted-foreground max-w-xs text-xs">
             Registra la primera compra para generar QR
           </p>
         </div>
@@ -412,9 +449,9 @@ function isHighlighted(unit) {
       <!-- Pagination -->
       <div
         v-if="table.getRowModel().rows?.length"
-        class="flex shrink-0 items-center justify-between border-t px-3 py-2"
+        class="lg:bg-card flex shrink-0 items-center justify-between p-2"
       >
-        <p class="text-muted-foreground text-[13px]">
+        <p class="text-muted-foreground text-xs">
           Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
           {{ Math.max(table.getPageCount(), 1) }}
         </p>
@@ -423,23 +460,23 @@ function isHighlighted(unit) {
           <Button
             variant="outline"
             size="sm"
-            class="gap-0.5"
             :disabled="!table.getCanPreviousPage()"
+            class="gap-0.5"
             @click="table.previousPage()"
           >
-            <ChevronLeft class="mt-0.5 h-4 w-4 px-0 lg:mt-0" />
-            <span class="mr-0.5 pb-0.5 text-xs lg:text-sm">Anterior</span>
+            <ChevronLeft class="mt-0.5 h-4 w-4" />
+            <span class="text-xs lg:pr-1">Anterior</span>
           </Button>
           <!-- Next -->
           <Button
             variant="outline"
             size="sm"
-            class="gap-0.5"
             :disabled="!table.getCanNextPage()"
+            class="gap-0.5"
             @click="table.nextPage()"
           >
-            <span class="ml-0.5 pb-0.5 text-xs lg:text-sm">Siguiente</span>
-            <ChevronRight class="mt-0.5 h-4 w-4 px-0 lg:mt-0 lg:p-0" />
+            <span class="text-xs lg:ml-1">Siguiente</span>
+            <ChevronRight class="mt-0.5 h-4 w-4" />
           </Button>
         </div>
       </div>

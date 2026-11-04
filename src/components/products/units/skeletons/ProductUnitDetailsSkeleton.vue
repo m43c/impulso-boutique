@@ -24,32 +24,34 @@ import { Card, CardContent } from '@/components/ui/card'
           <!-- Image and details -->
           <div class="flex w-full flex-wrap items-stretch gap-4 lg:gap-5">
             <!-- Image -->
-            <Skeleton class="mx-auto aspect-5/5 w-32 shrink-0 rounded-lg lg:w-52 lg:rounded-sm" />
+            <Skeleton
+              class="mx-auto aspect-square w-32 shrink-0 rounded-lg lg:w-44 lg:rounded-sm"
+            />
             <!-- Details -->
             <div class="flex min-w-0 flex-1 flex-col justify-between">
               <div class="flex flex-col gap-3">
                 <!-- Category -->
-                <div class="flex justify-between gap-2">
+                <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-16 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-25" />
                 </div>
                 <!-- Brand -->
-                <div class="flex justify-between gap-2">
+                <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-12 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-20" />
                 </div>
                 <!-- Color -->
-                <div class="flex justify-between gap-2">
+                <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-12 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-17.5" />
                 </div>
                 <!-- Size -->
-                <div class="flex justify-between gap-2">
+                <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-10 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-12.5" />
                 </div>
                 <!-- Price -->
-                <div class="flex justify-between gap-2">
+                <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-14 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-20" />
                 </div>
@@ -57,23 +59,27 @@ import { Card, CardContent } from '@/components/ui/card'
             </div>
           </div>
           <!-- Unit info -->
-          <div class="flex flex-col gap-1.5 border-t pt-3">
+          <div class="flex flex-col gap-2 border-t pt-3">
             <!-- ID + Origin -->
-            <div class="flex flex-wrap justify-between gap-2">
+            <div class="flex justify-between gap-2">
               <div class="flex items-center gap-2">
-                <Skeleton class="h-4 w-36" />
+                <Skeleton class="h-3 w-14" />
+                <Skeleton class="h-3 w-20" />
               </div>
-              <div class="flex items-center gap-1.5">
-                <Skeleton class="h-4 w-28" />
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-3 w-12" />
+                <Skeleton class="h-3 w-16" />
               </div>
             </div>
             <!-- Dates -->
-            <div class="flex flex-wrap justify-between gap-2">
-              <div class="flex items-center gap-1.5">
-                <Skeleton class="h-4 w-28" />
+            <div class="flex justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-3 w-14" />
+                <Skeleton class="h-3 w-16" />
               </div>
-              <div class="flex items-center gap-1.5">
-                <Skeleton class="h-4 w-36" />
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-3 w-20" />
+                <Skeleton class="h-3 w-16" />
               </div>
             </div>
           </div>

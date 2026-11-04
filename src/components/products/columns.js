@@ -11,7 +11,7 @@ import {
 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +30,8 @@ export const columns = [
     accessorKey: 'name',
     header: 'Producto',
     meta: {
-      skeletonClass: 'h-8 w-80',
-      cellClass: 'w-[350px] max-w-[350px]',
+      skeletonClass: 'h-8 w-60',
+      cellClass: 'text-xs max-w-[250px]',
     },
     cell: (info) => {
       const product = info.row.original
@@ -47,16 +47,21 @@ export const columns = [
         iconClass: 'text-muted-foreground h-4 w-4',
       })
 
-      const textNode = h(TooltipProvider, { delayDuration: 200 }, () =>
-        h(Tooltip, () => [
-          h(TooltipTrigger, { asChild: true }, () =>
-            h('span', { class: 'min-w-0 truncate font-medium cursor-default' }, name),
+      const textNode = h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline-block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
+            },
+            name,
           ),
-          h(TooltipContent, () => h('p', name)),
-        ]),
-      )
+        ),
+        h(TooltipContent, () => h('p', {class: 'max-w-xs'}, name)),
+      ])
 
-      return h('div', { class: 'flex min-w-0 items-center gap-3' }, [imageNode, textNode])
+      return h('div', { class: 'flex min-w-0 items-center gap-3 w-full' }, [imageNode, textNode])
     },
   },
   {
@@ -65,17 +70,26 @@ export const columns = [
     header: 'Categoría',
     filterFn: filterFn_arrHas,
     meta: {
-      cellClass: 'max-w-24 truncate',
+      cellClass: 'text-xs max-w-[120px]',
       skeletonClass: 'h-4 w-20',
     },
-    cell: (info) =>
-      h(
-        'span',
-        {
-          title: info.row.original.category,
-        },
-        info.row.original.category,
-      ),
+    cell: (info) => {
+      const category = info.row.original.category
+
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
+            },
+            category,
+          ),
+        ),
+        h(TooltipContent, () => h('p', category)),
+      ])
+    },
   },
   {
     accessorFn: (row) => normalizeText(row.brand),
@@ -83,17 +97,26 @@ export const columns = [
     header: 'Marca',
     filterFn: filterFn_arrHas,
     meta: {
-      cellClass: 'max-w-24 truncate',
+      cellClass: 'text-xs max-w-[120px]',
       skeletonClass: 'h-4 w-20',
     },
-    cell: (info) =>
-      h(
-        'span',
-        {
-          title: info.row.original.brand,
-        },
-        info.row.original.brand || 'Sin marca',
-      ),
+    cell: (info) => {
+      const brand = info.row.original.brand || 'Sin marca'
+
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline block max-w-full text-left border-muted-foreground/50 cursor-help border-b border-dashed ',
+            },
+            brand,
+          ),
+        ),
+        h(TooltipContent, () => h('p', brand)),
+      ])
+    },
   },
   {
     accessorFn: (row) => normalizeText(row.color),
@@ -101,10 +124,26 @@ export const columns = [
     header: 'Color',
     filterFn: filterFn_arrHas,
     meta: {
-      cellClass: 'truncate',
+      cellClass: 'text-xs max-w-[120px]',
       skeletonClass: 'h-4 w-20',
     },
-    cell: (info) => info.row.original.color || 'Sin color',
+    cell: (info) => {
+      const color = info.row.original.color || 'Sin color'
+
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'inline block max-w-full text-left border-muted-foreground/50 cursor-help border-b border-dashed',
+            },
+            color,
+          ),
+        ),
+        h(TooltipContent, () => h('p', color)),
+      ])
+    },
   },
   {
     accessorFn: (row) => normalizeText(row.size),
@@ -113,8 +152,8 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-5 w-12',
+      cellClass: 'text-center text-xs max-w-[80px]',
+      skeletonClass: 'mx-auto h-4 w-12',
     },
     cell: (info) => info.row.original.size || 'Sin talla',
   },
@@ -124,8 +163,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-end',
-      cellClass: 'text-end',
-      skeletonClass: 'ml-auto h-5 w-12',
+      cellClass: 'text-end text-xs max-w-[100px]',
+      skeletonClass: 'ml-auto h-4 w-12',
     },
     cell: (info) => formatCurrency(info.getValue()),
   },
@@ -135,8 +174,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-5 w-16 rounded-full',
+      cellClass: 'text-center text-xs max-w-[110px]',
+      skeletonClass: 'mx-auto h-5 w-14 rounded-full',
     },
     cell: (info) => {
       const isActive = info.getValue()
@@ -146,8 +185,8 @@ export const columns = [
         {
           variant: 'outline',
           class: isActive
-            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-            : 'border-rose-500/30 text-rose-400 bg-rose-500/10',
+            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[11px]'
+            : 'border-rose-500/30 text-rose-400 bg-rose-500/10 text-[11px]',
         },
         () => (isActive ? 'Vigente' : 'Retirado'),
       )
@@ -160,7 +199,7 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center text-xs max-w-[70px]',
       skeletonClass: 'mx-auto h-5 w-8',
     },
     cell: (info) => {
@@ -169,42 +208,40 @@ export const columns = [
       const low = info.row.original.is_low_stock
       const empty = available === 0
 
-      return h(TooltipProvider, { delayDuration: 200 }, () =>
-        h(Tooltip, () => [
-          h(TooltipTrigger, { asChild: true }, () =>
+      return h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'span',
+            {
+              class: [
+                'inline-flex items-center gap-1 cursor-default tabular-nums',
+                empty ? 'text-rose-400' : low ? 'text-amber-400' : '',
+              ],
+            },
+            [available, low && !empty ? h(CircleAlert, { class: 'h-3.5 w-3.5' }) : null],
+          ),
+        ),
+        h(TooltipContent, () =>
+          h('div', { class: 'flex flex-col gap-0.5 text-xs' }, [
+            h('p', `Disponibles: ${available}`),
+            h('p', { class: 'text-muted-foreground' }, `Vendidos: ${s.stock_sold ?? 0}`),
+            h('p', { class: 'text-muted-foreground' }, `Devueltos: ${s.stock_returned ?? 0}`),
             h(
-              'span',
-              {
-                class: [
-                  'inline-flex items-center gap-1 cursor-default tabular-nums',
-                  empty ? 'text-rose-400' : low ? 'text-amber-400' : '',
-                ],
-              },
-              [available, low && !empty ? h(CircleAlert, { class: 'h-3.5 w-3.5' }) : null],
+              'p',
+              { class: 'text-muted-foreground' },
+              `No disponibles: ${s.stock_unavailable ?? 0}`,
             ),
-          ),
-          h(TooltipContent, () =>
-            h('div', { class: 'flex flex-col gap-0.5 text-xs' }, [
-              h('p', `Disponibles: ${available}`),
-              h('p', { class: 'text-muted-foreground' }, `Vendidos: ${s.stock_sold ?? 0}`),
-              h('p', { class: 'text-muted-foreground' }, `Devueltos: ${s.stock_returned ?? 0}`),
-              h(
-                'p',
-                { class: 'text-muted-foreground' },
-                `No disponibles: ${s.stock_unavailable ?? 0}`,
-              ),
-              low && !empty
-                ? h(
-                    'p',
-                    { class: 'text-amber-400 mt-1' },
-                    `Stock mínimo: ${info.row.original.min_stock}`,
-                  )
-                : null,
-              empty ? h('p', { class: 'text-rose-400 mt-1' }, 'Sin stock') : null,
-            ]),
-          ),
-        ]),
-      )
+            low && !empty
+              ? h(
+                  'p',
+                  { class: 'text-amber-400 mt-1' },
+                  `Stock mínimo: ${info.row.original.min_stock}`,
+                )
+              : null,
+            empty ? h('p', { class: 'text-rose-400 mt-1' }, 'Sin stock') : null,
+          ]),
+        ),
+      ])
     },
   },
   {
@@ -239,8 +276,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-4 w-24',
+      cellClass: 'text-center text-xs max-w-[80px]',
+      skeletonClass: 'mx-auto h-4 w-16',
     },
     cell: (info) => formatDate(info.getValue()),
   },
@@ -250,27 +287,21 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-4 w-24',
+      cellClass: 'text-center text-xs max-w-[100px]',
+      skeletonClass: 'mx-auto h-4 w-20',
     },
     cell: (info) => {
       const val = info.getValue()
 
       return h(Tooltip, () => [
-        h(
-          TooltipTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              'button',
-              {
-                type: 'button',
-                class: 'cursor-default',
-              },
-              formatRelativeDate(val),
-            ),
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class: 'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+            },
+            formatRelativeDate(val),
+          ),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])
@@ -282,8 +313,8 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
+      cellClass: 'text-center max-w-[50px]',
+      skeletonClass: 'mx-auto h-6 w-6 rounded-full',
     },
     cell: (info) => {
       const product = info.row.original
@@ -321,7 +352,7 @@ export const columns = [
             DropdownMenuItem,
             {
               'aria-label': `Ver detalles de ${product.name}`,
-              class: 'cursor-pointer',
+              class: 'cursor-pointer text-xs',
               onClick: () => info.table.options.meta?.onViewDetails?.(product),
             },
             () => [
@@ -337,7 +368,7 @@ export const columns = [
               DropdownMenuItem,
               {
                 'aria-label': `Crear variante de ${product.name}`,
-                class: 'cursor-pointer',
+                class: 'cursor-pointer text-xs',
                 onClick: () => info.table.options.meta?.onCreateVariant?.(product),
               },
               () => [
@@ -353,7 +384,7 @@ export const columns = [
               DropdownMenuItem,
               {
                 'aria-label': `Editar a ${product.name}`,
-                class: 'cursor-pointer',
+                class: 'cursor-pointer text-xs',
                 onClick: () => info.table.options.meta?.onEdit?.(product),
               },
               () => [
@@ -371,7 +402,7 @@ export const columns = [
               {
                 'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
                 class: [
-                  'cursor-pointer',
+                  'cursor-pointer text-xs',
                   isActive
                     ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
                     : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',

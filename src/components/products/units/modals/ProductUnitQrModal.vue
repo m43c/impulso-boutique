@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useMediaQuery } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import { Copy, Download, Printer } from '@lucide/vue'
+import { Copy, Check, Download, Printer } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -14,7 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer'
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
@@ -120,97 +126,99 @@ async function copyId() {
   <TooltipProvider :delay-duration="200">
     <!-- Desktop view -->
     <Dialog v-if="isDesktop" v-model:open="openModel">
-      <DialogContent class="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Código QR de unidad</DialogTitle>
-          <DialogDescription class="sr-only">
+      <DialogContent class="px-6 pt-4 pb-6 sm:max-w-sm">
+        <DialogHeader class="gap-1">
+          <DialogTitle class="text-sm">Código QR de unidad</DialogTitle>
+          <DialogDescription class="text-xs">
             Vista previa del código QR y detalles de la unidad
           </DialogDescription>
         </DialogHeader>
-        <!-- QR -->
-        <div v-if="unit" class="flex flex-col gap-4 pt-2">
-          <div class="border-border mx-auto rounded-lg border-2 bg-white p-2 shadow-sm">
+        <div v-if="unit" class="flex flex-col gap-4">
+          <!-- Product Name -->
+          <div class="px-2 text-center">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <h3 class="line-clamp-2 cursor-default text-[13px] leading-tight font-medium">
+                  {{ product?.name || 'Sin nombre' }}
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p class="max-w-xs text-wrap">{{ product?.name || 'Sin nombre' }}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <!-- QR code -->
+          <div class="border-border mx-auto rounded-sm border-2 bg-white p-2 shadow-sm">
             <QrcodeVue
               ref="qrRef"
               :value="buildUnitUrl(unit.id)"
-              :size="240"
+              :size="180"
               level="H"
               render-as="svg"
               background="#ffffff"
               class="block h-auto w-full"
             />
           </div>
-          <div class="bg-muted/40 flex w-full flex-col gap-2 rounded-lg p-4 text-xs">
-            <!-- Product name -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Producto:</span>
+          <!-- Info unit -->
+          <div class="my-1 grid grid-cols-2 gap-x-4 gap-y-2 rounded-sm border p-4 text-xs">
+            <!-- Unit -->
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Unidad:</span>
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <span class="max-w-50 truncate text-right font-medium">
-                    {{ product?.name || 'Sin nombre' }}
-                  </span>
+                  <button
+                    @click="copyId"
+                    class="bg-muted/80 hover:bg-muted active:bg-muted/60 group flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-xs shadow-sm transition-colors"
+                  >
+                    <span :class="{ 'text-emerald-500': copied, 'text-foreground': !copied }">
+                      {{ unit.id.slice(0, 8) }}
+                    </span>
+                    <!-- Feedback -->
+                    <Check v-if="copied" class="h-3.5 w-3.5 text-emerald-500" />
+                    <Copy v-else class="h-3.5 w-3.5" />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{{ product?.name || 'Sin nombre' }}</p>
+                  <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
-            <!-- Unit -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Unidad:</span>
-              <div class="flex items-center gap-1">
-                <!-- Chip del ID -->
-                <span
-                  class="bg-muted rounded px-1.5 py-0.5 font-mono text-xs font-medium shadow-sm"
-                >
-                  {{ unit.id.slice(0, 8) }}
-                </span>
-                <!-- Copy button -->
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <Button variant="ghost" size="icon" class="ml-1 h-6 w-6" @click="copyId">
-                      <Copy class="h-3 w-3" :class="{ 'text-emerald-500': copied }" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
             <!-- Status -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Estado:</span>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Estado:</span>
               <Badge
                 variant="outline"
-                class="px-2 pt-0 text-[10px]"
+                class="shrink-0 text-[11px]"
                 :class="STATUS_STYLES[unit.status] ?? ''"
               >
                 {{ formatUnitStatus(unit.status) }}
               </Badge>
             </div>
             <!-- Entry -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Ingreso:</span>
-              <span class="font-medium">{{ formatDate(unit.created_at) }}</span>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Ingreso:</span>
+              <span class="truncate">{{ formatDate(unit.created_at) }}</span>
             </div>
             <!-- Origin -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Origen:</span>
-              <span class="font-medium">
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Origen:</span>
+              <span
+                class="truncate"
+                :title="unit.origin_reason ? formatMoveReason(unit.origin_reason) : 'Sin origen'"
+              >
                 {{ unit.origin_reason ? formatMoveReason(unit.origin_reason) : 'Sin origen' }}
               </span>
             </div>
           </div>
           <!-- Action buttons -->
           <div class="flex w-full gap-2">
-            <Button variant="outline" class="flex-1" @click="handleReprint">
+            <Button variant="outline" size="sm" class="flex-1" @click="handleReprint">
               <Printer class="h-4 w-4" />
-              Reimprimir
+              <span class="text-xs">Reimprimir</span>
             </Button>
-            <Button class="flex-1" @click="downloadQr">
+            <Button size="sm" class="flex-1" @click="downloadQr">
               <Download class="h-4 w-4" />
-              Descargar
+              <span class="text-xs">Descargar</span>
             </Button>
           </div>
         </div>
@@ -219,81 +227,92 @@ async function copyId() {
     <!-- Mobile view -->
     <Drawer v-else v-model:open="openModel">
       <DrawerContent>
-        <DrawerHeader class="px-6">
-          <DrawerTitle class="flex">Código QR de unidad</DrawerTitle>
+        <DrawerHeader class="gap-1 px-6">
+          <DrawerTitle class="text-sm">Código QR de unidad</DrawerTitle>
+          <DrawerDescription class="text-xs">
+            Vista previa del código QR y detalles de la unidad
+          </DrawerDescription>
         </DrawerHeader>
-        <!-- QR -->
         <div v-if="unit" class="flex max-h-[80vh] flex-col gap-4 overflow-y-auto p-6 pt-2 pb-6">
+          <!-- Product name -->
+          <div class="-mt-2 px-2 text-center">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <h3 class="line-clamp-2 cursor-default text-[13px] leading-tight font-semibold">
+                  {{ product?.name || 'Sin nombre' }}
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p class="max-w-xs text-wrap">{{ product?.name || 'Sin nombre' }}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <!-- QR code -->
           <div class="border-border mx-auto rounded-lg border-2 bg-white p-2 shadow-sm">
             <QrcodeVue
               ref="qrRef"
               :value="buildUnitUrl(unit.id)"
-              :size="200"
+              :size="180"
               level="H"
               render-as="svg"
               background="#ffffff"
               class="block h-auto w-full"
             />
           </div>
-          <div class="bg-muted/40 flex w-full flex-col gap-2 rounded-lg p-4 text-xs">
-            <!-- Product name -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Producto:</span>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <span class="max-w-50 truncate text-right font-medium">
-                    {{ product?.name || 'Sin nombre' }}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{{ product?.name || 'Sin nombre' }}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
+          <!-- Info unit -->
+          <div
+            class="bg-muted/40 my-1 grid grid-cols-2 gap-x-3 gap-y-2 rounded-md border p-3 text-xs"
+          >
             <!-- Unit -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Unidad:</span>
-              <div class="flex items-center gap-1">
-                <span class="font-mono font-medium">{{ unit.id.slice(0, 8) }}</span>
-                <!-- Copy button -->
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <Button variant="ghost" size="icon" class="ml-1 h-6 w-6" @click="copyId">
-                      <Copy class="h-3 w-3" :class="{ 'text-emerald-500': copied }" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{{ copied ? '¡Copiado!' : 'Copiar ID completo' }}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Unidad:</span>
+              <button
+                @click="copyId"
+                class="bg-muted/80 hover:bg-muted active:bg-muted/60 flex cursor-pointer items-center gap-1 rounded px-1.5 py-1 font-mono text-xs shadow-sm transition-colors"
+              >
+                <span :class="{ 'text-emerald-500': copied, 'text-foreground': !copied }">
+                  {{ unit.id.slice(0, 8) }}
+                </span>
+                <Check v-if="copied" class="h-3.5 w-3.5 text-emerald-500" />
+                <Copy v-else class="h-3.5 w-3.5" />
+              </button>
             </div>
             <!-- Status -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Estado:</span>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Estado:</span>
               <Badge
                 variant="outline"
-                class="px-2 pt-0.5 text-[11px]"
+                class="shrink-0 text-[11px]"
                 :class="STATUS_STYLES[unit.status] ?? ''"
               >
                 {{ formatUnitStatus(unit.status) }}
               </Badge>
             </div>
             <!-- Entry -->
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-muted-foreground">Ingreso:</span>
-              <span class="font-medium">{{ formatDate(unit.created_at) }}</span>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Ingreso:</span>
+              <span class="truncate">{{ formatDate(unit.created_at) }}</span>
+            </div>
+            <!-- Origin -->
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-muted-foreground whitespace-nowrap">Origen:</span>
+              <span
+                class="truncate"
+                :title="unit.origin_reason ? formatMoveReason(unit.origin_reason) : 'Sin origen'"
+              >
+                {{ unit.origin_reason ? formatMoveReason(unit.origin_reason) : 'Sin origen' }}
+              </span>
             </div>
           </div>
           <!-- Action buttons -->
           <div class="flex flex-col items-center justify-between gap-2">
-            <Button variant="outline" class="w-full" @click="handleReprint">
-              <Printer class="h-4 w-4" />
-              Reimprimir
-            </Button>
             <Button class="w-full" @click="downloadQr">
               <Download class="h-4 w-4" />
-              Descargar
+              <span>Descargar</span>
+            </Button>
+            <Button variant="outline" class="w-full" @click="handleReprint">
+              <Printer class="h-4 w-4" />
+              <span>Reimprimir</span>
             </Button>
           </div>
         </div>

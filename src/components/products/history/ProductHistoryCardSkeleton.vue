@@ -7,28 +7,28 @@ import { Skeleton } from '@/components/ui/skeleton'
   <Card class="py-0">
     <CardContent class="flex flex-col gap-1.5 p-4 text-xs">
       <!-- Date -->
-      <div class="flex min-w-0 items-baseline gap-1">
-        <span class="text-muted-foreground shrink-0">Fecha:</span>
+      <div class="flex min-w-0 items-center gap-2">
+        <Skeleton class="h-3 w-10" />
         <Skeleton class="h-3.5 w-32" />
       </div>
       <!-- Unit -->
-      <div class="flex min-w-0 items-baseline gap-1">
-        <span class="text-muted-foreground shrink-0">Unidad:</span>
-        <Skeleton class="h-3.5 w-full" />
+      <div class="flex min-w-0 items-center gap-2">
+        <Skeleton class="h-3.5 w-10" />
+        <Skeleton class="h-3.5 w-14" />
       </div>
       <!-- Type -->
-      <div class="flex min-w-0 items-center gap-1.5">
-        <span class="text-muted-foreground shrink-0">Tipo:</span>
-        <Skeleton class="h-4 w-20 rounded-full" />
+      <div class="flex min-w-0 items-center gap-2">
+        <Skeleton class="h-3.5 w-8" />
+        <Skeleton class="h-4 w-12 rounded-full" />
       </div>
       <!-- User -->
-      <div class="flex min-w-0 items-baseline gap-1">
-        <span class="text-muted-foreground shrink-0">Usuario:</span>
-        <Skeleton class="h-3.5 w-full" />
+      <div class="flex min-w-0 items-center gap-2">
+        <Skeleton class="h-3.5 w-10" />
+        <Skeleton class="h-3.5 w-20" />
       </div>
-      <!-- Ref / Note -->
-      <div class="flex min-w-0 items-baseline gap-1">
-        <span class="text-muted-foreground shrink-0">Ref/Nota:</span>
+      <!-- Ref/note -->
+      <div class="flex min-w-0 items-center gap-2">
+        <Skeleton class="h-3.5 w-12" />
         <Skeleton class="h-3.5 w-full" />
       </div>
     </CardContent>

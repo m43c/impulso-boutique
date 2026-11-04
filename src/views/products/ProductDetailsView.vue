@@ -6,6 +6,7 @@ import { toast } from 'vue-sonner'
 import { Boxes, CircleAlert, Loader2 } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import ProductDetailsBody from '@/components/products/details/ProductDetailsBody.vue'
 import ProductDetailsSkeleton from '@/components/products/details/ProductDetailsSkeleton.vue'
 import ProductUnitsModal from '@/components/products/units/modals/ProductUnitsModal.vue'
@@ -147,8 +148,9 @@ function handleReactivate(unit) {
   isReactivateModalOpen.value = true
 }
 
-async function handleExitSuccess() {
-  toast.success('Unidad marcada como no disponible')
+async function handleExitSuccess({ reason }) {
+  const label = reason === 'damage' ? 'daño' : 'pérdida'
+  toast.success(`Unidad dada de baja por ${label}`)
 
   await Promise.all([
     productsStore.fetchUnitStats(product.value.id),
@@ -158,7 +160,7 @@ async function handleExitSuccess() {
 }
 
 async function handleReactivateSuccess() {
-  toast.success('Unidad reactivada')
+  toast.success('Unidad reactivada (mismo QR)')
 
   await Promise.all([
     productsStore.fetchUnitStats(product.value.id),
@@ -175,7 +177,7 @@ async function handleCountSuccess({ missing }) {
   const noun = missing === 1 ? 'unidad marcada' : 'unidades marcadas'
   const suffix = missing === 1 ? '' : 's'
 
-  toast.success(`Conteo registrado: ${missing} ${noun} como no disponible${suffix}`)
+  toast.success(`Conteo registrado: ${missing} ${noun} como faltante${suffix}`)
 
   await Promise.all([
     productsStore.fetchUnitStats(product.value.id),
@@ -197,9 +199,10 @@ watch(() => route.params.id, loadProduct)
 
 <template>
   <div class="w-full px-6 pb-6 lg:pb-0">
+    <!-- Skeletons -->
     <div
       v-if="isLoading"
-      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[470px_minmax(0,1fr)]"
+      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[400px_minmax(0,1fr)]"
     >
       <!-- Skeleton (Left column) -->
       <div class="flex w-full flex-col lg:max-h-[calc(100vh-5rem)] lg:self-start">
@@ -225,81 +228,80 @@ watch(() => route.params.id, loadProduct)
     <!-- Columns -->
     <div
       v-else-if="product"
-      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[470px_minmax(0,1fr)]"
+      class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-[400px_minmax(0,1fr)]"
     >
       <!-- Left column (Product details) -->
       <div class="flex w-full flex-col lg:max-h-[calc(100vh-5rem)] lg:self-start">
         <div
-          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-6 lg:py-4 lg:shadow-none"
+          class="bg-card flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-5 lg:py-4 lg:shadow-none"
         >
+          <!-- <div
+          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-5 lg:py-4 lg:shadow-none"
+        > -->
           <div class="w-full min-w-0 flex-1 overflow-y-auto">
             <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
           </div>
         </div>
       </div>
       <!-- Right column (Units and history) -->
-      <div class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-col lg:gap-4">
-        <!-- header -->
-        <div v-if="showTabs" class="mb-1 flex shrink-0 flex-col items-center justify-between gap-4">
-          <!-- Tabs -->
-          <div
-            class="border-border/60 inline-flex w-full rounded-md border p-0.5 lg:w-auto lg:self-start"
+      <div class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-col">
+        <!-- headers -->
+        <Tabs
+          v-model="activeTab"
+          class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-1 lg:flex-col"
+        >
+          <TabsList
+            v-if="showTabs"
+            class="border-border/60 inline-flex h-auto w-full items-center justify-start gap-0 rounded-md border bg-transparent p-0.5 lg:w-auto lg:self-start"
           >
-            <button
+            <TabsTrigger
               v-if="can('inventory:view-units')"
-              type="button"
-              class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition lg:flex-none"
-              :class="
-                activeTab === 'units'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              "
-              @click="activeTab = 'units'"
+              value="units"
+              class="text-muted-foreground hover:text-foreground data-[state=active]:text-foreground dark:data-[state=active]:bg-muted flex-1 rounded px-3 py-2 text-xs font-medium transition data-[state=active]:bg-zinc-100 data-[state=active]:shadow-none lg:flex-none lg:py-1.5"
             >
               Unidades
-            </button>
-            <button
+            </TabsTrigger>
+            <TabsTrigger
               v-if="can('inventory:view-history')"
-              type="button"
-              class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition lg:flex-none"
-              :class="
-                activeTab === 'history'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              "
-              @click="activeTab = 'history'"
+              value="history"
+              class="text-muted-foreground hover:text-foreground data-[state=active]:text-foreground dark:data-[state=active]:bg-muted flex-1 rounded px-3 py-2 text-xs font-medium transition data-[state=active]:bg-zinc-100 data-[state=active]:shadow-none lg:flex-none lg:py-1.5"
             >
               Historial
-            </button>
+            </TabsTrigger>
+          </TabsList>
+          <div
+            class="bg-card flex min-h-[50vh] flex-col overflow-hidden rounded-xl border shadow-sm lg:min-h-0 lg:flex-1 lg:rounded-md lg:shadow-none"
+          >
+            <TabsContent
+              value="units"
+              class="m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-0 focus-visible:outline-none"
+            >
+              <ProductUnitsList
+                v-if="can('inventory:view-units')"
+                :units="productsStore.productUnits"
+                :is-loading="productsStore.isFetchingUnits"
+                :highlight-ids="registeredUnitIds"
+                @add-units="openUnitsModal"
+                @view-qr="handleUnitViewQr"
+                @refresh="handleUnitsRefresh"
+                @register-exit="handleRegisterExit"
+                @reactivate-unit="handleReactivate"
+                @count-units="handleCountUnits"
+              />
+            </TabsContent>
+            <TabsContent
+              value="history"
+              class="m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-0 focus-visible:outline-none"
+            >
+              <ProductHistoryList
+                v-if="can('inventory:view-history')"
+                :history="productsStore.productHistory"
+                :is-loading="productsStore.isFetchingHistory"
+                @refresh="() => productsStore.fetchProductHistory(product.id)"
+              />
+            </TabsContent>
           </div>
-        </div>
-        <!-- Panel content -->
-        <div
-          class="bg-card lg:bg-background flex min-h-[50vh] flex-col overflow-hidden rounded-xl border shadow-sm lg:min-h-0 lg:flex-1 lg:rounded-md lg:shadow-none"
-        >
-          <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
-            <!-- Units tab -->
-            <ProductUnitsList
-              v-if="activeTab === 'units' && can('inventory:view-units')"
-              :units="productsStore.productUnits"
-              :is-loading="productsStore.isFetchingUnits"
-              :highlight-ids="registeredUnitIds"
-              @add-units="openUnitsModal"
-              @view-qr="handleUnitViewQr"
-              @refresh="handleUnitsRefresh"
-              @register-exit="handleRegisterExit"
-              @reactivate-unit="handleReactivate"
-              @count-units="handleCountUnits"
-            />
-            <!-- History tab -->
-            <ProductHistoryList
-              v-else-if="activeTab === 'history' && can('inventory:view-history')"
-              :history="productsStore.productHistory"
-              :is-loading="productsStore.isFetchingHistory"
-              @refresh="() => productsStore.fetchProductHistory(product.id)"
-            />
-          </div>
-        </div>
+        </Tabs>
       </div>
     </div>
     <!-- Register units -->

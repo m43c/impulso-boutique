@@ -15,16 +15,10 @@ import { useCamera } from '@/composables/useCamera'
 import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
 
 const props = defineProps({
-  existingImageId: {
-    type: String,
-    default: null,
-  },
+  existingImageId: { type: String, default: null },
 })
 
-const modelValue = defineModel({
-  type: File,
-  default: null,
-})
+const modelValue = defineModel({ type: File, default: null })
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 

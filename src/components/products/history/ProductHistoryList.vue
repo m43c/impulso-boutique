@@ -35,14 +35,8 @@ import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import ProductHistoryCardSkeleton from '@/components/products/history/ProductHistoryCardSkeleton.vue'
 
 const props = defineProps({
-  history: {
-    type: Array,
-    default: () => [],
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
+  history: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['refresh'])
@@ -79,6 +73,7 @@ const table = useTable({
   enableMultiSort: false,
   globalFilterFn: 'includesStringNormalized',
   initialState: {
+    sorting: [{ id: 'created_at', desc: true }],
     pagination: { pageIndex: 0, pageSize: isDesktop.value ? 10 : 5 },
   },
 })
@@ -124,20 +119,34 @@ function getReferenceText(row) {
 
   return 'Sin referencia / nota'
 }
+
+function sortName(fullName) {
+  const parts = fullName?.trim().split(/\s+/) ?? []
+
+  if (!parts.length) {
+    return 'Sin usuario'
+  }
+
+  if (parts.length <= 2) {
+    return parts.join(' ')
+  }
+
+  return `${parts[0]} ${parts.at(-2)}`
+}
 </script>
 
 <template>
   <TooltipProvider :delay-duration="200">
     <div class="flex h-full min-h-0 flex-1 flex-col">
       <!-- Toolbar -->
-      <div class="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
+      <div class="lg:bg-card flex shrink-0 items-center justify-between gap-2 border-b p-2">
         <!-- Search -->
         <div class="relative w-full">
-          <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+          <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
           <Input
             v-model="search"
             placeholder="Buscar movimiento..."
-            class="pl-8 text-sm"
+            class="h-8 pl-8 text-[13px] lg:text-xs!"
             :disabled="isLoading"
           />
         </div>
@@ -146,8 +155,8 @@ function getReferenceText(row) {
           <TooltipTrigger as-child>
             <Button
               variant="outline"
-              size="icon"
-              class="shrink-0"
+              size="sm"
+              class="shrink-0 p-2!"
               :disabled="isLoading"
               aria-label="Actualizar movimientos"
               @click="emit('refresh')"
@@ -162,11 +171,11 @@ function getReferenceText(row) {
         <!-- Sort (mobile) -->
         <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
       </div>
-      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <div class="bg-background flex min-h-0 flex-1 flex-col overflow-y-auto">
         <!-- Desktop view -->
         <template v-if="isDesktop">
-          <Table>
-            <TableHeader class="bg-background/95 sticky top-0 z-10 backdrop-blur">
+          <Table class="border-separate border-spacing-0 bg-transparent">
+            <TableHeader class="sticky top-0 z-10">
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                 <TableHead
                   v-for="header in headerGroup.headers"
@@ -174,6 +183,7 @@ function getReferenceText(row) {
                   :class="[
                     header.column.getCanSort() ? 'cursor-pointer select-none' : '',
                     header.column.columnDef.meta?.cellClass || '',
+                    'bg-card border-b backdrop-blur',
                   ]"
                   @click="header.column.getToggleSortingHandler()?.($event)"
                 >
@@ -195,7 +205,11 @@ function getReferenceText(row) {
               <!-- Skeleton -->
               <template v-if="isLoading">
                 <TableRow v-for="row in 10" :key="`sk-${row}`">
-                  <TableCell v-for="col in columns" :key="col.id || col.accessorKey">
+                  <TableCell
+                    v-for="col in columns"
+                    :key="col.id || col.accessorKey"
+                    :class="[col.meta?.cellClass || '', 'border-b bg-transparent']"
+                  >
                     <Skeleton :class="col.meta?.skeletonClass || 'h-4 w-16'" />
                   </TableCell>
                 </TableRow>
@@ -206,7 +220,10 @@ function getReferenceText(row) {
                   <TableCell
                     v-for="cell in row.getAllCells()"
                     :key="cell.id"
-                    :class="cell.column.columnDef.meta?.cellClass"
+                    :class="[
+                      cell.column.columnDef.meta?.cellClass || '',
+                      'border-b bg-transparent',
+                    ]"
                   >
                     <FlexRender :cell="cell" />
                   </TableCell>
@@ -226,86 +243,97 @@ function getReferenceText(row) {
             <Card v-for="row in table.getRowModel().rows" :key="row.id" class="py-0">
               <CardContent class="flex flex-col gap-1.5 p-4 text-xs">
                 <!-- Date -->
-                <div class="flex min-w-0 items-baseline gap-1">
+                <div class="flex min-w-0 items-center gap-2">
                   <span class="text-muted-foreground shrink-0">Fecha:</span>
-                  <span class="font-medium whitespace-nowrap">
+                  <span>
                     {{ formatDateTime(row.original.created_at) }}
                   </span>
                 </div>
                 <!-- Unit -->
-                <div class="flex min-w-0 items-baseline gap-1">
+                <div class="flex min-w-0 items-center gap-2">
                   <span class="text-muted-foreground shrink-0">Unidad:</span>
-                  <span class="min-w-0 flex-1 truncate font-mono">
-                    {{ row.original.product_unit_id || '-' }}
-                  </span>
+                  <Tooltip v-if="row.original.profile_name">
+                    <TooltipTrigger as-child>
+                      <button class="min-w-0 truncate">
+                        {{ row.original.product_unit_id.slice(0, 8) || 'Sin unidad' }}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{{ row.original.product_unit_id.slice(0, 8) || 'Sin unidad' }}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <!-- Move type -->
-                <div class="flex min-w-0 items-center gap-1.5">
+                <div class="flex min-w-0 items-center gap-2">
                   <span class="text-muted-foreground shrink-0">Tipo:</span>
                   <Badge
                     variant="outline"
-                    class="text-[11px]"
+                    class="text-[11.5px]"
                     :class="TYPE_STYLES[row.original.type] ?? ''"
                   >
                     {{ formatMoveType(row.original.type) }}
                   </Badge>
                 </div>
                 <!-- User -->
-                <div class="flex min-w-0 items-baseline gap-1">
+                <div class="flex min-w-0 items-center gap-2">
                   <span class="text-muted-foreground shrink-0">Usuario:</span>
                   <Tooltip v-if="row.original.profile_name">
                     <TooltipTrigger as-child>
-                      <span class="min-w-0 flex-1 cursor-default truncate">
-                        {{ row.original.profile_name }}
-                      </span>
+                      <button class="min-w-0 truncate">
+                        {{ sortName(row.original.profile_name) }}
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{{ row.original.profile_name }}</p>
                     </TooltipContent>
                   </Tooltip>
-                  <span v-else class="text-muted-foreground">—</span>
+                  <span v-else class="text-muted-foreground italic">Sin usuario</span>
                 </div>
                 <!-- Ref/Note -->
-                <div class="flex min-w-0 items-baseline gap-1">
+                <div class="flex min-w-0 items-baseline gap-2">
                   <span class="text-muted-foreground shrink-0">Ref/Nota:</span>
-                  <Tooltip>
+                  <Tooltip
+                    v-if="row.original.sale_id || row.original.return_id || row.original.note"
+                  >
                     <TooltipTrigger as-child>
-                      <span class="min-w-0 flex-1 cursor-default truncate">
+                      <button class="min-w-0 truncate">
                         {{ getReferenceText(row.original) }}
-                      </span>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{{ getReferenceText(row.original) }}</p>
                     </TooltipContent>
                   </Tooltip>
+                  <!-- Fallback Ref/Nota -->
+                  <span v-else class="text-muted-foreground italic">Sin ref/nota</span>
                 </div>
               </CardContent>
             </Card>
           </template>
-          <!-- Empty -->
+          <!-- Empty state (Mobile) -->
           <div
             v-if="!isLoading && !table.getRowModel().rows?.length"
             class="flex flex-1 flex-col items-center justify-center px-6 text-center"
           >
-            <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
+            <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
               <History class="h-9 w-9" />
             </div>
             <h3 class="text-sm font-semibold">Aún no hay movimientos</h3>
-            <p class="text-muted-foreground mt-1 max-w-xs text-xs">
+            <p class="text-muted-foreground max-w-xs text-xs">
               Los registros de entradas y ajustes aparecerán aquí.
             </p>
           </div>
         </div>
-        <!-- Desktop Empty -->
+        <!-- Empty state (Desktop) -->
         <div
           v-if="isDesktop && !isLoading && !table.getRowModel().rows?.length"
           class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
         >
-          <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
+          <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
             <History class="h-9 w-9" />
           </div>
-          <h3 class="text-sm font-semibold">Aún no hay movimientos</h3>
-          <p class="text-muted-foreground mt-1 max-w-xs text-xs">
+          <h3 class="text-[13px] font-semibold">Aún no hay movimientos</h3>
+          <p class="text-muted-foreground max-w-xs text-xs">
             Los registros de entradas y ajustes aparecerán aquí
           </p>
         </div>
@@ -313,9 +341,9 @@ function getReferenceText(row) {
       <!-- Pagination -->
       <div
         v-if="table.getRowModel().rows?.length"
-        class="flex shrink-0 items-center justify-between border-t px-3 py-2"
+        class="lg:bg-card flex shrink-0 items-center justify-between p-2"
       >
-        <p class="text-muted-foreground text-[13px]">
+        <p class="text-muted-foreground text-xs">
           Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
           {{ Math.max(table.getPageCount(), 1) }}
         </p>
@@ -323,22 +351,22 @@ function getReferenceText(row) {
           <Button
             variant="outline"
             size="sm"
-            class="gap-1"
+            class="gap-0.5"
             :disabled="!table.getCanPreviousPage()"
             @click="table.previousPage()"
           >
-            <ChevronLeft class="h-4 w-4" />
-            <span class="pb-0.5 text-xs lg:text-sm">Anterior</span>
+            <ChevronLeft class="mt-0.5 h-4 w-4" />
+            <span class="text-xs lg:pr-1">Anterior</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
-            class="gap-1"
+            class="gap-0.5"
             :disabled="!table.getCanNextPage()"
             @click="table.nextPage()"
           >
-            <span class="pb-0.5 text-xs lg:text-sm">Siguiente</span>
-            <ChevronRight class="h-4 w-4" />
+            <span class="text-xs lg:ml-1">Siguiente</span>
+            <ChevronRight class="mt-0.5 h-4 w-4" />
           </Button>
         </div>
       </div>

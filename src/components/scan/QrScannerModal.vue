@@ -28,10 +28,7 @@ import {
 import { useQrScanner } from '@/composables/useQrScanner'
 
 const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
+  open: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:open', 'detected'])
@@ -134,15 +131,17 @@ watch(
 <template>
   <!-- Desktop view -->
   <Dialog v-if="isDesktop" :open="openModel" @update:open="handleOpenChange">
-    <DialogContent class="sm:max-w-sm">
+    <DialogContent class="pt-4 sm:max-w-sm">
       <DialogHeader class="gap-0.5">
-        <DialogTitle>Escanear código QR</DialogTitle>
-        <DialogDescription>Apunta la cámara a la etiqueta de la unidad</DialogDescription>
+        <DialogTitle class="text-sm">Escanear código QR</DialogTitle>
+        <DialogDescription class="text-xs">
+          Apunta la cámara a la etiqueta de la unidad
+        </DialogDescription>
       </DialogHeader>
       <!-- QR scanner -->
       <div class="flex flex-col gap-3">
         <div
-          class="bg-muted/40 relative flex min-h-50 items-center justify-center overflow-hidden rounded-md"
+          class="bg-muted/40 relative mx-auto flex h-64 w-64 items-center justify-center overflow-hidden rounded-md"
         >
           <div :id="READER_ELEMENT_ID" class="qr-reader w-full" :class="{ mirrored: isMirrored }" />
           <!-- Botón de voltear -->
@@ -156,7 +155,7 @@ watch(
           </button>
           <div
             v-if="isStarting"
-            class="bg-background/80 absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm"
+            class="bg-background/80 absolute inset-0 z-10 flex items-center justify-center gap-2 text-xs"
           >
             <Loader2 class="h-5 w-5 animate-spin" />
             <span class="text-muted-foreground">Iniciando cámara…</span>
@@ -175,12 +174,12 @@ watch(
           <label for="qr-camera-desktop" class="text-muted-foreground shrink-0">Cámara:</label>
 
           <Select v-model="selectedCameraId" @update:model-value="handleRetry">
-            <SelectTrigger id="qr-camera-desktop" class="h-8 min-w-0 flex-1 text-xs">
+            <SelectTrigger id="qr-camera-desktop" class="h-7! min-w-0 flex-1 rounded-sm text-xs">
               <SelectValue placeholder="Seleccionar cámara" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="cam in cameras" :key="cam.id" :value="cam.id">
-                {{ cam.label || `Cámara ${cam.id.slice(0, 8)}` }}
+                <span class="text-xs">{{ cam.label || `Cámara ${cam.id.slice(0, 8)}` }}</span>
               </SelectItem>
             </SelectContent>
           </Select>
@@ -212,10 +211,12 @@ watch(
             <Input
               v-model="manualId"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              class="font-mono text-xs"
+              class="h-8 font-mono text-xs!"
             />
             <p v-if="manualError" class="text-destructive text-xs">{{ manualError }}</p>
-            <Button size="sm" class="w-full" @click="handleManualSubmit">Buscar unidad</Button>
+            <Button size="sm" class="w-full" @click="handleManualSubmit">
+              <span class="text-xs">Buscar unidad</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -224,14 +225,14 @@ watch(
   <!-- Mobile view -->
   <Drawer v-else :open="openModel" @update:open="handleOpenChange">
     <DrawerContent>
-      <DrawerHeader class="gap-0 px-6 pb-1 text-left">
+      <DrawerHeader class="gap-0 px-6 pb-2 text-left">
         <DrawerTitle>Escanear código QR</DrawerTitle>
         <DrawerDescription>Apunta la cámara a la etiqueta de la unidad</DrawerDescription>
       </DrawerHeader>
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6 pt-2">
         <!-- QR scanner -->
         <div
-          class="bg-muted/40 relative flex aspect-square w-full shrink-0 overflow-hidden rounded-sm border"
+          class="bg-muted/40 relative mx-auto flex aspect-square w-full max-w-70 shrink-0 overflow-hidden rounded-sm border"
         >
           <div :id="READER_ELEMENT_ID" class="qr-reader w-full" />
           <div
@@ -239,7 +240,7 @@ watch(
             class="bg-background/80 absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm"
           >
             <Loader2 class="h-5 w-5 animate-spin" />
-            <span class="text-muted-foreground">Iniciando cámara…</span>
+            <span class="text-muted-foreground text-xs">Iniciando cámara…</span>
           </div>
         </div>
         <!-- Searching... -->
@@ -292,7 +293,7 @@ watch(
             <Input
               v-model="manualId"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              class="font-mono text-xs"
+              class="font-mono lg:text-xs"
             />
             <p v-if="manualError" class="text-destructive text-xs">{{ manualError }}</p>
             <Button size="sm" class="mt-0.5 w-full" @click="handleManualSubmit">
@@ -308,6 +309,8 @@ watch(
 <style>
 .qr-reader video {
   width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
   border-radius: 0.5rem;
   transition: transform 0.3s ease;
 }

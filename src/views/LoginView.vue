@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { toast } from 'vue-sonner'
+import { useMediaQuery } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -17,6 +18,7 @@ import { getAuthErrorMessage } from '@/utils/authErrors'
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const showPassword = ref(false)
 const errorMessage = ref('')
@@ -69,25 +71,25 @@ const onSubmit = handleSubmit(async (credentials) => {
 </script>
 
 <template>
-  <div class="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+  <div class="flex min-h-svh w-full items-center justify-center p-6">
     <div class="w-full max-w-sm">
-      <Card>
-        <CardHeader class="text-xl">
-          <CardTitle>Inicia Sesión</CardTitle>
-          <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
+      <Card class="gap-4">
+        <CardHeader class="gap-0">
+          <CardTitle class="text-lg">Inicia Sesión</CardTitle>
+          <CardDescription class="lg:text-xs">Ingresa tus credenciales para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>
           <form @submit="onSubmit">
             <!-- Form fields -->
             <FieldGroup class="gap-4">
-              <!-- Errors -->
+              <!-- Error message -->
               <Alert v-if="errorMessage" variant="destructive">
-                <AlertDescription>{{ errorMessage }}</AlertDescription>
+                <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
               </Alert>
               <!-- Email -->
               <VeeField v-slot="{ componentField, errors }" name="email">
                 <Field :data-invalid="!!errors.length">
-                  <FieldLabel for="email">Correo electrónico</FieldLabel>
+                  <FieldLabel for="email" class="lg:text-xs">Correo electrónico</FieldLabel>
                   <Input
                     id="email"
                     v-bind="componentField"
@@ -95,20 +97,21 @@ const onSubmit = handleSubmit(async (credentials) => {
                     placeholder="correo@ejemplo.com"
                     autocomplete="username"
                     :aria-invalid="!!errors.length"
+                    class="text-sm! lg:text-xs!"
                   />
-                  <FieldError v-if="errors.length" :errors="[errors[0]]" />
+                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs"/>
                 </Field>
               </VeeField>
               <!-- Password -->
               <VeeField v-slot="{ componentField, errors }" name="password">
                 <Field :data-invalid="!!errors.length">
-                  <FieldLabel for="password">Contraseña</FieldLabel>
+                  <FieldLabel for="password" class="lg:text-xs">Contraseña</FieldLabel>
                   <div class="relative flex items-center">
                     <Input
                       id="password"
                       v-bind="componentField"
                       :type="showPassword ? 'text' : 'password'"
-                      class="pr-10"
+                      class="pr-10 text-sm! lg:text-xs!"
                       autocomplete="current-password"
                       :aria-invalid="!!errors.length"
                     />
@@ -123,14 +126,14 @@ const onSubmit = handleSubmit(async (credentials) => {
                       <EyeOff v-else class="h-4 w-4" />
                     </button>
                   </div>
-                  <FieldError v-if="errors.length" :errors="[errors[0]]" />
+                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs"/>
                 </Field>
               </VeeField>
-              <!-- Submit -->
+              <!-- Submit button -->
               <Field class="mt-2">
-                <Button type="submit" :disabled="isSubmitting">
+                <Button type="submit" :size="isDesktop ? 'sm' : ''" :disabled="isSubmitting">
                   <Loader2 v-if="isSubmitting" class="animate-spin" />
-                  {{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+                  <span class="lg:text-xs">{{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}</span>
                 </Button>
               </Field>
             </FieldGroup>

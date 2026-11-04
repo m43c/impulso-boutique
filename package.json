@@ -17,6 +17,7 @@
     "@vueuse/core": "^14.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cn": "^0.5.1",
     "html5-qrcode": "^2.3.8",
     "pinia": "^4.0.3",
     "qrcode.vue": "^3.11.0",

@@ -160,10 +160,10 @@ async function handleToggleStatus(user) {
     </Button>
     <!-- Dialog (desktop) -->
     <Dialog v-if="isDesktop" v-model:open="isFormOpen">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="sm:max-w-sm px-5 py-4">
         <DialogHeader>
-          <DialogTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle class="text-sm">{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DialogTitle>
+          <DialogDescription class="text-xs">
             {{
               editingUser
                 ? 'Actualiza la información del usuario'
@@ -184,7 +184,7 @@ async function handleToggleStatus(user) {
     <!-- Drawer (mobile) -->
     <Drawer v-else v-model:open="isFormOpen">
       <DrawerContent class="h-[90dvh]">
-        <DrawerHeader class="text-left">
+        <DrawerHeader class="text-left px-6 pt-2 pb-4">
           <DrawerTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DrawerTitle>
           <DrawerDescription>
             {{
@@ -194,7 +194,7 @@ async function handleToggleStatus(user) {
             }}
           </DrawerDescription>
         </DrawerHeader>
-        <div class="flex min-h-0 flex-1 flex-col px-4 pb-4">
+        <div class="flex min-h-0 flex-1 flex-col px-6 pb-6">
           <UserForm
             :user="editingUser"
             :is-self="isSelf"

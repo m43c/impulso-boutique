@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -19,29 +20,18 @@ import {
 import { getRegisterEntryErrorMessage } from '@/utils/productErrors'
 
 const props = defineProps({
-  product: {
-    type: Object,
-    default: null,
-  },
-  maxQuantity: {
-    type: Number,
-    default: 50,
-  },
+  product: { type: Object, default: null },
+  maxQuantity: { type: Number, default: 50 },
 })
 
 const emit = defineEmits(['submit', 'cancel'])
 
 const productsStore = useProductsStore()
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const reasons = [
-  {
-    value: 'purchase',
-    label: 'Compra',
-  },
-  {
-    value: 'count',
-    label: 'Ajuste por conteo',
-  },
+  { value: 'purchase', label: 'Compra' },
+  { value: 'count', label: 'Ajuste por conteo' },
 ]
 
 const NOTE_MAX = 500
@@ -85,8 +75,8 @@ const helperText = computed(() =>
 
 const notePlaceholder = computed(() =>
   values.reason === 'purchase'
-    ? 'Compra al proveedor / distribuidor'
-    : 'Prenda encontrada en estante sin registrar',
+    ? 'Compra al proveedor/distribuidor'
+    : 'Unidad encontrada en estante sin registrar',
 )
 
 const onSubmit = handleSubmit(async (formValues) => {
@@ -119,28 +109,28 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col gap-6" @submit="onSubmit">
-    <!-- Error -->
+    <!-- Error message -->
     <div v-if="errorMessage" class="px-6 pt-2">
       <Alert variant="destructive">
-        <AlertDescription>{{ errorMessage }}</AlertDescription>
+        <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
       </Alert>
     </div>
     <!-- Fiels -->
     <div class="min-h-0 flex-1 overflow-y-auto px-6">
-      <FieldGroup class="gap-4">
+      <FieldGroup class="gap-2">
         <!-- Reason -->
         <VeeField v-slot="{ value, setValue, errors }" name="reason">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel>Motivo</FieldLabel>
+            <FieldLabel class="lg:text-xs">Motivo</FieldLabel>
             <div class="border-border/60 inline-flex w-full rounded-md border p-0.5">
               <button
                 v-for="r in reasons"
                 :key="r.value"
                 type="button"
-                class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition"
+                class="flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-all lg:text-xs"
                 :class="
                   value === r.value
-                    ? 'bg-muted text-foreground'
+                    ? 'dark:bg-muted text-foreground bg-zinc-100'
                     : 'text-muted-foreground hover:text-foreground'
                 "
                 @click="setValue(r.value)"
@@ -149,7 +139,8 @@ function handleCancel() {
               </button>
             </div>
             <p v-if="value === 'count'" class="text-muted-foreground mt-1.5 text-xs">
-              Usar si se encontró una prenda sin registrar al contar el inventario
+              Solo para unidades que nunca se registraron. Si ya tenía QR, reactívala desde la
+              tabla.
             </p>
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
           </Field>
@@ -158,7 +149,7 @@ function handleCancel() {
         <VeeField v-slot="{ value, handleChange, errors }" name="quantity">
           <Field :data-invalid="!!errors.length">
             <div class="flex items-center justify-between">
-              <FieldLabel for="quantity">Cantidad</FieldLabel>
+              <FieldLabel for="quantity" class="lg:text-xs">Cantidad</FieldLabel>
               <span class="text-muted-foreground text-xs">Máximo {{ maxQuantity }}</span>
             </div>
             <NumberField
@@ -180,13 +171,13 @@ function handleCancel() {
         <!-- Note -->
         <VeeField v-slot="{ componentField, errors }" name="note">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="note">Nota (opcional)</FieldLabel>
+            <FieldLabel for="note" class="lg:text-xs">Nota (opcional)</FieldLabel>
             <Textarea
               id="note"
               v-bind="componentField"
               :placeholder="notePlaceholder"
               rows="2"
-              class="text-sm"
+              class="text-sm lg:text-xs!"
               :aria-invalid="!!errors.length"
             />
             <FieldError v-if="errors.length" :errors="[errors[0]]" />
@@ -200,10 +191,12 @@ function handleCancel() {
     <div
       class="border-border/60 flex shrink-0 flex-col-reverse gap-2 px-6 pb-6 sm:flex-row sm:justify-end"
     >
-      <Button type="button" variant="outline" @click="handleCancel">Cancelar</Button>
-      <Button type="submit" :disabled="isSubmitting">
-        <Loader2 v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin" />
-        {{ isSubmitting ? 'Registrando…' : submitLabel }}
+      <Button type="button" :size="isDesktop ? 'sm' : ''" variant="outline" @click="handleCancel">
+        <span class="lg:text-xs">Cancelar</span>
+      </Button>
+      <Button type="submit" :size="isDesktop ? 'sm' : ''" :disabled="isSubmitting">
+        <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
+        <span class="lg:text-xs">{{ isSubmitting ? 'Registrando…' : submitLabel }}</span>
       </Button>
     </div>
   </form>

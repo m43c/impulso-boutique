@@ -16,38 +16,14 @@ import {
 import { normalizeText } from '@/utils/text'
 
 const props = defineProps({
-  id: {
-    type: String,
-    default: undefined,
-  },
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  options: {
-    type: Array,
-    default: () => [],
-  },
-  placeholder: {
-    type: String,
-    default: 'Selecciona...',
-  },
-  searchPlaceholder: {
-    type: String,
-    default: 'Buscar o crear...',
-  },
-  clearable: {
-    type: Boolean,
-    default: false,
-  },
-  clearLabel: {
-    type: String,
-    default: 'Quitar selección',
-  },
-  invalid: {
-    type: Boolean,
-    default: false,
-  },
+  id: { type: String, default: undefined },
+  modelValue: { type: String, default: '' },
+  options: { type: Array, default: () => [] },
+  placeholder: { type: String, default: 'Selecciona...' },
+  searchPlaceholder: { type: String, default: 'Buscar o crear...' },
+  clearable: { type: Boolean, default: false },
+  clearLabel: { type: String, default: 'Quitar selección' },
+  invalid: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -108,7 +84,7 @@ function handleUpdate(value) {
           :aria-invalid="invalid"
           class="w-full min-w-0 justify-between font-normal"
         >
-          <span class="truncate" :class="{ 'text-muted-foreground': !modelValue }">
+          <span class="truncate lg:text-xs" :class="{ 'text-muted-foreground': !modelValue }">
             {{ modelValue || placeholder }}
           </span>
           <ChevronsUpDownIcon class="shrink-0 opacity-50" />
@@ -116,18 +92,18 @@ function handleUpdate(value) {
       </ComboboxTrigger>
     </ComboboxAnchor>
     <ComboboxList class="w-(--reka-combobox-trigger-width)">
-      <ComboboxInput v-model="search" :placeholder="searchPlaceholder" />
-      <ComboboxEmpty>Escribe para crear una opción</ComboboxEmpty>
+      <ComboboxInput v-model="search" :placeholder="searchPlaceholder" class="lg:text-xs" />
+      <ComboboxEmpty class="lg:text-xs">Escribe para crear una opción</ComboboxEmpty>
       <ComboboxGroup>
         <ComboboxItem v-for="option in filteredOptions" :key="option" :value="option">
-          {{ option }}
+          <span class="lg:text-xs">{{ option }}</span>
           <ComboboxItemIndicator>
             <CheckIcon />
           </ComboboxItemIndicator>
         </ComboboxItem>
         <ComboboxItem v-if="canCreate" :value="newValue">
           <PlusIcon />
-          Crear "{{ newValue }}"
+          <span class="lg:text-xs">Crear "{{ newValue }}"</span>
         </ComboboxItem>
         <ComboboxItem v-if="showClear" :value="CLEAR_VALUE" class="text-muted-foreground">
           <XIcon />

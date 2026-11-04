@@ -13,10 +13,7 @@ import { IMAGE_SIZES } from '@/services/cloudinary'
 import ProductImage from '@/components/products/ProductImage.vue'
 
 const props = defineProps({
-  product: {
-    type: Object,
-    required: true,
-  },
+  product: { type: Object, required: true },
   stats: {
     type: Object,
     default: () => ({
@@ -31,22 +28,20 @@ const props = defineProps({
 <template>
   <TooltipProvider :delay-duration="200">
     <!-- Desktop view -->
-    <div class="hidden flex-col gap-4 lg:flex">
-      <div class="flex flex-col gap-2">
+    <div class="hidden flex-col gap-3 lg:flex">
+      <div class="flex flex-col gap-1">
         <!-- Name -->
-        <h3 class="text-base font-semibold">
+        <p class="text-[13px] font-semibold">
           {{ product.name }}
-        </h3>
+        </p>
         <!-- Description -->
-        <p class="text-muted-foreground line-clamp-3 text-sm leading-relaxed">
+        <p class="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
           {{ product.description || 'Sin descripción' }}
         </p>
       </div>
-      <div class="flex items-start gap-5">
+      <div class="flex items-start gap-4">
         <!-- Image -->
-        <div
-          class="mx-auto aspect-5/5 w-32 shrink-0 overflow-hidden rounded-lg lg:w-52 lg:rounded-sm"
-        >
+        <div class="mx-auto aspect-square w-44 shrink-0 overflow-hidden rounded-sm">
           <ProductImage
             :public-id="product.image_public_id"
             :alt="product.name"
@@ -57,13 +52,17 @@ const props = defineProps({
           />
         </div>
         <!-- Details -->
-        <div class="flex min-w-0 flex-1 flex-col gap-3 text-sm">
+        <div class="flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-none -mt-1">
           <!-- Category -->
-          <div class="flex min-w-0 justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Categoria</span>
+          <div class="flex min-w-0 gap-2">
+            <span class="text-muted-foreground shrink-0">Categoria:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 cursor-default truncate">{{ product.category }}</button>
+                <button
+                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                >
+                  {{ product.category }}
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{{ product.category }}</p>
@@ -71,43 +70,64 @@ const props = defineProps({
             </Tooltip>
           </div>
           <!-- Brand -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Marca</span>
-            <span class="min-w-0 truncate">{{ product.brand || 'Sin marca' }}</span>
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Marca:</span>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button
+                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                >
+                  {{ product.brand || 'Sin marca' }}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ product.brand || 'Sin marca' }}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <!-- Color -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Color</span>
-            <span class="min-w-0 truncate">{{ product.color || 'Sin color' }}</span>
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Color:</span>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button
+                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                >
+                  {{ product.color || 'Sin color' }}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ product.color || 'Sin color' }}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <!-- Size -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Talla</span>
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Talla:</span>
             <span class="min-w-0 truncate">{{ product.size || 'Sin talla' }}</span>
           </div>
           <!-- Price -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Precio</span>
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Precio:</span>
             <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
           </div>
           <!-- Min stock -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Stock mín.</span>
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Stock mín.:</span>
             <span class="min-w-0 truncate">{{ product.min_stock }}</span>
           </div>
           <!-- Status -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Estado</span>
+          <div class="flex items-center gap-2">
+            <span class="text-muted-foreground shrink-0">Estado:</span>
             <Badge
               variant="outline"
-              class="shrink-0 text-xs"
               :class="
                 product.is_active
                   ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                   : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
               "
             >
-              {{ product.is_active ? 'Vigente' : 'Retirado' }}
+              <span class="text-[10px]">{{ product.is_active ? 'Vigente' : 'Retirado' }}</span>
             </Badge>
           </div>
         </div>
@@ -118,11 +138,11 @@ const props = defineProps({
         <div class="flex flex-col items-center">
           <Badge
             variant="outline"
-            class="h-10 w-10 rounded-full border-violet-500/30 bg-violet-500/10 text-sm font-semibold text-violet-400"
+            class="h-10 w-10 rounded-full border-emerald-500/30 bg-emerald-500/10 text-sm font-semibold text-emerald-400"
           >
             {{ stats.available }}
           </Badge>
-          <span class="mt-1 text-xs text-violet-500">Disponibles</span>
+          <span class="mt-1 text-xs text-emerald-500">Disponibles</span>
         </div>
         <!-- Sold -->
         <div class="flex flex-col items-center">
@@ -132,7 +152,7 @@ const props = defineProps({
           >
             {{ stats.sold }}
           </Badge>
-          <span class="mt-1 text-xs text-blue-500">Vendidos</span>
+          <span class="mt-1 text-xs text-blue-500">Vendidas</span>
         </div>
         <!-- Unavailable -->
         <div class="flex flex-col items-center">
@@ -146,14 +166,18 @@ const props = defineProps({
         </div>
       </div>
       <!-- Dates -->
-      <div class="flex justify-between gap-2 text-xs">
-        <div class="flex gap-2">
-          <span class="text-muted-foreground">Creado:</span>
-          <span>{{ formatDateTime(product.created_at) }}</span>
+      <div class="flex flex-col gap-1 text-xs">
+        <div class="flex items-center gap-1">
+          <span class="text-muted-foreground">Creado el</span>
+          <span class="text-foreground">
+            {{ formatDateTime(product.created_at).replace(',', ' a las') }}
+          </span>
         </div>
-        <div class="flex gap-2">
-          <span class="text-muted-foreground">Actualizado:</span>
-          <span>{{ formatDateTime(product.updated_at) }}</span>
+        <div class="flex items-center gap-1">
+          <span class="text-muted-foreground">Actualizado el</span>
+          <span class="text-foreground">
+            {{ formatDateTime(product.updated_at).replace(',', ' a las') }}
+          </span>
         </div>
       </div>
     </div>
@@ -167,18 +191,20 @@ const props = defineProps({
           :public-id="product.image_public_id"
           :alt="product.name"
           :size="IMAGE_SIZES.detail"
-          image-class="aspect-5/5 w-32 shrink-0 rounded-lg object-cover"
-          fallback-class="bg-muted flex justify-center h-28 shrink-0 w-28 items-center rounded-lg"
+          image-class="aspect-square w-32 shrink-0 rounded-lg object-cover"
+          fallback-class="bg-muted flex justify-center h-32 shrink-0 w-32 justify-center items-center rounded-lg"
           icon-class="text-muted-foreground h-6 w-6"
         />
         <!-- Details -->
-        <div class="flex min-w-0 flex-1 flex-col gap-2.5 text-xs">
+        <div class="flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-none -mt-1">
           <!-- Category -->
-          <div class="flex min-w-0 justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Categoría</span>
+          <div class="flex min-w-0 gap-2">
+            <span class="text-muted-foreground shrink-0">Categoría:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 cursor-default truncate">{{ product.category }}</button>
+                <button class="min-w-0 truncate">
+                  {{ product.category }}
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{{ product.category }}</p>
@@ -186,11 +212,11 @@ const props = defineProps({
             </Tooltip>
           </div>
           <!-- Brand -->
-          <div class="flex min-w-0 justify-between gap-2">
-            <span class="text-muted-foreground shrink-0">Marca</span>
+          <div class="flex min-w-0 gap-2">
+            <span class="text-muted-foreground shrink-0">Marca:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 cursor-default truncate">
+                <button class="min-w-0 truncate">
                   {{ product.brand || 'Sin marca' }}
                 </button>
               </TooltipTrigger>
@@ -200,17 +226,26 @@ const props = defineProps({
             </Tooltip>
           </div>
           <!-- Color -->
-          <div class="flex justify-between gap-2">
-            <span class="text-muted-foreground">Color:</span>
-            <span>{{ product.color || 'Sin color' }}</span>
+          <div class="flex min-w-0 gap-2">
+            <span class="text-muted-foreground shrink-0">Color:</span>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button class="min-w-0 truncate">
+                  {{ product.color || 'Sin color' }}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ product.color || 'Sin color' }}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <!-- Size -->
-          <div class="flex justify-between gap-2">
+          <div class="flex gap-2">
             <span class="text-muted-foreground">Talla:</span>
             <span>{{ product.size || 'Sin talla' }}</span>
           </div>
           <!-- Status -->
-          <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
             <span class="text-muted-foreground">Estado:</span>
             <Badge
               variant="outline"
@@ -227,18 +262,18 @@ const props = defineProps({
         </div>
       </div>
       <!-- Divisor -->
-      <div class="mb-3 border-t"></div>
+      <div class="my-1 border-t"></div>
       <!-- KPIs -->
-      <div class="grid grid-cols-3 gap-1">
+      <div class="grid grid-cols-3 gap-1 pt-3">
         <!-- Available -->
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center text-xs">
           <Badge
             variant="outline"
-            class="h-8 w-8 rounded-full border-violet-500/30 bg-violet-500/10 text-sm font-semibold text-violet-400"
+            class="h-8 w-8 rounded-full  border-emerald-500/30 bg-emerald-500/10 text-sm font-semibold text-emerald-400"
           >
             {{ stats.available }}
           </Badge>
-          <span class="mt-1 text-xs text-violet-500">Disponibles</span>
+          <span class="mt-1 text-xs text-emerald-500">Disponibles</span>
         </div>
         <!-- Sold -->
         <div class="flex flex-col items-center">
@@ -248,7 +283,7 @@ const props = defineProps({
           >
             {{ stats.sold }}
           </Badge>
-          <span class="mt-1 text-xs text-blue-500">Vendidos</span>
+          <span class="mt-1 text-xs text-blue-500">Vendidas</span>
         </div>
         <!-- Unavailable -->
         <div class="flex flex-col items-center">
@@ -289,9 +324,19 @@ const props = defineProps({
             <!-- Divisor -->
             <div class="border-t"></div>
             <!-- Date -->
-            <div class="text-muted-foreground flex flex-col gap-1 text-xs">
-              <span>Creado: {{ formatDateTime(product.created_at) }}</span>
-              <span>Actualizado: {{ formatDateTime(product.updated_at) }}</span>
+            <div class="flex flex-col gap-1 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-muted-foreground">Creado el</span>
+                <span class="text-foreground">
+                  {{ formatDateTime(product.created_at).replace(',', ' a las') }}
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-muted-foreground">Actualizado el</span>
+                <span class="text-foreground">
+                  {{ formatDateTime(product.updated_at).replace(',', ' a las') }}
+                </span>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

@@ -76,7 +76,7 @@ async function handleSubmit(formData) {
         formData.image,
         imagePublicId,
       )
-      
+
       toast.success('Variante creada', {
         action: { label: 'Ver producto', onClick: () => router.push('/products/' + newId) },
       })
@@ -183,11 +183,11 @@ async function handleToggleStatus(product) {
       <SheetContent
         v-if="can('products:create') || can('products:update')"
         :side="isDesktop ? 'right' : 'bottom'"
-        class="w-full p-6 sm:max-w-md"
+        class="w-full px-5 py-4 sm:max-w-md"
         :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
       >
         <SheetHeader class="gap-0.5 p-0 pb-0">
-          <SheetTitle>
+          <SheetTitle class="lg:text-sm">
             {{
               formMode === 'edit'
                 ? 'Editar producto'
@@ -196,7 +196,7 @@ async function handleToggleStatus(product) {
                   : 'Crear producto'
             }}
           </SheetTitle>
-          <SheetDescription>
+          <SheetDescription class="lg:text-xs">
             {{
               formMode === 'edit'
                 ? 'Actualiza la información del producto'

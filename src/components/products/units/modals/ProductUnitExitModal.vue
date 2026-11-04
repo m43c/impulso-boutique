@@ -68,7 +68,7 @@ const submitLabel = computed(() =>
 const notePlaceholder = computed(() =>
   reason.value === 'damage'
     ? 'Se manchó de tinta durante el traslado'
-    : 'No se encontró durante el conteo físico',
+    : 'Se perdió durante el traslado al depósito',
 )
 
 async function handleSubmit() {
@@ -100,33 +100,33 @@ function handleCancel() {
 </script>
 
 <template>
-  <!-- Desktop -->
+  <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
-    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-md">
+    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
       <DialogHeader class="border-border/60 px-6 pt-6">
-        <DialogTitle>Registrar salida de unidad</DialogTitle>
-        <DialogDescription v-if="unit" class="pb-2">
+        <DialogTitle class="text-sm">Registrar salida de unidad</DialogTitle>
+        <DialogDescription v-if="unit" class="pb-2 text-xs">
           Unidad {{ unit.id.slice(0, 8) }}
           <span v-if="product">- {{ product.name }}</span>
         </DialogDescription>
       </DialogHeader>
       <div class="flex flex-col gap-4 px-6">
-        <!-- Error alert -->
+        <!-- Error message -->
         <Alert v-if="errorMessage" variant="destructive">
-          <AlertDescription>{{ errorMessage }}</AlertDescription>
+          <AlertDescription class="text-sm">{{ errorMessage }}</AlertDescription>
         </Alert>
         <Field>
           <!-- Reason -->
-          <FieldLabel>Motivo</FieldLabel>
+          <FieldLabel class="text-xs">Motivo</FieldLabel>
           <div class="border-border/60 inline-flex w-full rounded-md border p-0.5">
             <button
               v-for="r in reasons"
               :key="r.value"
               type="button"
-              class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition"
+              class="flex-1 rounded-sm px-3 py-1.5 text-xs font-medium transition-all"
               :class="
                 reason === r.value
-                  ? 'bg-muted text-foreground'
+                  ? 'dark:bg-muted text-foreground bg-zinc-100'
                   : 'text-muted-foreground hover:text-foreground'
               "
               @click="reason = r.value"
@@ -137,20 +137,20 @@ function handleCancel() {
         </Field>
         <!-- Note -->
         <Field>
-          <FieldLabel for="exit-note">Nota (opcional)</FieldLabel>
+          <FieldLabel for="exit-note" class="text-xs">Nota (opcional)</FieldLabel>
           <Textarea
             id="exit-note"
             v-model="note"
             :maxlength="NOTE_MAX"
             :placeholder="notePlaceholder"
             rows="3"
-            class="text-sm"
+            class="text-xs!"
           />
         </Field>
         <!-- Info -->
         <p class="text-muted-foreground text-xs">
-          Al confirmar, la unidad dejará de estar disponible para la venta. Quedará registrado en el
-          historial.
+          La unidad saldrá del inventario de forma definitiva. Si solo está extraviada, usa el
+          conteo físico.
         </p>
       </div>
       <!-- Action buttons -->
@@ -159,20 +159,28 @@ function handleCancel() {
       >
         <Button
           type="button"
+          size="sm"
           variant="outline"
           :disabled="productsStore.isRegisteringExit"
           @click="handleCancel"
         >
-          Cancelar
+          <span class="text-xs">Cancelar</span>
         </Button>
-        <Button type="button" :disabled="productsStore.isRegisteringExit" @click="handleSubmit">
+        <Button
+          type="button"
+          size="sm"
+          :disabled="productsStore.isRegisteringExit"
+          @click="handleSubmit"
+        >
           <Loader2 v-if="productsStore.isRegisteringExit" class="h-4 w-4 animate-spin" />
-          {{ productsStore.isRegisteringExit ? 'Registrando…' : submitLabel }}
+          <span class="text-xs">
+            {{ productsStore.isRegisteringExit ? 'Registrando…' : submitLabel }}
+          </span>
         </Button>
       </div>
     </DialogContent>
   </Dialog>
-  <!-- Mobile -->
+  <!-- Mobile view -->
   <Drawer v-else v-model:open="openModel">
     <DrawerContent class="max-h-[85vh]">
       <DrawerHeader class="border-border/60 px-6 pb-2 text-left">
@@ -190,15 +198,15 @@ function handleCancel() {
         <!-- Reason -->
         <Field>
           <FieldLabel>Motivo</FieldLabel>
-          <div class="border-border/60 inline-flex w-full rounded-md border p-0.5">
+          <div class="border-border/60 inline-flex w-full rounded-sm border p-0.5">
             <button
               v-for="r in reasons"
               :key="r.value"
               type="button"
-              class="flex-1 rounded px-3 py-1.5 text-sm font-medium transition"
+              class="flex-1 rounded-sm px-3 py-1.5 text-[13px] font-medium transition-all"
               :class="
                 reason === r.value
-                  ? 'bg-muted text-foreground'
+                  ? 'text-foreground dark:bg-muted bg-zinc-100'
                   : 'text-muted-foreground hover:text-foreground'
               "
               @click="reason = r.value"
@@ -220,9 +228,10 @@ function handleCancel() {
           />
         </Field>
         <!-- Info -->
+        <!-- Info -->
         <p class="text-muted-foreground text-xs">
-          Al confirmar, la unidad dejará de estar disponible para la venta. Quedará registrado en el
-          historial.
+          La unidad saldrá del inventario de forma definitiva. Si solo está extraviada, usa el
+          conteo físico.
         </p>
         <!-- Action buttons -->
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

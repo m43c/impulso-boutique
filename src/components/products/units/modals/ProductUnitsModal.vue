@@ -18,14 +18,8 @@ import {
 import ProductUnitsForm from '@/components/products/units/ProductUnitsForm.vue'
 
 const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
-  product: {
-    type: Object,
-    default: null,
-  },
+  open: { type: Boolean, default: false },
+  product: { type: Object, default: null },
 })
 
 const emit = defineEmits(['update:open', 'submit'])
@@ -48,10 +42,10 @@ function handleSubmit(payload) {
 <template>
   <!-- Desktop -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
-    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-md">
+    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
       <DialogHeader class="border-border/60 px-6 pt-6">
-        <DialogTitle>Agregar unidades</DialogTitle>
-        <DialogDescription v-if="productName" class="pb-4">
+        <DialogTitle class="text-sm">Agregar unidades</DialogTitle>
+        <DialogDescription v-if="productName" class="pb-4 text-xs">
           {{ productName }}
         </DialogDescription>
       </DialogHeader>

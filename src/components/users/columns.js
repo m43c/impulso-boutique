@@ -19,14 +19,16 @@ export const columns = [
     accessorKey: 'full_name',
     header: 'Nombre completo',
     meta: {
-      skeletonClass: 'h-4 w-32',
+      skeletonClass: 'h-4 w-40',
+      cellClass: 'text-xs',
     },
   },
   {
     accessorKey: 'email',
     header: 'Correo electrónico',
     meta: {
-      skeletonClass: 'h-4 w-44',
+      skeletonClass: 'h-4 w-32',
+      cellClass: 'text-xs',
     },
   },
   {
@@ -36,6 +38,7 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       skeletonClass: 'h-4 w-20',
+      cellClass: 'text-xs',
     },
     cell: (info) => info.getValue(),
   },
@@ -47,8 +50,8 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
       skeletonClass: 'mx-auto h-5 w-16 rounded-full',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => {
       const isActive = info.row.original.is_active
@@ -59,8 +62,8 @@ export const columns = [
         {
           variant: 'outline',
           class: isActive
-            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-            : 'border-rose-500/30 text-rose-400 bg-rose-500/10',
+            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[11px]'
+            : 'border-rose-500/30 text-rose-400 bg-rose-500/10 text-[11px]',
         },
         () => label,
       )
@@ -72,8 +75,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-4 w-24',
+      skeletonClass: 'mx-auto h-4 w-20',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => formatDate(info.getValue()),
   },
@@ -83,27 +86,15 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
       skeletonClass: 'mx-auto h-4 w-24',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => {
       const val = info.getValue()
 
       return h(Tooltip, () => [
-        h(
-          TooltipTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              'button',
-              {
-                type: 'button',
-                class: 'cursor-default',
-              },
-              formatRelativeDate(val),
-            ),
+        h(TooltipTrigger, { asChild: true }, () =>
+          h('button', { class: 'cursor-help border-muted-foreground/50 border-b border-dashed min-w-p' }, formatRelativeDate(val)),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])
@@ -115,8 +106,8 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-6 w-6 rounded-full',
       cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
     },
     cell: (info) => {
       const user = info.row.original
@@ -151,7 +142,7 @@ export const columns = [
             DropdownMenuItem,
             {
               'aria-label': `Editar a ${user.full_name}`,
-              class: 'cursor-pointer',
+              class: 'cursor-pointer text-xs',
               onClick: () => info.table.options.meta?.onEdit?.(user),
             },
             () => [
@@ -173,8 +164,8 @@ export const columns = [
               class: [
                 'cursor-pointer',
                 isActive
-                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10 text-xs'
+                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 text-xs',
                 isSelf ? 'pointer-events-none opacity-50' : '',
               ],
               onClick: () => {

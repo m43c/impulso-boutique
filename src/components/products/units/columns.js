@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
@@ -27,16 +28,17 @@ export const columns = [
     accessorKey: 'id',
     id: 'code',
     header: 'Unidad',
+    enableSorting: false,
     meta: {
-      skeletonClass: 'h-10 w-80',
-      cellClass: 'w-[360px]',
+      skeletonClass: 'h-10 w-10',
+      cellClass: 'text-xs',
     },
     cell: (info) => {
       const id = info.getValue()
 
       const qrNode = h(
         'div',
-        { class: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white p-1' },
+        { class: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-white p-1' },
         [
           h(QrcodeVue, {
             value: buildUnitUrl(id),
@@ -48,11 +50,19 @@ export const columns = [
         ],
       )
 
-      const textNode = h(
-        'span',
-        { class: 'font-mono text-[13px] font-medium whitespace-nowrap select-all' },
-        id,
-      )
+      const textNode = h(Tooltip, () => [
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            {
+              class:
+                'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed font-mono',
+            },
+            id.slice(0, 8),
+          ),
+        ),
+        h(TooltipContent, () => h('p', id)),
+      ])
 
       return h('div', { class: 'flex items-center gap-3' }, [qrNode, textNode])
     },
@@ -61,9 +71,16 @@ export const columns = [
     accessorKey: 'status',
     header: 'Estado',
     filterFn: filterFn_arrHas,
+    enableGlobalFilter: false,
+    sortingFn: (rowA, rowB, columnId) => {
+      const a = formatUnitStatus(rowA.getValue(columnId))
+      const b = formatUnitStatus(rowB.getValue(columnId))
+
+      return a.localeCompare(b, 'es')
+    },
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
+      cellClass: 'text-center text-xs',
       skeletonClass: 'mx-auto h-5 w-20 rounded-full',
     },
     cell: (info) => {
@@ -73,7 +90,7 @@ export const columns = [
         Badge,
         {
           variant: 'outline',
-          class: STATUS_STYLES[status] ?? '',
+          class: `text-[11px] ${STATUS_STYLES[status] ?? ''}`,
         },
         () => formatUnitStatus(status),
       )
@@ -85,8 +102,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-4 w-20',
+      cellClass: 'text-center text-xs',
+      skeletonClass: 'mx-auto h-4 w-16',
     },
     cell: (info) => formatDate(info.getValue()),
   },
@@ -95,8 +112,19 @@ export const columns = [
     id: 'origin',
     header: 'Origen',
     filterFn: filterFn_arrHas,
+    enableGlobalFilter: false,
+    sortingFn: (rowA, rowB) => {
+      const reasonA = rowA.original.origin_reason
+        ? formatMoveReason(rowA.original.origin_reason)
+        : 'Sin origen'
+      const reasonB = rowB.original.origin_reason
+        ? formatMoveReason(rowB.original.origin_reason)
+        : 'Sin origen'
+      return reasonA.localeCompare(reasonB, 'es')
+    },
     meta: {
       skeletonClass: 'h-4 w-16',
+      cellClass: 'text-xs',
     },
     cell: (info) => {
       const reason = info.row.original.origin_reason
@@ -111,7 +139,7 @@ export const columns = [
     meta: {
       headerClass: 'justify-center',
       cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
+      skeletonClass: 'mx-auto h-7 w-7 rounded-full',
     },
     cell: (info) => {
       const unit = info.row.original
@@ -126,7 +154,7 @@ export const columns = [
           DropdownMenuItem,
           {
             'aria-label': `Ver QR de unidad ${unit.id.slice(0, 8)}`,
-            class: 'cursor-pointer',
+            class: 'cursor-pointer text-xs',
             onClick: () => meta.onViewQr?.(unit),
           },
           () => [h(Eye, { class: 'h-4 w-4' }), h('span', 'Ver QR')],
@@ -139,10 +167,11 @@ export const columns = [
             DropdownMenuItem,
             {
               'aria-label': `Registrar salida de unidad ${unit.id.slice(0, 8)}`,
-              class: 'cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10',
+              class:
+                'cursor-pointer text-xs text-destructive focus:text-destructive focus:bg-destructive/10',
               onClick: () => meta.onRegisterExit?.(unit),
             },
-            () => [h(XCircle, { class: 'h-4 w-4 text-destructive' }), h('span', 'Registrar salida')],
+            () => [h(XCircle, { class: 'h-4 w-4 text-destructive' }), h('span', 'Dar de baja')],
           ),
         )
       }
@@ -153,10 +182,11 @@ export const columns = [
             DropdownMenuItem,
             {
               'aria-label': `Reactivar unidad ${unit.id.slice(0, 8)}`,
-              class: 'cursor-pointer text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+              class:
+                'cursor-pointer text-xs text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
               onClick: () => meta.onReactivateUnit?.(unit),
             },
-            () => [h(RotateCcw, { class: 'h-4 w-4 text-emerald-500' }), h('span', 'Reactivar unidad')],
+            () => [h(RotateCcw, { class: 'h-4 w-4 text-emerald-500' }), h('span', 'Reactivar')],
           ),
         )
       }

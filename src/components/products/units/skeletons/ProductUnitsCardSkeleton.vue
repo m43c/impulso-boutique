@@ -5,18 +5,30 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 <template>
   <Card class="py-0">
-    <CardContent class="flex items-center gap-3 p-3">
+    <CardContent class="flex gap-4 p-4">
       <!-- QR -->
       <Skeleton class="h-20 w-20 shrink-0 rounded-md" />
       <!-- Info -->
-      <div class="flex flex-1 flex-col gap-2">
-        <Skeleton class="h-4 w-24" />
-        <Skeleton class="h-3 w-28" />
-        <Skeleton class="h-3 w-28" />
-        <Skeleton class="h-3 w-24" />
+      <div class="flex min-w-0 flex-1 flex-col gap-2 text-xs">
+        <div class="flex gap-2">
+          <Skeleton class="h-3 w-12" />
+          <Skeleton class="h-3 w-14" />
+        </div>
+        <div class="flex items-center gap-2">
+          <Skeleton class="h-3 w-10" />
+          <Skeleton class="h-4 w-16 rounded-full" />
+        </div>
+        <div class="flex gap-2">
+          <Skeleton class="h-3 w-12" />
+          <Skeleton class="h-3 w-14" />
+        </div>
+        <div class="flex gap-2">
+          <Skeleton class="h-3 w-12" />
+          <Skeleton class="h-3 w-12" />
+        </div>
       </div>
       <!-- Actions menu -->
-      <Skeleton class="h-8 w-8 shrink-0 self-start rounded-full" />
+      <Skeleton class="-mt-0.5 -mr-1 h-6 w-6 shrink-0 rounded-full" />
     </CardContent>
   </Card>
 </template>
