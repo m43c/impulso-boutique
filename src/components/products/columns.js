@@ -58,7 +58,7 @@ export const columns = [
             name,
           ),
         ),
-        h(TooltipContent, () => h('p', {class: 'max-w-xs'}, name)),
+        h(TooltipContent, () => h('p', { class: 'max-w-xs' }, name)),
       ])
 
       return h('div', { class: 'flex min-w-0 items-center gap-3 w-full' }, [imageNode, textNode])
@@ -82,7 +82,7 @@ export const columns = [
             'button',
             {
               class:
-                'inline block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
+                'inline-block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
             },
             category,
           ),
@@ -109,7 +109,7 @@ export const columns = [
             'button',
             {
               class:
-                'inline block max-w-full text-left border-muted-foreground/50 cursor-help border-b border-dashed ',
+                'inline-block max-w-full truncate text-left border-muted-foreground/50 cursor-help border-b border-dashed ',
             },
             brand,
           ),
@@ -136,7 +136,7 @@ export const columns = [
             'button',
             {
               class:
-                'inline block max-w-full text-left border-muted-foreground/50 cursor-help border-b border-dashed',
+                'inline-block max-w-full truncate text-left border-muted-foreground/50 cursor-help border-b border-dashed',
             },
             color,
           ),

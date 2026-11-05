@@ -437,11 +437,21 @@ function toggleExpand(id) {
                     </Tooltip>
                   </div>
                   <!-- Color -->
-                  <div class="flex items-center gap-2">
-                    <span class="text-muted-foreground">Color:</span>
-                    <span :class="!row.original.color ? 'text-muted-foreground italic' : ''">
-                      {{ row.original.color || 'Sin color' }}
-                    </span>
+                  <div class="flex min-w-0 items-center gap-2">
+                    <span class="text-muted-foreground shrink-0">Color:</span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button
+                          class="min-w-0 truncate border-b text-left"
+                          :class="!row.original.color ? 'text-muted-foreground italic' : ''"
+                        >
+                          {{ row.original.color || 'Sin color' }}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{{ row.original.color || 'Sin color' }}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <!-- Size -->
                   <div class="flex items-center gap-2">

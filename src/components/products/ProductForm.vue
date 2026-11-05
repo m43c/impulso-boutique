@@ -220,7 +220,7 @@ function handleCancel() {
               :model-value="value"
               :options="options.categories"
               placeholder="Sin categoría"
-              search-placeholder="Buscar o crear categoría..."
+              search-placeholder="Buscar categoría..."
               :invalid="!!errors.length"
               :disabled="isVariantMode"
               aria-required="true"
@@ -238,7 +238,7 @@ function handleCancel() {
               :model-value="value"
               :options="options.brands"
               placeholder="Sin marca"
-              search-placeholder="Buscar o crear marca..."
+              search-placeholder="Buscar marca..."
               clearable
               clear-label="Sin marca"
               :invalid="!!errors.length"
@@ -259,7 +259,7 @@ function handleCancel() {
               :model-value="value"
               :options="options.colors"
               placeholder="Sin color"
-              search-placeholder="Buscar o crear color..."
+              search-placeholder="Buscar color..."
               clearable
               clear-label="Sin color"
               :invalid="!!errors.length"
@@ -277,7 +277,7 @@ function handleCancel() {
               :model-value="value"
               :options="options.sizes"
               placeholder="Sin talla"
-              search-placeholder="Buscar o crear talla..."
+              search-placeholder="Buscar talla..."
               clearable
               clear-label="Sin talla"
               :invalid="!!errors.length"

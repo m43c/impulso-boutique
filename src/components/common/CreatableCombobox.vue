@@ -20,7 +20,7 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   options: { type: Array, default: () => [] },
   placeholder: { type: String, default: 'Selecciona...' },
-  searchPlaceholder: { type: String, default: 'Buscar o crear...' },
+  searchPlaceholder: { type: String, default: 'Buscar...' },
   clearable: { type: Boolean, default: false },
   clearLabel: { type: String, default: 'Quitar selección' },
   invalid: { type: Boolean, default: false },
@@ -93,23 +93,27 @@ function handleUpdate(value) {
     </ComboboxAnchor>
     <ComboboxList class="w-(--reka-combobox-trigger-width)">
       <ComboboxInput v-model="search" :placeholder="searchPlaceholder" class="lg:text-xs" />
-      <ComboboxEmpty class="lg:text-xs">Escribe para crear una opción</ComboboxEmpty>
-      <ComboboxGroup>
-        <ComboboxItem v-for="option in filteredOptions" :key="option" :value="option">
-          <span class="lg:text-xs">{{ option }}</span>
-          <ComboboxItemIndicator>
-            <CheckIcon />
-          </ComboboxItemIndicator>
-        </ComboboxItem>
-        <ComboboxItem v-if="canCreate" :value="newValue">
-          <PlusIcon />
-          <span class="lg:text-xs">Crear "{{ newValue }}"</span>
-        </ComboboxItem>
-        <ComboboxItem v-if="showClear" :value="CLEAR_VALUE" class="text-muted-foreground">
-          <XIcon />
-          {{ clearLabel }}
-        </ComboboxItem>
-      </ComboboxGroup>
+      <div
+        class="max-h-[min(14rem,var(--reka-combobox-content-available-height,100vh))] overflow-x-hidden overflow-y-auto md:max-h-[min(20rem,var(--reka-combobox-content-available-height,100vh))]"
+      >
+        <ComboboxEmpty class="lg:text-xs">Escribe para crear</ComboboxEmpty>
+        <ComboboxGroup>
+          <ComboboxItem v-for="option in filteredOptions" :key="option" :value="option">
+            <span class="min-w-0 truncate lg:text-xs">{{ option }}</span>
+            <ComboboxItemIndicator>
+              <CheckIcon />
+            </ComboboxItemIndicator>
+          </ComboboxItem>
+          <ComboboxItem v-if="canCreate" :value="newValue">
+            <PlusIcon class="shrink-0" />
+            <span class="min-w-0 truncate lg:text-xs">Crear "{{ newValue }}"</span>
+          </ComboboxItem>
+          <ComboboxItem v-if="showClear" :value="CLEAR_VALUE" class="text-muted-foreground">
+            <XIcon class="shrink-0" />
+            <span class="min-w-0 truncate lg:text-xs">{{ clearLabel }}</span>
+          </ComboboxItem>
+        </ComboboxGroup>
+      </div>
     </ComboboxList>
   </Combobox>
 </template>
