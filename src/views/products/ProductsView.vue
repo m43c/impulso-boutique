@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useMediaQuery } from '@vueuse/core'
@@ -76,7 +76,39 @@ function loadOptions() {
   })
 }
 
-onMounted(() => loadProducts())
+const isScrollingDown = ref(false)
+let lastScrollY = 0
+
+function handleScroll() {
+  const currentScrollY = window.scrollY
+
+  if (currentScrollY <= 0) {
+    isScrollingDown.value = false
+    lastScrollY = currentScrollY
+    return
+  }
+
+  const diff = currentScrollY - lastScrollY
+
+  if (diff > 10) {
+    isScrollingDown.value = true
+  } else if (diff < -10) {
+    isScrollingDown.value = false
+  }
+
+  if (Math.abs(diff) > 2) {
+    lastScrollY = currentScrollY
+  }
+}
+
+onMounted(() => {
+  loadProducts()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 async function handleSubmit(formData) {
   const mode = formMode.value
@@ -199,7 +231,12 @@ async function handleToggleStatus(product) {
     <Button
       v-if="!fetchError && can('products:create')"
       size="icon"
-      class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
+      :class="[
+        'fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300 md:hidden',
+        isScrollingDown
+          ? 'pointer-events-none translate-y-4 opacity-0'
+          : 'translate-y-0 opacity-100',
+      ]"
       aria-label="Agregar producto"
       :disabled="productsStore.isFetching"
       @click="handleAddProduct"

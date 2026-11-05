@@ -340,7 +340,7 @@ function sortName(fullName) {
       </div>
       <!-- Pagination -->
       <div
-        v-if="table.getRowModel().rows?.length"
+        v-if="table.getRowModel().rows?.length && table.getPageCount() > 1"
         class="lg:bg-card flex shrink-0 items-center justify-between p-2"
       >
         <p class="text-muted-foreground text-xs">

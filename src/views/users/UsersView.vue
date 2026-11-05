@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { useMediaQuery } from '@vueuse/core'
@@ -48,7 +48,39 @@ async function loadUsers() {
   }
 }
 
-onMounted(() => loadUsers())
+const isScrollingDown = ref(false)
+let lastScrollY = 0
+
+function handleScroll() {
+  const currentScrollY = window.scrollY
+
+  if (currentScrollY <= 0) {
+    isScrollingDown.value = false
+    lastScrollY = currentScrollY
+    return
+  }
+
+  const diff = currentScrollY - lastScrollY
+
+  if (diff > 10) {
+    isScrollingDown.value = true
+  } else if (diff < -10) {
+    isScrollingDown.value = false
+  }
+
+  if (Math.abs(diff) > 2) {
+    lastScrollY = currentScrollY
+  }
+}
+
+onMounted(() => {
+  loadUsers()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 async function handleSubmit(formData) {
   const isEditing = !!editingUser.value
@@ -151,7 +183,12 @@ async function handleToggleStatus(user) {
     <Button
       v-if="!fetchError"
       size="icon"
-      class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
+      :class="[
+        'fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300 md:hidden',
+        isScrollingDown
+          ? 'pointer-events-none translate-y-4 opacity-0'
+          : 'translate-y-0 opacity-100',
+      ]"
       aria-label="Agregar usuario"
       :disabled="usersStore.isFetching"
       @click="handleAddUser"
@@ -160,9 +197,11 @@ async function handleToggleStatus(user) {
     </Button>
     <!-- Dialog (desktop) -->
     <Dialog v-if="isDesktop" v-model:open="isFormOpen">
-      <DialogContent class="sm:max-w-sm px-5 py-4">
+      <DialogContent class="px-5 py-4 sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle class="text-sm">{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DialogTitle>
+          <DialogTitle class="text-sm">
+            {{ editingUser ? 'Editar usuario' : 'Crear usuario' }}
+          </DialogTitle>
           <DialogDescription class="text-xs">
             {{
               editingUser
@@ -184,7 +223,7 @@ async function handleToggleStatus(user) {
     <!-- Drawer (mobile) -->
     <Drawer v-else v-model:open="isFormOpen">
       <DrawerContent class="h-[90dvh]">
-        <DrawerHeader class="text-left px-6 pt-2 pb-4">
+        <DrawerHeader class="px-6 pt-2 pb-4 text-left">
           <DrawerTitle>{{ editingUser ? 'Editar usuario' : 'Crear usuario' }}</DrawerTitle>
           <DrawerDescription>
             {{

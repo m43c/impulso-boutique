@@ -153,7 +153,7 @@ function isHighlighted(unit) {
       <!-- Toolbar -->
       <div class="lg:bg-card flex shrink-0 items-center justify-between gap-2 border-b p-2">
         <!-- Search (Desktop) -->
-        <div v-if="isDesktop" class="relative w-full">
+        <div class="relative w-full">
           <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
           <Input
             v-model="search"
@@ -162,31 +162,6 @@ function isHighlighted(unit) {
             :disabled="isLoading"
           />
         </div>
-        <!-- Search (Mobile) -->
-        <Popover v-else>
-          <PopoverTrigger as-child>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="isLoading"
-              class="shrink-0 p-2!"
-              aria-label="Buscar unidad"
-            >
-              <Search class="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent class="w-64 p-2" align="start">
-            <div class="relative">
-              <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-              <Input
-                v-model="search"
-                placeholder="Buscar unidad..."
-                class="pl-8 text-[13px] lg:text-xs!"
-                :disabled="isLoading"
-              />
-            </div>
-          </PopoverContent>
-        </Popover>
         <!-- Refresh button -->
         <Tooltip>
           <TooltipTrigger as-child>
@@ -212,7 +187,7 @@ function isHighlighted(unit) {
         <!-- Physical count button -->
         <Tooltip v-if="can('inventory:count')">
           <TooltipTrigger as-child>
-            <span>
+            <span class="hidden md:flex">
               <Button
                 variant="outline"
                 size="sm"
@@ -315,7 +290,7 @@ function isHighlighted(unit) {
           </Table>
         </template>
         <!-- Mobile view -->
-        <div v-else class="flex min-h-0 flex-1 flex-col gap-3 p-3">
+        <div v-else class="flex min-h-0 flex-1 flex-col gap-4 p-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
             <ProductUnitsCardSkeleton v-for="card in 5" :key="`skeleton-card-${card}`" />
@@ -448,7 +423,7 @@ function isHighlighted(unit) {
       </div>
       <!-- Pagination -->
       <div
-        v-if="table.getRowModel().rows?.length"
+        v-if="table.getRowModel().rows?.length && table.getPageCount() > 1"
         class="lg:bg-card flex shrink-0 items-center justify-between p-2"
       >
         <p class="text-muted-foreground text-xs">

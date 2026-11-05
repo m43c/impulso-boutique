@@ -122,7 +122,9 @@ function sortIcon(column) {
 
 <template>
   <TooltipProvider :delay-duration="200">
-    <div class="flex min-h-0 flex-1 flex-col gap-4 lg:h-[calc(100dvh-5rem)] lg:overflow-hidden">
+    <div
+      class="flex min-h-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-5rem)] lg:overflow-hidden"
+    >
       <!-- Error message -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
         <div class="bg-destructive/10 text-destructive mb-3 rounded-full p-3">
@@ -256,7 +258,7 @@ function sortIcon(column) {
           </div>
         </div>
         <!-- Mobile view -->
-        <div v-else class="relative flex flex-col gap-4">
+        <div v-else class="relative flex flex-1 flex-col gap-4">
           <!-- Lock overlay -->
           <LoadingOverlay :show="isUpdatingStatus" text="Actualizando estado..." />
           <!-- Skeleton -->
@@ -276,7 +278,7 @@ function sortIcon(column) {
               <div class="flex justify-between">
                 <div class="flex min-w-0 flex-col">
                   <!-- Full name -->
-                  <p class="font-medium text-sm truncate">{{ row.original.full_name }}</p>
+                  <p class="truncate text-sm font-medium">{{ row.original.full_name }}</p>
                   <!-- Email -->
                   <p class="text-muted-foreground truncate text-sm">
                     {{ row.original.email }}
@@ -363,7 +365,10 @@ function sortIcon(column) {
           </Card>
         </div>
         <!-- Pagination -->
-        <div class="flex shrink-0 items-center justify-between pb-4">
+        <div
+          v-if="table.getRowModel().rows?.length && table.getPageCount() > 1"
+          class="flex shrink-0 items-center justify-between"
+        >
           <p class="text-muted-foreground text-xs">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}

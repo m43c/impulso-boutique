@@ -164,7 +164,7 @@ function toggleExpand(id) {
 <template>
   <TooltipProvider :delay-duration="200">
     <div
-      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 lg:h-[calc(100dvh-5rem)] lg:flex-none lg:overflow-hidden"
+      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-5rem)] lg:flex-none lg:overflow-hidden lg:pb-0"
     >
       <!-- Error message -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
@@ -542,7 +542,10 @@ function toggleExpand(id) {
           </Card>
         </div>
         <!-- Pagination -->
-        <div class="flex shrink-0 items-center justify-between pb-4 lg:pb-0">
+        <div
+          v-if="table.getRowModel().rows?.length && table.getPageCount() > 1"
+          class="flex shrink-0 items-center justify-between"
+        >
           <p class="text-muted-foreground text-xs">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}

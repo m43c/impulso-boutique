@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { toast } from 'vue-sonner'
-import { Boxes, CircleAlert, Loader2 } from '@lucide/vue'
+import { Boxes, ClipboardCheck, CircleAlert, Loader2 } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -186,15 +186,45 @@ async function handleCountSuccess({ missing }) {
   ])
 }
 
-onMounted(loadProduct)
+watch(() => route.params.id, loadProduct)
+
+const isScrollingDown = ref(false)
+let lastScrollY = 0
+
+function handleScroll() {
+  const currentScrollY = window.scrollY
+
+  if (currentScrollY <= 0) {
+    isScrollingDown.value = false
+    lastScrollY = currentScrollY
+    return
+  }
+
+  const diff = currentScrollY - lastScrollY
+
+  if (diff > 10) {
+    isScrollingDown.value = true
+  } else if (diff < -10) {
+    isScrollingDown.value = false
+  }
+
+  if (Math.abs(diff) > 2) {
+    lastScrollY = currentScrollY
+  }
+}
+
+onMounted(() => {
+  loadProduct()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
 
 onBeforeUnmount(() => {
   productsStore.resetUnitStats()
   productsStore.resetProductUnits()
   productsStore.resetProductHistory()
-})
 
-watch(() => route.params.id, loadProduct)
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
@@ -235,9 +265,6 @@ watch(() => route.params.id, loadProduct)
         <div
           class="bg-card flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-5 lg:py-4 lg:shadow-none"
         >
-          <!-- <div
-          class="bg-card lg:bg-background flex w-full flex-col overflow-hidden rounded-xl border p-4 shadow-sm lg:max-h-full lg:rounded-md lg:px-5 lg:py-4 lg:shadow-none"
-        > -->
           <div class="w-full min-w-0 flex-1 overflow-y-auto">
             <ProductDetailsBody :product="product" :stats="productsStore.unitStats" />
           </div>
@@ -345,16 +372,38 @@ watch(() => route.params.id, loadProduct)
       :units="availableUnitsForCount"
       @success="handleCountSuccess"
     />
-    <!-- Floating add units button -->
-    <Button
-      v-if="activeTab === 'units' && product && can('inventory:register-entry')"
-      size="icon"
-      class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg lg:hidden"
-      aria-label="Agregar unidades"
-      :disabled="productsStore.isFetchingUnits"
-      @click="openUnitsModal"
+    <!-- FABs Container -->
+    <div
+      v-if="activeTab === 'units' && product"
+      :class="[
+        'fixed right-4 bottom-6 z-50 flex flex-col items-center gap-3 transition-all duration-300 lg:hidden',
+        isScrollingDown
+          ? 'pointer-events-none translate-y-8 opacity-0'
+          : 'translate-y-0 opacity-100',
+      ]"
     >
-      <Boxes class="size-5" />
-    </Button>
+      <!-- Floating count units button -->
+      <Button
+        v-if="can('inventory:count')"
+        size="icon"
+        class="h-10 w-10 shrink-0 rounded-full border border-zinc-200 bg-zinc-100 text-zinc-900 shadow-md active:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:active:bg-zinc-700"
+        aria-label="Conteo físico"
+        :disabled="productsStore.isFetchingUnits || availableUnitsForCount.length === 0"
+        @click="handleCountUnits"
+      >
+        <ClipboardCheck class="size-4.5" />
+      </Button>
+      <!-- Floating add units button -->
+      <Button
+        v-if="can('inventory:register-entry')"
+        size="icon"
+        class="h-12 w-12 shrink-0 rounded-full shadow-lg"
+        aria-label="Agregar unidades"
+        :disabled="productsStore.isFetchingUnits"
+        @click="openUnitsModal"
+      >
+        <Boxes class="size-5" />
+      </Button>
+    </div>
   </div>
 </template>

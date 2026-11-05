@@ -32,17 +32,13 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
         <!-- Toolbar -->
         <div class="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
           <!-- Search (Desktop/moblie) -->
-          <Skeleton v-if="isDesktop" class="h-8 w-full rounded-md" />
-          <Skeleton v-else class="h-9 w-9 shrink-0 rounded-md" />
+          <Skeleton class="h-8 w-full rounded-md" />
           <!-- Update button -->
           <Skeleton class="h-8 w-8 shrink-0 rounded-md" />
           <!-- Filters (Desktop/mobile) -->
           <Skeleton class="lg:h-8 lg:w-20 h-9 w-9 shrink-0 rounded-md md:w-20" />
           <!-- Sorting (Mobile) -->
           <Skeleton v-if="!isDesktop" class="h-9 w-9 shrink-0 rounded-md" />
-          <!-- Physical count button (Desktop/mobile) -->
-          <Skeleton v-if="isDesktop" class="h-8 w-30 shrink-0 rounded-md" />
-          <Skeleton v-else class="h-9 w-9 shrink-0 rounded-md" />
           <!-- Add product unit button (Desktop) -->
           <Skeleton v-if="isDesktop" class="h-8 w-37.5 shrink-0 rounded-md" />
         </div>
