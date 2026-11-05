@@ -137,7 +137,7 @@ onUnmounted(() => {
         </div>
         <!-- Icons -->
         <TooltipProvider :delay-duration="200">
-          <div class="flex shrink-0 items-center gap-0 md:gap-1">
+          <div class="flex shrink-0 items-center gap-0">
             <!-- Scan QR code -->
             <Tooltip>
               <TooltipTrigger as-child>
@@ -148,7 +148,7 @@ onUnmounted(() => {
                   aria-label="Escanear código QR"
                   @click="openScanner"
                 >
-                  <ScanQrCode class="size-5" />
+                  <ScanQrCode class="size-4.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -159,7 +159,7 @@ onUnmounted(() => {
             <Popover>
               <PopoverTrigger as-child>
                 <Button variant="ghost" size="icon" class="relative h-8 w-8 rounded-full">
-                  <Bell class="size-5" />
+                  <Bell class="size-4.5" />
                   <Badge
                     v-if="alertsStore.lowStockCount > 0"
                     class="absolute top-0.5 right-0.5 z-10 flex h-3.5 min-w-3.5 items-center justify-center rounded-full p-0 text-[10px] leading-none"

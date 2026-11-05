@@ -39,7 +39,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
