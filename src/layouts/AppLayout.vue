@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { Bell, Moon, ScanQrCode, Sun } from '@lucide/vue'
@@ -21,6 +21,7 @@ import QrScannerModal from '@/components/scan/QrScannerModal.vue'
 import { useAlertsStore } from '@/stores/alerts'
 import { isDark, toggleTheme } from '@/composables/useTheme'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
+import { usePermissions } from '@/composables/usePermissions'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,8 +29,11 @@ const router = useRouter()
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const alertsStore = useAlertsStore()
 const { breadcrumbs } = useBreadcrumbs()
+const { can } = usePermissions()
 
 const isScannerOpen = ref(false)
+
+const canViewLowStockAlerts = computed(() => can('dashboard:view-low-stock-alerts'))
 
 function openScanner() {
   if (document.activeElement instanceof HTMLElement) {
@@ -44,13 +48,28 @@ function handleQrDetected(rawId) {
   router.push({ name: 'unit-details', params: { unitId } })
 }
 
-onMounted(() => {
-  alertsStore.fetchLowStockAlerts()
-  alertsStore.subscribeToStockChanges()
-})
+let isSubscribedToAlerts = false
+
+watch(
+  canViewLowStockAlerts,
+  (canView) => {
+    if (canView && !isSubscribedToAlerts) {
+      alertsStore.fetchLowStockAlerts()
+      alertsStore.subscribeToStockChanges()
+      isSubscribedToAlerts = true
+    } else if (!canView && isSubscribedToAlerts) {
+      alertsStore.unsubscribeFromStockChanges()
+      isSubscribedToAlerts = false
+    }
+  },
+  { immediate: true },
+)
 
 onUnmounted(() => {
-  alertsStore.unsubscribeFromStockChanges()
+  if (isSubscribedToAlerts) {
+    alertsStore.unsubscribeFromStockChanges()
+    isSubscribedToAlerts = false
+  }
 })
 </script>
 
@@ -130,7 +149,7 @@ onUnmounted(() => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <!-- Mobile view -->
+          <!-- Mobile view (title) -->
           <h1 class="min-w-0 flex-1 truncate text-sm font-semibold md:hidden">
             {{ route.meta.title }}
           </h1>
@@ -156,7 +175,7 @@ onUnmounted(() => {
               </TooltipContent>
             </Tooltip>
             <!-- Notifications -->
-            <Popover>
+            <Popover v-if="canViewLowStockAlerts">
               <PopoverTrigger as-child>
                 <Button variant="ghost" size="icon" class="relative h-8 w-8 rounded-full">
                   <Bell class="size-4.5" />
