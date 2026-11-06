@@ -34,22 +34,25 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/sidebar'
+import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
+const { can } = usePermissions()
 
 const items = [
   { title: 'Inicio', url: '/home', icon: Home },
-  { title: 'Usuarios', url: '/users', icon: Users, roles: ['admin'] },
-  { title: 'Productos', url: '/products', icon: Package, roles: ['admin', 'advisor', 'cashier'] },
-  { title: 'Movimientos', url: '/moves', icon: ArrowLeftRight, roles: ['admin'] },
+  { title: 'Usuarios', url: '/users', icon: Users, permission: 'users:view' },
+  { title: 'Productos', url: '/products', icon: Package, permission: 'products:view' },
+  { title: 'Movimientos', url: '/moves', icon: ArrowLeftRight, permission: 'inventory:view-moves' },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { openMobile } = useSidebar()
 
 const nameParts = computed(() => authStore.profile?.full_name?.trim().split(/\s+/) ?? [])
+
 const displayName = computed(() => {
   const parts = nameParts.value
 
@@ -63,8 +66,9 @@ const displayName = computed(() => {
 
   return `${parts[0]} ${parts.at(-2)}`
 })
+
 const visibleItems = computed(() =>
-  items.filter((item) => !item.roles || item.roles.includes(authStore.role)),
+  items.filter((item) => !item.permission || can(item.permission)),
 )
 
 async function handleLogout() {
@@ -96,7 +100,7 @@ watch(
         <SidebarMenuItem>
           <SidebarMenuButton>
             <Store />
-            <span class="font-semibold text-base">Impulso Boutique</span>
+            <span class="text-base font-semibold">Impulso Boutique</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -129,7 +133,7 @@ watch(
               </AvatarFallback>
             </Avatar>
             <div class="flex flex-1 flex-col overflow-hidden">
-              <span class="truncate text-sm lg:text-xs font-medium">
+              <span class="truncate text-sm font-medium lg:text-xs">
                 {{ displayName }}
               </span>
               <span class="text-muted-foreground truncate text-xs">

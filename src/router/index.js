@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { hasAnyPermission } from '@/utils/permissions'
 import { toast } from 'vue-sonner'
 
 const router = createRouter({
@@ -32,7 +33,7 @@ const router = createRouter({
           path: 'users',
           name: 'users',
           component: () => import('@/views/users/UsersView.vue'),
-          meta: { title: 'Usuarios', roles: ['admin'] },
+          meta: { title: 'Usuarios', permissions: ['users:view'] },
         },
         {
           path: 'profile',
@@ -70,7 +71,7 @@ const router = createRouter({
           path: 'moves',
           name: 'moves',
           component: () => import('@/views/MovesView.vue'),
-          meta: { title: 'Movimientos', roles: ['admin'] },
+          meta: { title: 'Movimientos', permissions: ['inventory:view-moves'] },
         },
       ],
     },
@@ -96,15 +97,17 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return {
       name: 'login',
-      query: {
-        redirect: to.fullPath,
-      },
+      query: { redirect: to.fullPath },
     }
   }
 
-  if (to.meta.roles && !to.meta.roles.includes(authStore.role)) {
-    toast.error('No tienes permisos para acceder a esta sección')
-    return { name: 'home' }
+  if (to.meta.permissions?.length) {
+    const authorized = hasAnyPermission(authStore.role, to.meta.permissions)
+
+    if (!authorized) {
+      toast.error('No tienes permisos para acceder a esta sección')
+      return { name: 'home' }
+    }
   }
 })
 

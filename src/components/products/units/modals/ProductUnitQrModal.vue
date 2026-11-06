@@ -160,7 +160,7 @@ async function copyId() {
             />
           </div>
           <!-- Info unit -->
-          <div class="my-1 grid grid-cols-2 gap-x-4 gap-y-2 rounded-sm border p-4 text-xs">
+          <div class="bg-card my-1 grid grid-cols-2 gap-x-4 gap-y-2 rounded-sm border p-4 text-xs">
             <!-- Unit -->
             <div class="flex min-w-0 items-center gap-2">
               <span class="text-muted-foreground whitespace-nowrap">Unidad:</span>

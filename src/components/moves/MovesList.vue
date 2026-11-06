@@ -36,7 +36,7 @@ import { columns } from '@/components/moves/columns'
 import { features } from '@/components/products/features'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
-import MovementsCardSkeleton from '@/components/moves/MovesCardSkeleton.vue'
+import MovesCardSkeleton from '@/components/moves/MovesCardSkeleton.vue'
 
 const props = defineProps({
   movements: { type: Array, default: () => [] },
@@ -275,7 +275,7 @@ function referenceText(row) {
         <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
-            <MovementsCardSkeleton v-for="c in 5" :key="`sk-m-${c}`" />
+            <MovesCardSkeleton v-for="c in 5" :key="`sk-m-${c}`" />
           </template>
           <!-- Data -->
           <template v-else-if="table.getRowModel().rows?.length">

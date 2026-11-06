@@ -47,6 +47,7 @@ import UserCardSkeleton from './UserCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
   users: { type: Array, default: () => [] },
@@ -59,6 +60,7 @@ const props = defineProps({
 const emit = defineEmits(['add-user', 'edit-user', 'toggle-status', 'retry', 'refresh'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const sortOptions = [
   { label: 'Nombre: A-Z', columnId: 'full_name', desc: false },
@@ -88,6 +90,7 @@ const table = useTable({
     },
   },
   meta: {
+    can,
     onEdit: (user) => emit('edit-user', user),
     onToggleStatus: (user) => emit('toggle-status', user),
     currentUserId: props.currentUserId,
@@ -173,6 +176,7 @@ function sortIcon(column) {
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add user button -->
           <Button
+            v-if="can('users:create')"
             size="sm"
             class="hidden gap-2 md:flex"
             :disabled="isLoading"
@@ -285,7 +289,7 @@ function sortIcon(column) {
                   </p>
                 </div>
                 <!-- Actions menu -->
-                <DropdownMenu>
+                <DropdownMenu v-if="can('users:update') || can('users:deactivate')">
                   <DropdownMenuTrigger as-child>
                     <Button
                       variant="ghost"
@@ -299,34 +303,37 @@ function sortIcon(column) {
                   <DropdownMenuContent align="end">
                     <!-- Edit user -->
                     <DropdownMenuItem
+                      v-if="can('users:update')"
                       class="cursor-pointer"
                       @click="emit('edit-user', row.original)"
                     >
                       <Pencil class="h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <!-- Toggle status -->
-                    <DropdownMenuItem
-                      class="cursor-pointer"
-                      :class="[
-                        row.original.is_active
-                          ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                          : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500',
-                        row.original.id === currentUserId ? 'pointer-events-none opacity-50' : '',
-                      ]"
-                      :disabled="row.original.id === currentUserId"
-                      @click="
-                        row.original.id !== currentUserId && emit('toggle-status', row.original)
-                      "
-                    >
-                      <component
-                        :is="row.original.is_active ? UserX : UserCheck"
-                        class="h-4 w-4"
-                        :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
-                      />
-                      <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
-                    </DropdownMenuItem>
+                    <template v-if="can('users:deactivate')">
+                      <DropdownMenuSeparator v-if="can('users:update')" />
+                      <DropdownMenuItem
+                        class="cursor-pointer"
+                        :class="[
+                          row.original.is_active
+                            ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                            : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500',
+                          row.original.id === currentUserId ? 'pointer-events-none opacity-50' : '',
+                        ]"
+                        :disabled="row.original.id === currentUserId"
+                        @click="
+                          row.original.id !== currentUserId && emit('toggle-status', row.original)
+                        "
+                      >
+                        <component
+                          :is="row.original.is_active ? UserX : UserCheck"
+                          class="h-4 w-4"
+                          :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
+                        />
+                        <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
+                      </DropdownMenuItem>
+                    </template>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

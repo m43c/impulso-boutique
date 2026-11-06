@@ -226,8 +226,8 @@ watch(
   <Drawer v-else :open="openModel" @update:open="handleOpenChange">
     <DrawerContent>
       <DrawerHeader class="gap-0 px-6 pb-2 text-left">
-        <DrawerTitle>Escanear código QR</DrawerTitle>
-        <DrawerDescription>Apunta la cámara a la etiqueta de la unidad</DrawerDescription>
+        <DrawerTitle class="text-sm">Escanear código QR</DrawerTitle>
+        <DrawerDescription class="text-xs">Apunta la cámara a la etiqueta de la unidad</DrawerDescription>
       </DrawerHeader>
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6 pt-2">
         <!-- QR scanner -->
@@ -256,12 +256,12 @@ watch(
           <label for="qr-camera-mobile" class="text-muted-foreground shrink-0">Cámara:</label>
 
           <Select v-model="selectedCameraId" @update:model-value="handleRetry">
-            <SelectTrigger id="qr-camera-mobile" class="h-9 min-w-0 flex-1 text-sm">
+            <SelectTrigger id="qr-camera-mobile" class="h-7! min-w-0 flex-1 text-xs">
               <SelectValue placeholder="Seleccionar cámara" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="cam in cameras" :key="cam.id" :value="cam.id">
-                {{ cam.label || `Cámara ${cam.id.slice(0, 8)}` }}
+                <span class="text-xs">{{ cam.label || `Cámara ${cam.id.slice(0, 8)}` }}</span>
               </SelectItem>
             </SelectContent>
           </Select>
@@ -293,7 +293,7 @@ watch(
             <Input
               v-model="manualId"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              class="font-mono lg:text-xs"
+              class="font-mono text-[13px]"
             />
             <p v-if="manualError" class="text-destructive text-xs">{{ manualError }}</p>
             <Button size="sm" class="mt-0.5 w-full" @click="handleManualSubmit">

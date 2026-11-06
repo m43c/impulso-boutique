@@ -94,7 +94,11 @@ export const columns = [
 
       return h(Tooltip, () => [
         h(TooltipTrigger, { asChild: true }, () =>
-          h('button', { class: 'cursor-help border-muted-foreground/50 border-b border-dashed min-w-p' }, formatRelativeDate(val)),
+          h(
+            'button',
+            { class: 'cursor-help border-muted-foreground/50 border-b border-dashed min-w-p' },
+            formatRelativeDate(val),
+          ),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])
@@ -114,30 +118,19 @@ export const columns = [
       const isActive = user.is_active
       const currentUserId = info.table.options.meta?.currentUserId
       const isSelf = user.id === currentUserId
+      const can = info.table.options.meta?.can
+      const canUpdate = can?.('users:update')
+      const canDeactivate = can?.('users:deactivate')
 
-      return h(DropdownMenu, () => [
-        h(
-          DropdownMenuTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              Button,
-              {
-                variant: 'ghost',
-                size: 'icon',
-                'aria-label': `Opciones para ${user.full_name}`,
-                class: 'h-8 w-8 rounded-full',
-              },
-              () =>
-                h(EllipsisVertical, {
-                  class: 'h-4 w-4',
-                }),
-            ),
-        ),
-        h(DropdownMenuContent, { align: 'end' }, () => [
-          // Edit user
+      if (!canUpdate && !canDeactivate) {
+        return null
+      }
+
+      const items = []
+
+      if (canUpdate) {
+        // Edit user
+        items.push(
           h(
             DropdownMenuItem,
             {
@@ -145,15 +138,17 @@ export const columns = [
               class: 'cursor-pointer text-xs',
               onClick: () => info.table.options.meta?.onEdit?.(user),
             },
-            () => [
-              h(Pencil, {
-                class: 'h-4 w-4',
-              }),
-              h('span', 'Editar'),
-            ],
+            () => [h(Pencil, { class: 'h-4 w-4' }), h('span', 'Editar')],
           ),
-          // Toggle status
-          h(DropdownMenuSeparator),
+        )
+      }
+
+      if (canDeactivate) {
+        if (items.length > 0) {
+          items.push(h(DropdownMenuSeparator))
+        }
+        // Toggle status
+        items.push(
           h(
             DropdownMenuItem,
             {
@@ -183,7 +178,22 @@ export const columns = [
               h('span', isActive ? 'Desactivar' : 'Activar'),
             ],
           ),
-        ]),
+        )
+      }
+      return h(DropdownMenu, () => [
+        h(DropdownMenuTrigger, { asChild: true }, () =>
+          h(
+            Button,
+            {
+              variant: 'ghost',
+              size: 'icon',
+              'aria-label': `Opciones para ${user.full_name}`,
+              class: 'h-8 w-8 rounded-full',
+            },
+            () => h(EllipsisVertical, { class: 'h-4 w-4' }),
+          ),
+        ),
+        h(DropdownMenuContent, { align: 'end' }, () => items),
       ])
     },
   },

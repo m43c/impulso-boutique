@@ -2,22 +2,19 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
-import { useAuthStore } from '@/stores/auth'
 import { CircleAlert, CheckCircle2 } from '@lucide/vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { hasPermission } from '@/utils/permissions' 
+import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
 const alertsStore = useAlertsStore()
-const authStore = useAuthStore()
+const { can } = usePermissions()
 
-const canViewLowStock = computed(() =>
-  hasPermission(authStore.role, 'dashboard:view-low-stock-alerts'),
-)
+const canViewLowStock = computed(() => can('dashboard:view-low-stock-alerts'))
 
 onMounted(() => {
   if (canViewLowStock.value) {
@@ -61,7 +58,9 @@ function goToLowStock() {
         <CardHeader class="px-4 pt-4">
           <CardTitle class="flex items-center gap-2 text-amber-500">
             <CircleAlert class="h-4 w-4" />
-            <span class="text-[13px]">Productos con stock bajo ({{ alertsStore.lowStockCount }})</span>
+            <span class="text-[13px]">
+              Productos con stock bajo ({{ alertsStore.lowStockCount }})
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-2 px-4 pb-4">
@@ -100,12 +99,7 @@ function goToLowStock() {
           >
             Y {{ alertsStore.lowStockCount - 3 }} productos más...
           </p>
-          <Button
-            variant="secondary"
-            size="sm"
-            class="mt-2 w-full"
-            @click="goToLowStock"
-          >
+          <Button variant="secondary" size="sm" class="mt-2 w-full" @click="goToLowStock">
             <span class="text-[13px] lg:text-xs">Ver todos los productos</span>
           </Button>
         </CardContent>
@@ -113,7 +107,7 @@ function goToLowStock() {
       <Card v-else class="w-full max-w-md rounded-md p-0 shadow-sm lg:max-w-sm">
         <CardContent class="flex items-start gap-2 p-4">
           <CheckCircle2 class="h-5 w-5 lg:h-4 lg:w-4" />
-          <p class="text-sm lg:text-xs font-medium">Todo el inventario está en niveles óptimos</p>
+          <p class="text-sm font-medium lg:text-xs">Todo el inventario está en niveles óptimos</p>
         </CardContent>
       </Card>
     </div>

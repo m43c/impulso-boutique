@@ -23,11 +23,13 @@ import {
 import UserForm from '@/components/users/UserForm.vue'
 import UsersList from '@/components/users/UsersList.vue'
 import { getEdgeFunctionErrorMessage } from '@/utils/edgeFunctionErrors'
+import { usePermissions } from '@/composables/usePermissions'
 
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const isFormOpen = ref(false)
 const editingUser = ref(null)
@@ -181,7 +183,7 @@ async function handleToggleStatus(user) {
     />
     <!-- Floating add user button (mobile) -->
     <Button
-      v-if="!fetchError"
+       v-if="!fetchError && can('users:create')"
       size="icon"
       :class="[
         'fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300 md:hidden',
