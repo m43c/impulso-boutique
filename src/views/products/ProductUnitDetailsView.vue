@@ -541,7 +541,7 @@ onUnmounted(() => {
                   <TableHeader class="lg:dark:bg-card border-b bg-zinc-100 dark:bg-zinc-800">
                     <TableRow>
                       <TableHead
-                        class="lg:dark:bg-card sticky left-0 z-30 bg-zinc-100 px-4 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-28 lg:text-xs dark:bg-zinc-800"
+                        class="lg:dark:bg-card sticky left-0 z-30 w-32 max-w-32 bg-zinc-100 px-2 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-40 lg:max-w-40 lg:px-4 lg:text-xs dark:bg-zinc-800"
                       >
                         Color/Talla
                       </TableHead>
@@ -561,9 +561,20 @@ onUnmounted(() => {
                       class="divide-x-0"
                     >
                       <TableCell
-                        class="lg:dark:bg-card sticky left-0 z-30 bg-zinc-100 px-4 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-28 lg:text-xs dark:bg-zinc-800"
+                        class="lg:dark:bg-card sticky left-0 z-30 w-32 max-w-32 bg-zinc-100 px-2 py-3 font-medium shadow-[1px_0_0_0_var(--color-border)] before:absolute before:inset-y-0 before:-left-4 before:w-4 before:bg-inherit lg:w-40 lg:max-w-40 lg:px-4 lg:text-xs dark:bg-zinc-800"
                       >
-                        {{ row.color }}
+                        <Tooltip>
+                          <TooltipTrigger as-child>
+                            <button
+                              class="lg:border-muted-foreground/50 inline-block max-w-full truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                            >
+                              {{ row.color }}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{{ row.color }}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </TableCell>
                       <TableCell
                         v-for="size in variantMatrix.sizes"
