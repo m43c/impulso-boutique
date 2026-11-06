@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { Check, Dot, Loader2 } from '@lucide/vue'
+import { Check, Dot, Loader2, QrCode } from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useProductsStore } from '@/stores/products'
 import { formatDate } from '@/utils/date'
 import { getRegisterCountErrorMessage } from '@/utils/inventoryErrors'
+import ProductUnitsCountScanner from '@/components/products/units/modals/ProductUnitsCountScanner.vue'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -47,12 +48,17 @@ const NOTE_MAX = 500
 const step = ref('checking')
 const frozenUnits = ref([])
 const checked = ref({})
+const scannedIds = ref([])
 const note = ref('')
 const errorMessage = ref(null)
 
 const total = computed(() => frozenUnits.value.length)
 const foundCount = computed(() => frozenUnits.value.filter((u) => checked.value[u.id]).length)
 const missingUnits = computed(() => frozenUnits.value.filter((u) => !checked.value[u.id]))
+const knownUnitIds = computed(() => frozenUnits.value.map((u) => u.id))
+const scanButtonLabel = computed(() =>
+  scannedIds.value.length > 0 ? 'Continuar escaneando' : 'Escanear QR',
+)
 
 watch(
   () => props.open,
@@ -61,6 +67,7 @@ watch(
       frozenUnits.value = [...props.units]
       step.value = 'checking'
       checked.value = {}
+      scannedIds.value = []
       note.value = ''
       errorMessage.value = null
     }
@@ -70,6 +77,10 @@ watch(
 const title = computed(() => {
   if (step.value === 'checking') {
     return 'Conteo físico'
+  }
+
+  if (step.value === 'scanning') {
+    return 'Escaneando unidades'
   }
 
   if (step.value === 'confirm') {
@@ -84,6 +95,10 @@ const description = computed(() => {
     return 'Marca las unidades que encontraste físicamente en la tienda.'
   }
 
+  if (step.value === 'scanning') {
+    return 'Escanea el QR de cada unidad encontrada. Las que no marques se considerarán faltantes.'
+  }
+
   if (step.value === 'confirm') {
     return 'Revisa las unidades que se marcarán como faltantes (no disponibles).'
   }
@@ -92,7 +107,25 @@ const description = computed(() => {
 })
 
 function toggleUnit(unitId) {
-  checked.value = { ...checked.value, [unitId]: !checked.value[unitId] }
+  const wasChecked = !!checked.value[unitId]
+  checked.value = { ...checked.value, [unitId]: !wasChecked }
+
+  if (wasChecked) {
+    scannedIds.value = scannedIds.value.filter((id) => id !== unitId)
+  }
+}
+
+function handleScanDetected(unitId) {
+  if (!frozenUnits.value.some((u) => u.id === unitId)) {
+    return
+  }
+
+  if (scannedIds.value.includes(unitId)) {
+    return
+  }
+
+  checked.value = { ...checked.value, [unitId]: true }
+  scannedIds.value = [...scannedIds.value, unitId]
 }
 
 function handleFinalize() {
@@ -174,6 +207,10 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
             <span class="text-muted-foreground">Encontradas</span>
             <span class="font-semibold">{{ foundCount }} de {{ total }}</span>
           </div>
+          <!-- Scan trigger -->
+          <Button variant="outline" class="w-full" @click="step = 'scanning'">
+            <span class="text-xs">{{ scanButtonLabel }}</span>
+          </Button>
           <!-- Unit list -->
           <div
             role="group"
@@ -193,6 +230,11 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
                 class="pointer-events-none"
               />
               <span class="font-mono text-xs font-medium">{{ unit.id.slice(0, 8) }}</span>
+              <QrCode
+                v-if="scannedIds.includes(unit.id)"
+                class="h-3.5 w-3.5 shrink-0 text-emerald-500"
+                aria-label="Escaneada"
+              />
               <span class="text-muted-foreground ml-auto text-xs">
                 Ingresó {{ formatDate(unit.created_at) }}
               </span>
@@ -215,6 +257,23 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           </Button>
           <Button type="button" size="sm" @click="handleFinalize">
             <span class="text-xs">Finalizar conteo</span>
+          </Button>
+        </div>
+      </template>
+      <!-- Step 1.5: Scanning -->
+      <template v-else-if="step === 'scanning'">
+        <ProductUnitsCountScanner
+          :known-unit-ids="knownUnitIds"
+          :scanned-ids="scannedIds"
+          :total="total"
+          @detected="handleScanDetected"
+        />
+        <!-- Action buttons -->
+        <div
+          class="border-border/60 mt-4 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end"
+        >
+          <Button type="button" size="sm" variant="outline" @click="step = 'checking'">
+            <span class="text-xs">Volver a la lista</span>
           </Button>
         </div>
       </template>
@@ -349,6 +408,10 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
               <span class="text-muted-foreground">Encontradas</span>
               <span class="font-semibold">{{ foundCount }} de {{ total }}</span>
             </div>
+            <!-- Scan trigger -->
+            <Button variant="outline" class="w-full" @click="step = 'scanning'">
+              {{ scanButtonLabel }}
+            </Button>
             <!-- Unit list -->
             <div
               role="group"
@@ -368,6 +431,11 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
                   class="pointer-events-none"
                 />
                 <span class="font-mono text-sm font-medium">{{ unit.id.slice(0, 8) }}</span>
+                <QrCode
+                  v-if="scannedIds.includes(unit.id)"
+                  class="h-4 w-4 shrink-0 text-emerald-500"
+                  aria-label="Escaneada"
+                />
                 <span class="text-muted-foreground ml-auto text-xs">
                   {{ formatDate(unit.created_at) }}
                 </span>
@@ -385,6 +453,21 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           <div class="mt-4 flex flex-col-reverse gap-2 px-6 pb-6">
             <Button type="button" variant="outline" @click="handleClose">Cancelar</Button>
             <Button type="button" @click="handleFinalize">Finalizar conteo</Button>
+          </div>
+        </template>
+        <!-- Step 1.5: Scanning -->
+        <template v-else-if="step === 'scanning'">
+          <ProductUnitsCountScanner
+            :known-unit-ids="knownUnitIds"
+            :scanned-ids="scannedIds"
+            :total="total"
+            @detected="handleScanDetected"
+          />
+          <!-- Action buttons -->
+          <div class="mt-4 flex flex-col-reverse gap-2 px-6 pb-6">
+            <Button type="button" variant="outline" @click="step = 'checking'">
+              Volver a la lista
+            </Button>
           </div>
         </template>
         <!-- Step 2: Confirm -->

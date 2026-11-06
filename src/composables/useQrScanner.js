@@ -3,7 +3,8 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { mapQrScannerError, QR_ERRORS } from '@/utils/qrScannerErrors'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const URL_UNIT_REGEX = /^.*\/units\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+const URL_UNIT_REGEX =
+  /^.*\/units\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
 const READER_ELEMENT_ID = 'qr-scanner-reader'
 
 function extractUnitId(value) {
@@ -23,6 +24,7 @@ function extractUnitId(value) {
 
 let scanner = null
 let isHandling = false
+let lastSeenAt = new Map()
 
 export function useQrScanner() {
   const isScanning = ref(false)
@@ -61,7 +63,7 @@ export function useQrScanner() {
     return !!document.getElementById(READER_ELEMENT_ID)
   }
 
-  async function startScan(onDetected) {
+  async function startScan(onDetected, { continuous = false, cooldownMs = 1500 } = {}) {
     scanError.value = null
     isHandling = false
 
@@ -86,6 +88,10 @@ export function useQrScanner() {
         ? { deviceId: { exact: selectedCameraId.value } }
         : { facingMode: 'environment' }
 
+      if (continuous) {
+        lastSeenAt.clear()
+      }
+
       await scanner.start(
         cameraConfig,
         {
@@ -100,7 +106,7 @@ export function useQrScanner() {
           disableFlip: false,
         },
         (decodedText) => {
-          if (isHandling) {
+          if (!continuous && isHandling) {
             return
           }
 
@@ -114,11 +120,26 @@ export function useQrScanner() {
 
           if (!unitId) {
             console.warn('[QR Scanner] Código escaneado no es una unidad válida:', value)
-            scanError.value = QR_ERRORS.INVALID_QR
+
+            if (!continuous) {
+              scanError.value = QR_ERRORS.INVALID_QR
+            }
+
             return
           }
 
-          isHandling = true
+          if (continuous) {
+            const now = Date.now()
+
+            if (now - (lastSeenAt.get(unitId) ?? 0) < cooldownMs) {
+              return
+            }
+
+            lastSeenAt.set(unitId, now)
+          } else {
+            isHandling = true
+          }
+
           onDetected?.(unitId)
         },
         () => {
@@ -140,6 +161,7 @@ export function useQrScanner() {
 
   async function stopScan() {
     isHandling = false
+    lastSeenAt.clear()
 
     try {
       if (scanner) {
