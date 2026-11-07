@@ -17,7 +17,7 @@ import {
   NumberFieldInput,
   NumberFieldIncrement,
 } from '@/components/ui/number-field'
-import { getRegisterEntryErrorMessage } from '@/utils/productErrors'
+import { getRegisterEntryErrorMessage } from '@/utils/inventoryErrors'
 
 const props = defineProps({
   product: { type: Object, default: null },
