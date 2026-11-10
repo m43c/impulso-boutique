@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { Eye, EyeOff, Loader2 } from '@lucide/vue'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
@@ -19,24 +20,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const props = defineProps({
-  user: {
-    type: Object,
-    default: null,
-  },
-  isSelf: {
-    type: Boolean,
-    default: false,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  errorMessage: {
-    type: String,
-    default: null,
-  },
+  user: { type: Object, default: null },
+  isSelf: { type: Boolean, default: false },
+  isLoading: { type: Boolean, default: false },
+  errorMessage: { type: String, default: null },
 })
 const emit = defineEmits(['submit', 'cancel'])
+
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const showPassword = ref(false)
 const isEditMode = computed(() => !!props.user)
@@ -118,45 +109,47 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
-    <!-- Errors -->
+    <!-- Error message -->
     <Alert v-if="errorMessage" variant="destructive" class="mb-4">
-      <AlertDescription>{{ errorMessage }}</AlertDescription>
+      <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
     </Alert>
-    <!-- Form fields -->
+    <!-- Fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Full name -->
       <VeeField v-slot="{ componentField, errors }" name="fullName">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="fullName">Nombre completo</FieldLabel>
+          <FieldLabel for="fullName" class="lg:text-xs">Nombre completo</FieldLabel>
           <Input
             id="fullName"
             v-bind="componentField"
             type="text"
             placeholder="Marco Encinas"
+            class="text-sm lg:text-xs"
             :aria-invalid="!!errors.length"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
-      <!-- email -->
+      <!-- Email -->
       <VeeField v-slot="{ componentField, errors }" name="email">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="email">Correo electrónico</FieldLabel>
+          <FieldLabel for="email" class="lg:text-xs">Correo electrónico</FieldLabel>
           <Input
             id="email"
             v-bind="componentField"
             type="email"
             placeholder="correo@ejemplo.com"
             autocomplete="username"
+            class="text-sm lg:text-xs"
             :aria-invalid="!!errors.length"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Password -->
       <VeeField v-slot="{ componentField, errors }" name="password">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="password">
+          <FieldLabel for="password" class="lg:text-xs">
             {{ isEditMode ? 'Nueva contraseña (opcional)' : 'Contraseña' }}
           </FieldLabel>
           <div class="relative flex items-center">
@@ -164,7 +157,7 @@ function handleCancel() {
               id="password"
               v-bind="componentField"
               :type="showPassword ? 'text' : 'password'"
-              class="pr-10"
+              class="pr-10 text-sm lg:text-xs"
               autocomplete="new-password"
               :aria-invalid="!!errors.length"
             />
@@ -179,40 +172,62 @@ function handleCancel() {
               <EyeOff v-else class="h-4 w-4" />
             </button>
           </div>
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Role -->
       <VeeField v-slot="{ componentField, errors }" name="role">
         <FieldSet :data-invalid="!!errors.length">
-          <FieldLegend variant="label" :class="errors.length ? 'text-destructive' : ''">
+          <FieldLegend
+            variant="label"
+            class="lg:text-xs!"
+            :class="errors.length ? 'text-destructive' : ''"
+          >
             Rol
           </FieldLegend>
-          <RadioGroup v-bind="componentField" :disabled="isSelf" :aria-invalid="!!errors.length">
+          <RadioGroup
+            v-bind="componentField"
+            :disabled="isSelf"
+            :aria-invalid="!!errors.length"
+            class="flex flex-wrap gap-x-6 gap-y-2"
+          >
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="admin" value="admin" :aria-invalid="!!errors.length" />
-              <Label for="admin" class="cursor-pointer font-normal">Administrador</Label>
+              <Label for="admin" class="cursor-pointer font-normal lg:text-xs">Administrador</Label>
             </div>
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="advisor" value="advisor" :aria-invalid="!!errors.length" />
-              <Label for="advisor" class="cursor-pointer font-normal">Vendedor</Label>
+              <Label for="advisor" class="cursor-pointer font-normal lg:text-xs">Vendedor</Label>
             </div>
             <div class="flex items-center space-x-2">
               <RadioGroupItem id="cashier" value="cashier" :aria-invalid="!!errors.length" />
-              <Label for="cashier" class="cursor-pointer font-normal">Cajero</Label>
+              <Label for="cashier" class="cursor-pointer font-normal lg:text-xs">Cajero</Label>
             </div>
           </RadioGroup>
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </FieldSet>
       </VeeField>
     </FieldGroup>
     <!-- Actions -->
-    <div class="flex flex-col gap-2 pt-6">
-      <Button type="submit" :disabled="isSubmitting">
-        <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
-        {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}
+    <div class="flex gap-2 pt-6" :class="isDesktop ? 'flex-row justify-end' : 'flex-col'">
+      <Button
+        type="button"
+        :size="isDesktop ? 'sm' : ''"
+        variant="outline"
+        :class="!isDesktop ? 'order-2' : ''"
+        @click="handleCancel"
+      >
+        <span class="lg:text-xs">Cancelar</span>
       </Button>
-      <Button type="button" variant="outline" @click="handleCancel">Cancelar</Button>
+      <Button
+        type="submit"
+        :size="isDesktop ? 'sm' : ''"
+        :disabled="isSubmitting"
+        :class="!isDesktop ? 'order-1' : ''"
+      >
+        <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
+        <span class="lg:text-xs">{{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}</span>
+      </Button>
     </div>
   </form>
 </template>

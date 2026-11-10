@@ -1,48 +1,57 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { Loader2 } from '@lucide/vue'
+import { useMediaQuery } from '@vueuse/core'
 import { z } from 'zod'
 import { useForm, Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { Button } from '@/components/ui/button'
+import { Loader2 } from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  NumberField,
+  NumberFieldContent,
+  NumberFieldDecrement,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import ProductImageUploader from '@/components/products/ProductImageUploader.vue'
 import CreatableCombobox from '@/components/common/CreatableCombobox.vue'
 
 const props = defineProps({
-  product: {
-    type: Object,
-    default: null,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  errorMessage: {
-    type: String,
-    default: null,
-  },
-  options: {
-    type: Object,
-    default: () => ({ categories: [], brands: [], colors: [], sizes: [] }),
-  },
+  product: { type: Object, default: null },
+  mode: { type: String, default: null },
+  isLoading: { type: Boolean, default: false },
+  errorMessage: { type: String, default: null },
+  options: { type: Object, default: () => ({ categories: [], brands: [], colors: [], sizes: [] }) },
 })
+
 const emit = defineEmits(['submit', 'cancel'])
 
-const isEditMode = computed(() => !!props.product)
+const isDesktop = useMediaQuery('(min-width: 768px)')
+
+const currentMode = computed(() => {
+  if (props.mode) {
+    return props.mode
+  }
+
+  return props.product ? 'edit' : 'create'
+})
+
+const isImageRequired = computed(() => currentMode.value === 'create')
+const isVariantMode = computed(() => currentMode.value === 'variant')
 
 const formSchema = computed(() =>
   toTypedSchema(
     z.object({
-      image: isEditMode.value
-        ? z.instanceof(File).nullable().default(null)
-        : z
+      image: isImageRequired.value
+        ? z
             .instanceof(File, { message: 'Selecciona una imagen del producto' })
             .nullable()
-            .refine((value) => value !== null, 'Selecciona una imagen del producto'),
+            .refine((value) => value !== null, 'Selecciona una imagen del producto')
+        : z.instanceof(File).nullable().default(null),
       name: z
         .string()
         .trim()
@@ -74,21 +83,19 @@ const formSchema = computed(() =>
         .max(20, 'La talla no puede superar 20 caracteres')
         .transform((value) => (value.length === 0 ? null : value)),
       price: z
-        .string()
-        .trim()
-        .min(1, 'Ingresa el precio')
-        .transform((value) => value.replace(',', '.'))
-        .refine((value) => /^-?\d+(\.\d{1,2})?$/.test(value), {
-          message: 'Ingresa un precio válido (máx. 2 decimales)',
+        .number({
+          required_error: 'Ingresa el precio',
+          invalid_type_error: 'Ingresa un precio válido',
         })
-        .transform(Number)
-        .refine((value) => value > 0, 'El precio debe ser mayor a 0'),
+        .positive('El precio debe ser mayor a 0')
+        .refine((value) => Math.abs(value - Number(value.toFixed(2))) < 1e-9, 'Máximo 2 decimales'),
       minStock: z
-        .string()
-        .trim()
-        .transform((value) => (value.length === 0 ? '0' : value))
-        .refine((value) => /^\d+$/.test(value), 'Ingresa un número entero válido')
-        .transform(Number),
+        .number({
+          required_error: 'Ingresa el stock mínimo',
+          invalid_type_error: 'Ingresa un stock válido',
+        })
+        .int('Debe ser un número entero')
+        .min(0, 'No puede ser negativo'),
     }),
   ),
 )
@@ -103,8 +110,8 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
     brand: '',
     color: '',
     size: '',
-    price: '',
-    minStock: '',
+    price: null,
+    minStock: 0,
   },
 })
 
@@ -119,8 +126,8 @@ function populateForm(product) {
           brand: product.brand ?? '',
           color: product.color ?? '',
           size: product.size ?? '',
-          price: Number(product.price).toFixed(2),
-          minStock: String(product.min_stock),
+          price: Number(product.price),
+          minStock: product.min_stock,
         }
       : {
           image: null,
@@ -130,8 +137,8 @@ function populateForm(product) {
           brand: '',
           color: '',
           size: '',
-          price: '',
-          minStock: '',
+          price: null,
+          minStock: 0,
         },
   })
 }
@@ -150,162 +157,216 @@ function handleCancel() {
 
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
-    <!-- Errors -->
+    <!-- Error message -->
     <Alert v-if="errorMessage" variant="destructive" class="mb-4">
-      <AlertDescription>{{ errorMessage }}</AlertDescription>
+      <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
     </Alert>
-    <!-- Form fields -->
+    <!-- Fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
       <!-- Image -->
       <VeeField v-slot="{ value, handleChange, errors }" name="image">
         <Field :data-invalid="!!errors.length">
+          <FieldLabel for="image" class="lg:text-xs">Imagen del producto</FieldLabel>
           <ProductImageUploader
             :model-value="value"
-            :existing-image-id="product?.image_public_id ?? null"
+            :existing-image-id="
+              currentMode === 'edit' || currentMode === 'variant'
+                ? (product?.image_public_id ?? null)
+                : null
+            "
             @update:model-value="handleChange"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" class="text-center" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="text-center lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Name -->
       <VeeField v-slot="{ componentField, errors }" name="name">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="name">Nombre</FieldLabel>
+          <FieldLabel for="name" class="lg:text-xs">Nombre</FieldLabel>
           <Input
             id="name"
             v-bind="componentField"
             type="text"
             placeholder="Camisa manga larga"
             :aria-invalid="!!errors.length"
+            aria-required="true"
+            class="text-sm lg:text-xs!"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
       <!-- Description -->
       <VeeField v-slot="{ componentField, errors }" name="description">
         <Field :data-invalid="!!errors.length">
-          <FieldLabel for="description">Descripción</FieldLabel>
+          <FieldLabel for="description" class="lg:text-xs">Descripción (opcional)</FieldLabel>
           <Textarea
             id="description"
             v-bind="componentField"
             placeholder="Camisa de manga larga, algodón 100%, corte slim fit..."
             :aria-invalid="!!errors.length"
+            class="text-sm lg:text-xs!"
           />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
-      <!-- Category + brand -->
+      <!-- Details -->
       <div class="grid grid-cols-2 gap-4">
+        <!-- Category -->
         <VeeField v-slot="{ value, handleChange, errors }" name="category">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="category">Categoría</FieldLabel>
+            <FieldLabel for="category" class="lg:text-xs">Categoría</FieldLabel>
             <CreatableCombobox
               id="category"
               :model-value="value"
               :options="options.categories"
-              placeholder="Selecciona"
-              search-placeholder="Buscar o crear categoría..."
+              placeholder="Sin categoría"
+              search-placeholder="Buscar categoría..."
               :invalid="!!errors.length"
+              :disabled="isVariantMode"
+              aria-required="true"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
+        <!-- Brand -->
         <VeeField v-slot="{ value, handleChange, errors }" name="brand">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="brand">Marca</FieldLabel>
+            <FieldLabel for="brand" class="lg:text-xs">Marca (opcional)</FieldLabel>
             <CreatableCombobox
               id="brand"
               :model-value="value"
               :options="options.brands"
               placeholder="Sin marca"
-              search-placeholder="Buscar o crear marca..."
+              search-placeholder="Buscar marca..."
               clearable
               clear-label="Sin marca"
               :invalid="!!errors.length"
+              :disabled="isVariantMode"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
-      <!-- Color + size -->
+      <!-- Color -->
       <div class="grid grid-cols-2 gap-4">
         <VeeField v-slot="{ value, handleChange, errors }" name="color">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="color">Color</FieldLabel>
+            <FieldLabel for="color" class="lg:text-xs">Color (opcional)</FieldLabel>
             <CreatableCombobox
               id="color"
               :model-value="value"
               :options="options.colors"
               placeholder="Sin color"
-              search-placeholder="Buscar o crear color..."
+              search-placeholder="Buscar color..."
               clearable
               clear-label="Sin color"
               :invalid="!!errors.length"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
+        <!-- Size -->
         <VeeField v-slot="{ value, handleChange, errors }" name="size">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="size">Talla</FieldLabel>
+            <FieldLabel for="size" class="lg:text-xs">Talla (opcional)</FieldLabel>
             <CreatableCombobox
               id="size"
               :model-value="value"
               :options="options.sizes"
               placeholder="Sin talla"
-              search-placeholder="Buscar o crear talla..."
+              search-placeholder="Buscar talla..."
               clearable
               clear-label="Sin talla"
               :invalid="!!errors.length"
               @update:model-value="handleChange"
             />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
-      <!-- Price + min stock -->
+      <!-- Price -->
       <div class="grid grid-cols-2 gap-4">
-        <VeeField v-slot="{ componentField, errors }" name="price">
+        <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="price">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="price">Precio</FieldLabel>
-            <Input
-              id="price"
-              v-bind="componentField"
-              type="text"
-              inputmode="decimal"
-              placeholder="0.00"
-              :aria-invalid="!!errors.length"
-            />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldLabel for="price" class="lg:text-xs">Precio</FieldLabel>
+            <NumberField
+              :model-value="value"
+              :min="0.01"
+              :step="0.01"
+              :format-options="{ maximumFractionDigits: 2 }"
+              :disabled="isVariantMode"
+              @update:model-value="setValue"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput
+                  id="price"
+                  placeholder="0.00"
+                  class="text-xs!"
+                  :aria-invalid="!!errors.length"
+                  aria-required="true"
+                  @blur="handleBlur"
+                />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
-        <VeeField v-slot="{ componentField, errors }" name="minStock">
+        <!-- Min stock -->
+        <VeeField v-slot="{ value, setValue, handleBlur, errors }" name="minStock">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="minStock">Stock mínimo</FieldLabel>
-            <Input
-              id="minStock"
-              v-bind="componentField"
-              type="text"
-              inputmode="numeric"
-              placeholder="0"
-              :aria-invalid="!!errors.length"
-            />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" />
+            <FieldLabel for="minStock" class="lg:text-xs">Stock mínimo</FieldLabel>
+            <NumberField
+              :model-value="value"
+              :min="0"
+              :step="1"
+              :allow-empty="false"
+              :default-value="0"
+              :format-options="{ maximumFractionDigits: 0 }"
+              :disabled="isVariantMode"
+              @update:model-value="setValue"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput
+                  id="minStock"
+                  placeholder="0"
+                  class="text-xs!"
+                  :aria-invalid="!!errors.length"
+                  aria-required="true"
+                  @blur="handleBlur"
+                />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
       </div>
     </FieldGroup>
     <!-- Actions buttons -->
-    <div class="flex flex-col gap-2 pt-6 md:flex-row-reverse">
-      <Button type="submit" class="md:flex-1" :disabled="isSubmitting || isLoading">
+    <div class="grid grid-cols-1 gap-2 pt-6 md:grid-cols-2 md:gap-4">
+      <Button
+        type="submit"
+        :size="isDesktop ? 'sm' : ''"
+        :disabled="isSubmitting || isLoading"
+        class="w-full md:order-2"
+      >
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
-        {{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}
+        <span class="lg:text-xs">{{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}</span>
       </Button>
-      <Button type="button" variant="outline" class="md:flex-1" @click="handleCancel">
-        Cancelar
+      <Button
+        type="button"
+        :size="isDesktop ? 'sm' : ''"
+        variant="outline"
+        class="w-full md:order-1"
+        @click="handleCancel"
+      >
+        <span class="lg:text-xs">Cancelar</span>
       </Button>
     </div>
   </form>

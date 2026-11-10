@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useMediaQuery } from '@vueuse/core'
 import { PackagePlus } from '@lucide/vue'
@@ -12,26 +13,55 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 import ProductForm from '@/components/products/ProductForm.vue'
 import ProductsList from '@/components/products/ProductsList.vue'
-import ProductDetails from '@/components/products/ProductDetails.vue'
 import { getProductErrorMessage } from '@/utils/productErrors'
 import { usePermissions } from '@/composables/usePermissions'
 
+const router = useRouter()
 const productsStore = useProductsStore()
+
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
 const isSheetOpen = ref(false)
-const isDetailsOpen = ref(false)
 const fetchError = ref(null)
 const formError = ref(null)
-const detailsProduct = ref(null)
-const editingProduct = ref(null)
+const formMode = ref('create')
+const formProduct = ref(null)
+
+const formTitle = computed(() => {
+  if (formMode.value === 'edit') {
+    return 'Editar producto'
+  }
+  if (formMode.value === 'variant') {
+    return 'Crear variante'
+  }
+
+  return 'Crear producto'
+})
+
+const formDescription = computed(() => {
+  if (formMode.value === 'edit') {
+    return 'Actualiza la información del producto'
+  }
+
+  if (formMode.value === 'variant') {
+    return 'Crea una nueva variante modificando los atributos que necesites'
+  }
+
+  return 'Completa la información del nuevo producto'
+})
 
 async function loadProducts() {
   fetchError.value = null
-
   try {
     await productsStore.fetchProducts()
   } catch (error) {
@@ -46,10 +76,42 @@ function loadOptions() {
   })
 }
 
-onMounted(() => loadProducts())
+const isScrollingDown = ref(false)
+let lastScrollY = 0
+
+function handleScroll() {
+  const currentScrollY = window.scrollY
+
+  if (currentScrollY <= 0) {
+    isScrollingDown.value = false
+    lastScrollY = currentScrollY
+    return
+  }
+
+  const diff = currentScrollY - lastScrollY
+
+  if (diff > 10) {
+    isScrollingDown.value = true
+  } else if (diff < -10) {
+    isScrollingDown.value = false
+  }
+
+  if (Math.abs(diff) > 2) {
+    lastScrollY = currentScrollY
+  }
+}
+
+onMounted(() => {
+  loadProducts()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 async function handleSubmit(formData) {
-  const isEditing = !!editingProduct.value
+  const mode = formMode.value
   formError.value = null
 
   try {
@@ -64,9 +126,21 @@ async function handleSubmit(formData) {
       min_stock: formData.minStock,
     }
 
-    if (isEditing) {
-      await productsStore.updateProduct({ ...payload, id: editingProduct.value.id }, formData.image)
+    if (mode === 'edit') {
+      await productsStore.updateProduct({ ...payload, id: formProduct.value.id }, formData.image)
       toast.success('Producto actualizado correctamente')
+    } else if (mode === 'variant') {
+      const imagePublicId = formData.image ? null : (formProduct.value?.image_public_id ?? null)
+      const newId = await productsStore.createProductVariant(
+        formProduct.value.id,
+        payload,
+        formData.image,
+        imagePublicId,
+      )
+
+      toast.success('Variante creada', {
+        action: { label: 'Ver producto', onClick: () => router.push('/products/' + newId) },
+      })
     } else {
       await productsStore.createProduct(payload, formData.image)
       toast.success('Producto creado correctamente')
@@ -75,40 +149,53 @@ async function handleSubmit(formData) {
     loadProducts()
 
     isSheetOpen.value = false
-    editingProduct.value = null
+    formMode.value = 'create'
+    formProduct.value = null
   } catch (error) {
     console.error('Error al guardar el producto:', error)
-
     formError.value = getProductErrorMessage(
       error,
-      isEditing ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto',
+      mode === 'edit'
+        ? 'No se pudo actualizar el producto'
+        : mode === 'variant'
+          ? 'No se pudo crear la variante'
+          : 'No se pudo crear el producto',
     )
   }
 }
 
 function handleCancel() {
   isSheetOpen.value = false
-  editingProduct.value = null
+  formMode.value = 'create'
+  formProduct.value = null
   formError.value = null
 }
 
 function handleAddProduct() {
-  editingProduct.value = null
+  formMode.value = 'create'
+  formProduct.value = null
   formError.value = null
   isSheetOpen.value = true
+
   loadOptions()
 }
 
 function handleEditProduct(product) {
-  editingProduct.value = product
+  formMode.value = 'edit'
+  formProduct.value = product
   formError.value = null
   isSheetOpen.value = true
+
   loadOptions()
 }
 
-function handleViewDetails(product) {
-  detailsProduct.value = product
-  isDetailsOpen.value = true
+function handleCreateProductVariant(product) {
+  formMode.value = 'variant'
+  formProduct.value = product
+  formError.value = null
+  isSheetOpen.value = true
+
+  loadOptions()
 }
 
 async function handleToggleStatus(product) {
@@ -128,50 +215,48 @@ async function handleToggleStatus(product) {
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
-    <Sheet v-model:open="isSheetOpen">
-      <!-- Products list -->
-      <ProductsList
-        :products="productsStore.products"
-        :is-loading="productsStore.isFetching"
-        :error="fetchError"
-        @add-product="handleAddProduct"
-        @view-details="handleViewDetails"
-        @edit-product="handleEditProduct"
-        @toggle-status="handleToggleStatus"
-        @retry="loadProducts"
-        @refresh="loadProducts"
-      />
-      <!-- Product details -->
-      <ProductDetails v-model:open="isDetailsOpen" :product="detailsProduct" />
-      <!-- Mobile add product button -->
-      <Button
-        v-if="!fetchError && can('products:create')"
-        size="icon"
-        class="fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full md:hidden"
-        aria-label="Agregar producto"
-        @click="handleAddProduct"
-      >
-        <PackagePlus class="size-5" />
-      </Button>
-      <!-- Product form -->
+    <!-- Products list -->
+    <ProductsList
+      :products="productsStore.products"
+      :is-loading="productsStore.isFetching"
+      :error="fetchError"
+      @add-product="handleAddProduct"
+      @edit-product="handleEditProduct"
+      @create-variant="handleCreateProductVariant"
+      @toggle-status="handleToggleStatus"
+      @retry="loadProducts"
+      @refresh="loadProducts"
+    />
+    <!-- Floating add product button -->
+    <Button
+      v-if="!fetchError && can('products:create')"
+      size="icon"
+      :class="[
+        'fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300 md:hidden',
+        isScrollingDown
+          ? 'pointer-events-none translate-y-4 opacity-0'
+          : 'translate-y-0 opacity-100',
+      ]"
+      aria-label="Agregar producto"
+      :disabled="productsStore.isFetching"
+      @click="handleAddProduct"
+    >
+      <PackagePlus class="size-5" />
+    </Button>
+    <!-- Desktop view (sheet) -->
+    <Sheet v-if="isDesktop" v-model:open="isSheetOpen">
       <SheetContent
         v-if="can('products:create') || can('products:update')"
-        :side="isDesktop ? 'right' : 'bottom'"
-        class="w-full p-6 sm:max-w-md"
-        :class="!isDesktop ? 'h-[90dvh] rounded-t-2xl' : ''"
+        side="right"
+        class="w-full px-5 py-4 sm:max-w-md"
       >
-        <SheetHeader class="p-0 pb-2">
-          <SheetTitle>{{ editingProduct ? 'Editar producto' : 'Crear producto' }}</SheetTitle>
-          <SheetDescription>
-            {{
-              editingProduct
-                ? 'Actualiza la información del producto'
-                : 'Completa la información del nuevo producto'
-            }}
-          </SheetDescription>
+        <SheetHeader class="gap-0.5 p-0 pb-0">
+          <SheetTitle class="lg:text-sm">{{ formTitle }}</SheetTitle>
+          <SheetDescription class="lg:text-xs">{{ formDescription }}</SheetDescription>
         </SheetHeader>
         <ProductForm
-          :product="editingProduct"
+          :product="formProduct"
+          :mode="formMode"
           :is-loading="productsStore.isCreating || productsStore.isUpdating"
           :error-message="formError"
           :options="productsStore.options"
@@ -180,5 +265,28 @@ async function handleToggleStatus(product) {
         />
       </SheetContent>
     </Sheet>
+    <!-- Mobile view (drawer) -->
+    <Drawer v-else v-model:open="isSheetOpen">
+      <DrawerContent
+        v-if="can('products:create') || can('products:update')"
+        class="flex h-[90dvh] flex-col pb-1"
+      >
+        <DrawerHeader class="px-5 pt-3 pb-2 text-left">
+          <DrawerTitle class="text-sm">{{ formTitle }}</DrawerTitle>
+          <DrawerDescription class="text-xs">{{ formDescription }}</DrawerDescription>
+        </DrawerHeader>
+
+        <ProductForm
+          class="min-h-0 flex-1 px-5 pb-4"
+          :product="formProduct"
+          :mode="formMode"
+          :is-loading="productsStore.isCreating || productsStore.isUpdating"
+          :error-message="formError"
+          :options="productsStore.options"
+          @submit="handleSubmit"
+          @cancel="handleCancel"
+        />
+      </DrawerContent>
+    </Drawer>
   </div>
 </template>

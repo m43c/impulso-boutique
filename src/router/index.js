@@ -1,10 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { hasAnyPermission } from '@/utils/permissions'
 import { toast } from 'vue-sonner'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // Public routes
     {
       path: '/',
       redirect: { name: 'login' },
@@ -14,6 +16,7 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
     },
+    // Private routes
     {
       path: '/',
       component: () => import('@/layouts/AppLayout.vue'),
@@ -25,11 +28,12 @@ const router = createRouter({
           component: () => import('@/views/HomeView.vue'),
           meta: { title: 'Inicio' },
         },
+        // User routes
         {
           path: 'users',
           name: 'users',
           component: () => import('@/views/users/UsersView.vue'),
-          meta: { title: 'Usuarios', roles: ['admin'] },
+          meta: { title: 'Usuarios', permissions: ['users:view'] },
         },
         {
           path: 'profile',
@@ -37,14 +41,41 @@ const router = createRouter({
           component: () => import('@/views/users/ProfileView.vue'),
           meta: { title: 'Perfil' },
         },
+        // Product routes
         {
           path: 'products',
           name: 'products',
           component: () => import('@/views/products/ProductsView.vue'),
           meta: { title: 'Productos' },
         },
+        {
+          path: 'products/:id',
+          name: 'product-details',
+          component: () => import('@/views/products/ProductDetailsView.vue'),
+          meta: {
+            title: 'Detalles del producto',
+            breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
+          },
+        },
+        // Inventary routes
+        {
+          path: 'units/:unitId',
+          name: 'unit-details',
+          component: () => import('@/views/products/ProductUnitDetailsView.vue'),
+          meta: {
+            title: 'Detalles de unidad',
+            breadcrumb: [{ title: 'Productos', to: { name: 'products' } }],
+          },
+        },
+        {
+          path: 'moves',
+          name: 'moves',
+          component: () => import('@/views/MovesView.vue'),
+          meta: { title: 'Movimientos', permissions: ['inventory:view-moves'] },
+        },
       ],
     },
+    // 404 not found
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -66,15 +97,17 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return {
       name: 'login',
-      query: {
-        redirect: to.fullPath,
-      },
+      query: { redirect: to.fullPath },
     }
   }
 
-  if (to.meta.roles && !to.meta.roles.includes(authStore.role)) {
-    toast.error('No tienes permisos para acceder a esta sección')
-    return { name: 'home' }
+  if (to.meta.permissions?.length) {
+    const authorized = hasAnyPermission(authStore.role, to.meta.permissions)
+
+    if (!authorized) {
+      toast.error('No tienes permisos para acceder a esta sección')
+      return { name: 'home' }
+    }
   }
 })
 

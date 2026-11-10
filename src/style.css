@@ -134,17 +134,17 @@
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-muted-foreground);
-    border-radius: 3px;
+    background: color-mix(in oklch, var(--color-muted-foreground) 35%, transparent);
+    border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-foreground);
+    background: color-mix(in oklch, var(--color-muted-foreground) 60%, transparent);
   }
 }

@@ -15,16 +15,10 @@ import { useCamera } from '@/composables/useCamera'
 import { buildImageUrl, IMAGE_SIZES } from '@/services/cloudinary'
 
 const props = defineProps({
-  existingImageId: {
-    type: String,
-    default: null,
-  },
+  existingImageId: { type: String, default: null },
 })
 
-const modelValue = defineModel({
-  type: File,
-  default: null,
-})
+const modelValue = defineModel({ type: File, default: null })
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
@@ -150,7 +144,7 @@ function closeCamera() {
 }
 
 async function capturePhoto() {
-  const file = await capture(videoEl.value)
+  const file = await capture(videoEl.value, isDesktop.value)
 
   if (!file) {
     toast.error('La cámara todavía no está lista')
@@ -172,22 +166,28 @@ onBeforeUnmount(() => {
     <!-- Mobile view -->
     <div v-if="!isDesktop" class="relative">
       <div
-        class="border-muted-foreground/25 relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-dashed transition-all duration-300"
-        :class="hasImage ? 'h-52' : 'h-40'"
+        class="border-muted-foreground/25 relative mx-auto flex aspect-square w-full max-w-52 items-center justify-center overflow-hidden rounded-lg border border-dashed transition-all duration-300"
+        :class="
+          hasImage
+            ? 'border-border bg-muted border'
+            : 'border-muted-foreground/25 border border-dashed'
+        "
       >
         <!-- Image preview -->
         <template v-if="hasImage">
           <img
             :src="displayUrl"
             alt="Vista previa"
-            class="h-full w-full cursor-pointer rounded-lg object-cover"
+            class="h-full w-full object-cover"
             @click="openFileDialog"
           />
-          <!-- Image hint -->
+          <!-- hint -->
           <div
-            class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-linear-to-t from-black/60 to-transparent pt-6 pb-2"
+            class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-linear-to-t from-black/60 to-transparent px-3 pt-8 pb-2.5"
           >
-            <span class="text-xs font-medium text-white">Toca para cambiar la imagen</span>
+            <span class="truncate pr-8 text-[11px] font-medium text-white">
+              Toca la imagen para cambiar
+            </span>
           </div>
           <!-- Remove image button -->
           <Button
@@ -206,10 +206,10 @@ onBeforeUnmount(() => {
         <template v-else>
           <div class="text-muted-foreground flex flex-col items-center justify-center text-center">
             <ImagePlus class="size-8 stroke-[1.5]" />
-            <p class="mt-2 text-xs">
+            <p class="mt-2 text-xs leading-relaxed">
               <button
                 type="button"
-                class="text-primary hover:text-primary/80"
+                class="text-primary hover:text-primary/80 text-[11px]"
                 @click="openFileDialog"
               >
                 Toca para seleccionar una imagen
@@ -217,7 +217,6 @@ onBeforeUnmount(() => {
             </p>
           </div>
         </template>
-
         <!-- Camera button -->
         <Button
           type="button"
@@ -291,7 +290,7 @@ onBeforeUnmount(() => {
     <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
     <!-- Camera Dialog -->
     <Dialog v-model:open="isCameraOpen" @update:open="!$event && closeCamera()">
-      <DialogContent class="sm:max-w-md">
+      <DialogContent class="lg:max-w-lg">
         <DialogHeader>
           <DialogTitle>Tomar foto</DialogTitle>
           <DialogDescription>Captura una imagen del producto usando la cámara</DialogDescription>
@@ -304,13 +303,21 @@ onBeforeUnmount(() => {
           autoplay
           muted
           playsinline
-          class="aspect-video w-full rounded-lg object-cover"
+          class="aspect-4/3 max-h-[45vh] w-full rounded-lg bg-black object-cover"
+          :class="{ 'scale-x-[-1]': isDesktop }"
         />
-        <div class="flex gap-2 pt-2">
-          <Button type="button" class="flex-1" :disabled="!isActive" @click="capturePhoto">
+        <div class="flex flex-col-reverse gap-2 pt-2 lg:flex-row">
+          <Button type="button" variant="outline" class="w-full sm:w-auto" @click="closeCamera">
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            class="w-full sm:flex-1"
+            :disabled="!isActive"
+            @click="capturePhoto"
+          >
             Capturar
           </Button>
-          <Button type="button" variant="outline" @click="closeCamera">Cancelar</Button>
         </div>
       </DialogContent>
     </Dialog>

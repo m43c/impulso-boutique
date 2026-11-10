@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { Funnel } from '@lucide/vue'
+import { Filter } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -10,14 +10,8 @@ import { toTitleCase } from '@/utils/text'
 import TableFacetedFiltersBody from './TableFacetedFiltersBody.vue'
 
 const props = defineProps({
-  table: {
-    type: Object,
-    required: true,
-  },
-  filterableColumns: {
-    type: Array,
-    required: true,
-  },
+  table: { type: Object, required: true },
+  filterableColumns: { type: Array, required: true },
 })
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -128,10 +122,10 @@ function handleClear() {
   <!-- Desktop view -->
   <Popover v-if="isDesktop" v-model:open="isOpen">
     <PopoverTrigger as-child>
-      <Button variant="outline" class="gap-2">
-        <Funnel class="h-4 w-4" />
-        Filtros
-        <Badge v-if="activeCount" class="ml-1 h-4.5 w-4.5 text-[10px]">{{ activeCount }}</Badge>
+      <Button variant="outline" size="sm" class="gap-2">
+        <Filter class="h-4 w-4" />
+        <span class="text-xs">Filtros</span>
+        <Badge v-if="activeCount" class="h-4 w-4 p-0 text-[10px]">{{ activeCount }}</Badge>
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-72 p-0" align="end">
@@ -140,11 +134,11 @@ function handleClear() {
   </Popover>
   <!-- Mobile view -->
   <Drawer v-else v-model:open="isOpen">
-    <Button variant="outline" size="icon" class="relative" @click="isOpen = true">
-      <Funnel class="h-4 w-4" />
+    <Button variant="outline" size="sm" class="relative p-2!" @click="isOpen = true">
+      <Filter class="h-4 w-4" />
       <Badge
         v-if="activeCount"
-        class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+        class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[11px]"
       >
         {{ activeCount }}
       </Badge>

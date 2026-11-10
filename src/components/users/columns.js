@@ -19,14 +19,16 @@ export const columns = [
     accessorKey: 'full_name',
     header: 'Nombre completo',
     meta: {
-      skeletonClass: 'h-4 w-32',
+      skeletonClass: 'h-4 w-40',
+      cellClass: 'text-xs',
     },
   },
   {
     accessorKey: 'email',
     header: 'Correo electrónico',
     meta: {
-      skeletonClass: 'h-4 w-44',
+      skeletonClass: 'h-4 w-32',
+      cellClass: 'text-xs',
     },
   },
   {
@@ -36,6 +38,7 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       skeletonClass: 'h-4 w-20',
+      cellClass: 'text-xs',
     },
     cell: (info) => info.getValue(),
   },
@@ -47,8 +50,8 @@ export const columns = [
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
       skeletonClass: 'mx-auto h-5 w-16 rounded-full',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => {
       const isActive = info.row.original.is_active
@@ -59,8 +62,8 @@ export const columns = [
         {
           variant: 'outline',
           class: isActive
-            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-            : 'border-rose-500/30 text-rose-400 bg-rose-500/10',
+            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[11px]'
+            : 'border-rose-500/30 text-rose-400 bg-rose-500/10 text-[11px]',
         },
         () => label,
       )
@@ -72,8 +75,8 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-4 w-24',
+      skeletonClass: 'mx-auto h-4 w-20',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => formatDate(info.getValue()),
   },
@@ -83,27 +86,19 @@ export const columns = [
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
-      cellClass: 'text-center',
       skeletonClass: 'mx-auto h-4 w-24',
+      cellClass: 'text-center text-xs',
     },
     cell: (info) => {
       const val = info.getValue()
 
       return h(Tooltip, () => [
-        h(
-          TooltipTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              'button',
-              {
-                type: 'button',
-                class: 'cursor-default',
-              },
-              formatRelativeDate(val),
-            ),
+        h(TooltipTrigger, { asChild: true }, () =>
+          h(
+            'button',
+            { class: 'cursor-help border-muted-foreground/50 border-b border-dashed min-w-p' },
+            formatRelativeDate(val),
+          ),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])
@@ -115,54 +110,45 @@ export const columns = [
     enableSorting: false,
     meta: {
       headerClass: 'justify-center',
+      skeletonClass: 'mx-auto h-6 w-6 rounded-full',
       cellClass: 'text-center',
-      skeletonClass: 'mx-auto h-8 w-8 rounded-full',
     },
     cell: (info) => {
       const user = info.row.original
       const isActive = user.is_active
       const currentUserId = info.table.options.meta?.currentUserId
       const isSelf = user.id === currentUserId
+      const can = info.table.options.meta?.can
+      const canUpdate = can?.('users:update')
+      const canDeactivate = can?.('users:deactivate')
 
-      return h(DropdownMenu, () => [
-        h(
-          DropdownMenuTrigger,
-          {
-            asChild: true,
-          },
-          () =>
-            h(
-              Button,
-              {
-                variant: 'ghost',
-                size: 'icon',
-                'aria-label': `Opciones para ${user.full_name}`,
-                class: 'h-8 w-8 rounded-full',
-              },
-              () =>
-                h(EllipsisVertical, {
-                  class: 'h-4 w-4',
-                }),
-            ),
-        ),
-        h(DropdownMenuContent, { align: 'end' }, () => [
-          // Edit user
+      if (!canUpdate && !canDeactivate) {
+        return null
+      }
+
+      const items = []
+
+      if (canUpdate) {
+        // Edit user
+        items.push(
           h(
             DropdownMenuItem,
             {
               'aria-label': `Editar a ${user.full_name}`,
-              class: 'cursor-pointer',
+              class: 'cursor-pointer text-xs',
               onClick: () => info.table.options.meta?.onEdit?.(user),
             },
-            () => [
-              h(Pencil, {
-                class: 'mr-2 h-4 w-4',
-              }),
-              h('span', 'Editar'),
-            ],
+            () => [h(Pencil, { class: 'h-4 w-4' }), h('span', 'Editar')],
           ),
-          // Toggle status
-          h(DropdownMenuSeparator),
+        )
+      }
+
+      if (canDeactivate) {
+        if (items.length > 0) {
+          items.push(h(DropdownMenuSeparator))
+        }
+        // Toggle status
+        items.push(
           h(
             DropdownMenuItem,
             {
@@ -173,8 +159,8 @@ export const columns = [
               class: [
                 'cursor-pointer',
                 isActive
-                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10',
+                  ? 'text-destructive focus:text-destructive focus:bg-destructive/10 text-xs'
+                  : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 text-xs',
                 isSelf ? 'pointer-events-none opacity-50' : '',
               ],
               onClick: () => {
@@ -187,12 +173,27 @@ export const columns = [
             },
             () => [
               h(isActive ? UserX : UserCheck, {
-                class: ['mr-2 h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
+                class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
               }),
               h('span', isActive ? 'Desactivar' : 'Activar'),
             ],
           ),
-        ]),
+        )
+      }
+      return h(DropdownMenu, () => [
+        h(DropdownMenuTrigger, { asChild: true }, () =>
+          h(
+            Button,
+            {
+              variant: 'ghost',
+              size: 'icon',
+              'aria-label': `Opciones para ${user.full_name}`,
+              class: 'h-8 w-8 rounded-full',
+            },
+            () => h(EllipsisVertical, { class: 'h-4 w-4' }),
+          ),
+        ),
+        h(DropdownMenuContent, { align: 'end' }, () => items),
       ])
     },
   },

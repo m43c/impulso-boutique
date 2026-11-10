@@ -31,7 +31,7 @@ const hasActiveFilters = computed(() => props.groups.some((group) => group.selec
 
 <template>
   <Command class="bg-transparent">
-    <CommandInput placeholder="Buscar filtro..." />
+    <CommandInput placeholder="Buscar filtro..." class="lg:text-xs" />
     <CommandList class="max-h-72">
       <CommandEmpty>No se encontraron resultados</CommandEmpty>
       <template v-for="(group, index) in groups" :key="group.columnId">
@@ -48,7 +48,7 @@ const hasActiveFilters = computed(() => props.groups.some((group) => group.selec
               tabindex="-1"
               class="pointer-events-none mr-2"
             />
-            <span>{{ option.label }}</span>
+            <span class="lg:text-xs">{{ option.label }}</span>
             <span class="text-muted-foreground ml-auto text-xs">{{ option.count }}</span>
           </CommandItem>
         </CommandGroup>

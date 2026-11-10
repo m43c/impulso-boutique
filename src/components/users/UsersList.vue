@@ -47,79 +47,33 @@ import UserCardSkeleton from './UserCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
-  users: {
-    type: Array,
-    default: () => [],
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  isUpdatingStatus: {
-    type: Boolean,
-    default: false,
-  },
-  error: {
-    type: String,
-    default: null,
-  },
-  currentUserId: {
-    type: String,
-    default: null,
-  },
+  users: { type: Array, default: () => [] },
+  isLoading: { type: Boolean, default: false },
+  isUpdatingStatus: { type: Boolean, default: false },
+  error: { type: String, default: null },
+  currentUserId: { type: String, default: null },
 })
 
 const emit = defineEmits(['add-user', 'edit-user', 'toggle-status', 'retry', 'refresh'])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const { can } = usePermissions()
 
 const sortOptions = [
-  {
-    label: 'Nombre: A-Z',
-    columnId: 'full_name',
-    desc: false,
-  },
-  {
-    label: 'Nombre: Z-A',
-    columnId: 'full_name',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Correo: A-Z',
-    columnId: 'email',
-    desc: false,
-  },
-  {
-    label: 'Correo: Z-A',
-    columnId: 'email',
-    desc: true,
-    separator: true,
-  },
-  {
-    label: 'Fecha: más recientes',
-    columnId: 'updated_at',
-    desc: true,
-  },
-  {
-    label: 'Fecha: más antiguos',
-    columnId: 'updated_at',
-    desc: false,
-  },
+  { label: 'Nombre: A-Z', columnId: 'full_name', desc: false },
+  { label: 'Nombre: Z-A', columnId: 'full_name', desc: true, separator: true },
+  { label: 'Correo: A-Z', columnId: 'email', desc: false },
+  { label: 'Correo: Z-A', columnId: 'email', desc: true, separator: true },
+  { label: 'Fecha: más recientes', columnId: 'updated_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'updated_at', desc: false },
 ]
 
 const filterableColumns = [
-  {
-    columnId: 'role',
-    label: 'Rol',
-    getOptionLabel: formatRole,
-  },
-  {
-    columnId: 'is_active',
-    label: 'Estado',
-  },
+  { columnId: 'role', label: 'Rol', getOptionLabel: formatRole },
+  { columnId: 'is_active', label: 'Estado' },
 ]
 
 const table = useTable({
@@ -136,6 +90,7 @@ const table = useTable({
     },
   },
   meta: {
+    can,
     onEdit: (user) => emit('edit-user', user),
     onToggleStatus: (user) => emit('toggle-status', user),
     currentUserId: props.currentUserId,
@@ -170,34 +125,40 @@ function sortIcon(column) {
 
 <template>
   <TooltipProvider :delay-duration="200">
-    <div class="flex min-h-0 flex-1 flex-col gap-4">
-      <!-- Error -->
+    <div
+      class="flex min-h-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-5rem)] lg:overflow-hidden"
+    >
+      <!-- Error message -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
         <div class="bg-destructive/10 text-destructive mb-3 rounded-full p-3">
           <CircleAlert />
         </div>
-        <h3 class="text-base font-semibold">{{ error }}</h3>
+        <h3 class="text-sm font-semibold">{{ error }}</h3>
         <p class="text-muted-foreground mt-1 mb-4 max-w-sm text-xs">Inténtalo nuevamente</p>
         <Button variant="outline" size="sm" :disabled="isLoading" @click="emit('retry')">
           <Loader2 v-if="isLoading" class="animate-spin" />
-          Reintentar
+          <span class="lg:text-xs">Reintentar</span>
         </Button>
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex shrink-0 items-center justify-between gap-2">
           <!-- Search -->
           <div class="relative w-full">
-            <Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input v-model="search" placeholder="Buscar usuario..." class="pl-9" />
+            <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
+            <Input
+              v-model="search"
+              placeholder="Buscar usuario..."
+              class="h-8 pl-8 text-[13px] lg:text-xs!"
+            />
           </div>
           <!-- Refresh button -->
           <Tooltip>
             <TooltipTrigger as-child>
               <Button
                 variant="outline"
-                size="icon"
-                class="shrink-0"
+                size="sm"
+                class="shrink-0 p-2!"
                 :disabled="isLoading"
                 aria-label="Actualizar tabla"
                 @click="emit('refresh')"
@@ -214,82 +175,94 @@ function sortIcon(column) {
           <!-- Sorting button (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- Add user button -->
-          <Button class="hidden gap-2 md:flex" @click="emit('add-user')">
+          <Button
+            v-if="can('users:create')"
+            size="sm"
+            class="hidden gap-2 md:flex"
+            :disabled="isLoading"
+            @click="emit('add-user')"
+          >
             <UserPlus class="h-4 w-4" />
-            Nuevo usuario
+            <span class="lg:text-xs">Agregar usuario</span>
           </Button>
         </div>
         <!-- Desktop view -->
-        <div v-if="isDesktop" class="relative rounded-md border">
+        <div
+          v-if="isDesktop"
+          class="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-md border"
+        >
           <!-- Lock overlay -->
           <LoadingOverlay :show="isUpdatingStatus" text="Actualizando estado..." />
-          <Table>
-            <TableHeader>
-              <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                <TableHead
-                  v-for="header in headerGroup.headers"
-                  :key="header.id"
-                  :class="[
-                    header.column.getCanSort() ? 'cursor-pointer select-none' : '',
-                    header.column.columnDef.meta?.cellClass || '',
-                  ]"
-                  @click="header.column.getToggleSortingHandler()?.($event)"
-                >
-                  <div
-                    class="flex items-center gap-1"
-                    :class="header.column.columnDef.meta?.headerClass || 'justify-start'"
+          <div class="relative isolate flex-1 overflow-auto">
+            <Table class="border-separate border-spacing-0">
+              <TableHeader class="sticky top-0 z-10">
+                <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                  <TableHead
+                    v-for="header in headerGroup.headers"
+                    :key="header.id"
+                    :class="[
+                      header.column.getCanSort() ? 'cursor-pointer select-none' : '',
+                      header.column.columnDef.meta?.cellClass || '',
+                      'bg-background/95 border-b backdrop-blur',
+                    ]"
+                    @click="header.column.getToggleSortingHandler()?.($event)"
                   >
-                    <FlexRender v-if="!header.isPlaceholder" :header="header" />
-                    <component
-                      :is="sortIcon(header.column)"
-                      v-if="sortIcon(header.column)"
-                      class="h-3.5 w-3.5"
-                    />
-                  </div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <!-- Skeleton -->
-            <TableBody>
-              <template v-if="isLoading">
-                <TableRow v-for="row in 10" :key="`skeleton-${row}`">
-                  <TableCell
-                    v-for="column in columns"
-                    :key="column.accessorKey || column.id"
-                    :class="column.meta?.cellClass || ''"
-                  >
-                    <Skeleton :class="column.meta?.skeletonClass || 'h-4 w-24'" />
-                  </TableCell>
+                    <div
+                      class="flex items-center gap-1"
+                      :class="header.column.columnDef.meta?.headerClass || 'justify-start'"
+                    >
+                      <FlexRender v-if="!header.isPlaceholder" :header="header" />
+                      <component
+                        :is="sortIcon(header.column)"
+                        v-if="sortIcon(header.column)"
+                        class="h-3.5 w-3.5"
+                      />
+                    </div>
+                  </TableHead>
                 </TableRow>
-              </template>
-              <!-- User data -->
-              <template v-else-if="table.getRowModel().rows?.length">
-                <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
-                  <TableCell
-                    v-for="cell in row.getAllCells()"
-                    :key="cell.id"
-                    :class="cell.column.columnDef.meta?.cellClass || ''"
-                  >
-                    <FlexRender :cell="cell" />
-                  </TableCell>
-                </TableRow>
-              </template>
-              <!-- Empty state -->
-              <template v-else>
-                <TableRow>
-                  <TableCell
-                    :colspan="columns.length"
-                    class="text-muted-foreground h-24 text-center"
-                  >
-                    No se encontraron usuarios
-                  </TableCell>
-                </TableRow>
-              </template>
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                <!-- Skeleton -->
+                <template v-if="isLoading">
+                  <TableRow v-for="row in 10" :key="`skeleton-${row}`">
+                    <TableCell
+                      v-for="column in columns"
+                      :key="column.accessorKey || column.id"
+                      :class="[column.meta?.cellClass || '', 'border-b']"
+                    >
+                      <Skeleton :class="column.meta?.skeletonClass || 'h-4 w-24'" />
+                    </TableCell>
+                  </TableRow>
+                </template>
+                <!-- User data -->
+                <template v-else-if="table.getRowModel().rows?.length">
+                  <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
+                    <TableCell
+                      v-for="cell in row.getAllCells()"
+                      :key="cell.id"
+                      :class="[cell.column.columnDef.meta?.cellClass || '', 'border-b']"
+                    >
+                      <FlexRender :cell="cell" />
+                    </TableCell>
+                  </TableRow>
+                </template>
+                <!-- Empty state -->
+                <template v-else>
+                  <TableRow>
+                    <TableCell
+                      :colspan="columns.length"
+                      class="text-muted-foreground h-24 border-b text-center"
+                    >
+                      No se encontraron usuarios.
+                    </TableCell>
+                  </TableRow>
+                </template>
+              </TableBody>
+            </Table>
+          </div>
         </div>
         <!-- Mobile view -->
-        <div v-else class="relative flex flex-col gap-4">
+        <div v-else class="relative flex flex-1 flex-col gap-4">
           <!-- Lock overlay -->
           <LoadingOverlay :show="isUpdatingStatus" text="Actualizando estado..." />
           <!-- Skeleton -->
@@ -301,7 +274,7 @@ function sortIcon(column) {
             v-else-if="!table.getRowModel().rows?.length"
             class="text-muted-foreground py-8 text-center text-sm"
           >
-            No se encontraron usuarios
+            No se encontraron usuarios.
           </p>
           <!-- User data -->
           <Card v-for="row in table.getRowModel().rows" v-else :key="row.id" class="py-0">
@@ -309,14 +282,14 @@ function sortIcon(column) {
               <div class="flex justify-between">
                 <div class="flex min-w-0 flex-col">
                   <!-- Full name -->
-                  <p class="font-mediums truncate">{{ row.original.full_name }}</p>
+                  <p class="truncate text-sm font-medium">{{ row.original.full_name }}</p>
                   <!-- Email -->
                   <p class="text-muted-foreground truncate text-sm">
                     {{ row.original.email }}
                   </p>
                 </div>
                 <!-- Actions menu -->
-                <DropdownMenu>
+                <DropdownMenu v-if="can('users:update') || can('users:deactivate')">
                   <DropdownMenuTrigger as-child>
                     <Button
                       variant="ghost"
@@ -330,34 +303,37 @@ function sortIcon(column) {
                   <DropdownMenuContent align="end">
                     <!-- Edit user -->
                     <DropdownMenuItem
+                      v-if="can('users:update')"
                       class="cursor-pointer"
                       @click="emit('edit-user', row.original)"
                     >
-                      <Pencil class="mr-2 h-4 w-4" />
+                      <Pencil class="h-4 w-4" />
                       <span>Editar</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <!-- Toggle status -->
-                    <DropdownMenuItem
-                      class="cursor-pointer"
-                      :class="[
-                        row.original.is_active
-                          ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
-                          : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500',
-                        row.original.id === currentUserId ? 'pointer-events-none opacity-50' : '',
-                      ]"
-                      :disabled="row.original.id === currentUserId"
-                      @click="
-                        row.original.id !== currentUserId && emit('toggle-status', row.original)
-                      "
-                    >
-                      <component
-                        :is="row.original.is_active ? UserX : UserCheck"
-                        class="mr-2 h-4 w-4"
-                        :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
-                      />
-                      <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
-                    </DropdownMenuItem>
+                    <template v-if="can('users:deactivate')">
+                      <DropdownMenuSeparator v-if="can('users:update')" />
+                      <DropdownMenuItem
+                        class="cursor-pointer"
+                        :class="[
+                          row.original.is_active
+                            ? 'text-destructive focus:text-destructive focus:bg-destructive/10'
+                            : 'text-emerald-500 focus:bg-emerald-500/10 focus:text-emerald-500',
+                          row.original.id === currentUserId ? 'pointer-events-none opacity-50' : '',
+                        ]"
+                        :disabled="row.original.id === currentUserId"
+                        @click="
+                          row.original.id !== currentUserId && emit('toggle-status', row.original)
+                        "
+                      >
+                        <component
+                          :is="row.original.is_active ? UserX : UserCheck"
+                          class="h-4 w-4"
+                          :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
+                        />
+                        <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
+                      </DropdownMenuItem>
+                    </template>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -367,7 +343,7 @@ function sortIcon(column) {
                 <!-- Status -->
                 <Badge
                   variant="outline"
-                  class="py-1 text-[11px]"
+                  class="text-[11px]"
                   :class="
                     row.original.is_active
                       ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -396,29 +372,36 @@ function sortIcon(column) {
           </Card>
         </div>
         <!-- Pagination -->
-        <div class="flex items-center justify-between">
-          <p class="text-muted-foreground text-sm">
+        <div
+          v-if="table.getRowModel().rows?.length && table.getPageCount() > 1"
+          class="flex shrink-0 items-center justify-between"
+        >
+          <p class="text-muted-foreground text-xs">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}
           </p>
-          <div class="flex gap-2">
+          <div class="flex items-center justify-center gap-2">
+            <!-- Previous -->
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanPreviousPage()"
+              class="gap-0.5"
               @click="table.previousPage()"
             >
-              <ChevronLeft class="h-4 w-4" />
-              Anterior
+              <ChevronLeft class="mt-0.5 h-4 w-4" />
+              <span class="pr-1 text-xs">Anterior</span>
             </Button>
+            <!-- Next -->
             <Button
               variant="outline"
               size="sm"
               :disabled="!table.getCanNextPage()"
+              class="gap-0.5"
               @click="table.nextPage()"
             >
-              Siguiente
-              <ChevronRight class="h-4 w-4" />
+              <span class="ml-1 text-xs">Siguiente</span>
+              <ChevronRight class="mt-0.5 h-4 w-4" />
             </Button>
           </div>
         </div>

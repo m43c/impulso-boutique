@@ -16,38 +16,14 @@ import {
 import { normalizeText } from '@/utils/text'
 
 const props = defineProps({
-  id: {
-    type: String,
-    default: undefined,
-  },
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  options: {
-    type: Array,
-    default: () => [],
-  },
-  placeholder: {
-    type: String,
-    default: 'Selecciona...',
-  },
-  searchPlaceholder: {
-    type: String,
-    default: 'Buscar o crear...',
-  },
-  clearable: {
-    type: Boolean,
-    default: false,
-  },
-  clearLabel: {
-    type: String,
-    default: 'Quitar selección',
-  },
-  invalid: {
-    type: Boolean,
-    default: false,
-  },
+  id: { type: String, default: undefined },
+  modelValue: { type: String, default: '' },
+  options: { type: Array, default: () => [] },
+  placeholder: { type: String, default: 'Selecciona...' },
+  searchPlaceholder: { type: String, default: 'Buscar...' },
+  clearable: { type: Boolean, default: false },
+  clearLabel: { type: String, default: 'Quitar selección' },
+  invalid: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -108,7 +84,7 @@ function handleUpdate(value) {
           :aria-invalid="invalid"
           class="w-full min-w-0 justify-between font-normal"
         >
-          <span class="truncate" :class="{ 'text-muted-foreground': !modelValue }">
+          <span class="truncate lg:text-xs" :class="{ 'text-muted-foreground': !modelValue }">
             {{ modelValue || placeholder }}
           </span>
           <ChevronsUpDownIcon class="shrink-0 opacity-50" />
@@ -116,24 +92,28 @@ function handleUpdate(value) {
       </ComboboxTrigger>
     </ComboboxAnchor>
     <ComboboxList class="w-(--reka-combobox-trigger-width)">
-      <ComboboxInput v-model="search" :placeholder="searchPlaceholder" />
-      <ComboboxEmpty>Escribe para crear una opción</ComboboxEmpty>
-      <ComboboxGroup>
-        <ComboboxItem v-for="option in filteredOptions" :key="option" :value="option">
-          {{ option }}
-          <ComboboxItemIndicator>
-            <CheckIcon />
-          </ComboboxItemIndicator>
-        </ComboboxItem>
-        <ComboboxItem v-if="canCreate" :value="newValue">
-          <PlusIcon />
-          Crear "{{ newValue }}"
-        </ComboboxItem>
-        <ComboboxItem v-if="showClear" :value="CLEAR_VALUE" class="text-muted-foreground">
-          <XIcon />
-          {{ clearLabel }}
-        </ComboboxItem>
-      </ComboboxGroup>
+      <ComboboxInput v-model="search" :placeholder="searchPlaceholder" class="lg:text-xs" />
+      <div
+        class="max-h-[min(14rem,var(--reka-combobox-content-available-height,100vh))] overflow-x-hidden overflow-y-auto md:max-h-[min(20rem,var(--reka-combobox-content-available-height,100vh))]"
+      >
+        <ComboboxEmpty class="lg:text-xs">Escribe para crear</ComboboxEmpty>
+        <ComboboxGroup>
+          <ComboboxItem v-for="option in filteredOptions" :key="option" :value="option">
+            <span class="min-w-0 truncate lg:text-xs">{{ option }}</span>
+            <ComboboxItemIndicator>
+              <CheckIcon />
+            </ComboboxItemIndicator>
+          </ComboboxItem>
+          <ComboboxItem v-if="canCreate" :value="newValue">
+            <PlusIcon class="shrink-0" />
+            <span class="min-w-0 truncate lg:text-xs">Crear "{{ newValue }}"</span>
+          </ComboboxItem>
+          <ComboboxItem v-if="showClear" :value="CLEAR_VALUE" class="text-muted-foreground">
+            <XIcon class="shrink-0" />
+            <span class="min-w-0 truncate lg:text-xs">{{ clearLabel }}</span>
+          </ComboboxItem>
+        </ComboboxGroup>
+      </div>
     </ComboboxList>
   </Combobox>
 </template>

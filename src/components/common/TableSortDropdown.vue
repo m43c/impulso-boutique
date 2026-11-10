@@ -12,18 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 const props = defineProps({
-  table: {
-    type: Object,
-    required: true,
-  },
-  options: {
-    type: Array,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: 'Ordenar por',
-  },
+  table: { type: Object, required: true },
+  options: { type: Array, required: true },
+  title: { type: String, default: 'Ordenar por' },
 })
 
 const activeSort = computed(() => {
@@ -63,7 +54,7 @@ function isOptionActive(option) {
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="outline" size="icon" class="shrink-0" aria-label="Opciones de orden">
+      <Button variant="outline" size="sm" class="shrink-0 p-2!" aria-label="Opciones de orden">
         <ArrowUpDown class="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
@@ -85,7 +76,7 @@ function isOptionActive(option) {
       <template v-if="activeSort">
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          class="text-muted-foreground cursor-pointer justify-center text-xs"
+          class="text-muted-foreground bg-secondary justify-center text-xs font-medium"
           @click="resetSort()"
         >
           Restablecer orden
