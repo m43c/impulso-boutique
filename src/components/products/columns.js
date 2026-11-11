@@ -68,6 +68,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.category),
     id: 'category',
     header: 'Categoría',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -95,6 +96,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.brand),
     id: 'brand',
     header: 'Marca',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -122,6 +124,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.color),
     id: 'color',
     header: 'Color',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -149,6 +152,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.size),
     id: 'size',
     header: 'Talla',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
@@ -171,6 +175,7 @@ export const columns = [
   {
     accessorKey: 'is_active',
     header: 'Estado',
+    enableSorting: false,
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
@@ -273,6 +278,7 @@ export const columns = [
   {
     accessorKey: 'created_at',
     header: 'Creación',
+    enableSorting: false,
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
