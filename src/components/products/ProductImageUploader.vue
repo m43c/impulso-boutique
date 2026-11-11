@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
     </div>
     <!-- Desktop view-->
     <div v-else class="flex gap-4">
-      <!-- Box 1: Image preview / empty state -->
+      <!-- Box 1: Image preview/empty state -->
       <div
         class="bg-muted/20 border-border relative flex h-40 w-1/2 items-center justify-center overflow-hidden rounded-xl border"
       >
@@ -290,10 +290,10 @@ onBeforeUnmount(() => {
     <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
     <!-- Camera Dialog -->
     <Dialog v-model:open="isCameraOpen" @update:open="!$event && closeCamera()">
-      <DialogContent class="lg:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Tomar foto</DialogTitle>
-          <DialogDescription>Captura una imagen del producto usando la cámara</DialogDescription>
+      <DialogContent class="lg:max-w-sm">
+        <DialogHeader class="gap-0 text-left">
+          <DialogTitle class="text-sm">Tomar foto</DialogTitle>
+          <DialogDescription class="text-xs">Captura una imagen del producto usando la cámara</DialogDescription>
         </DialogHeader>
         <p v-if="cameraError" class="text-destructive text-sm">
           {{ cameraError }}
