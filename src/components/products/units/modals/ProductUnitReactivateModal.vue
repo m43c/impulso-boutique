@@ -152,7 +152,7 @@ function handleCancel() {
         </DrawerDescription>
       </DrawerHeader>
       <div class="flex flex-col gap-4 overflow-y-auto px-6 pb-6">
-        <!-- Error alert -->
+        <!-- Error message -->
         <Alert v-if="errorMessage" variant="destructive">
           <AlertDescription>{{ errorMessage }}</AlertDescription>
         </Alert>

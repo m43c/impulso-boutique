@@ -473,7 +473,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
         <!-- Step 2: Confirm -->
         <template v-else-if="step === 'confirm'">
           <div class="flex flex-col gap-4 px-6">
-            <!-- Error menssage -->
+            <!-- Error message -->
             <Alert v-if="errorMessage" variant="destructive">
               <AlertDescription>{{ errorMessage }}</AlertDescription>
             </Alert>

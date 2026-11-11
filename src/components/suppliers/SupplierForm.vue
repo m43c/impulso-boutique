@@ -93,12 +93,8 @@ function handleCancel() {
 <template>
   <form class="flex min-h-0 flex-1 flex-col" @submit="onSubmit">
     <!-- Error message -->
-    <Alert
-      v-if="errorMessage"
-      variant="destructive"
-      class="bg-destructive/10 border-destructive/20 dark:bg-destructive/20 mb-4"
-    >
-      <AlertDescription class="font-medium lg:text-xs">{{ errorMessage }}</AlertDescription>
+    <Alert v-if="errorMessage" variant="destructive" class="mb-4 lg:mt-0">
+      <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
     </Alert>
     <!-- Fields -->
     <FieldGroup class="min-h-0 flex-1 gap-4 overflow-y-auto">
