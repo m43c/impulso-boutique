@@ -9,6 +9,7 @@ import {
   Package,
   LogOut,
   Store,
+  Truck,
   User,
   Users,
 } from '@lucide/vue'
@@ -45,6 +46,7 @@ const items = [
   { title: 'Inicio', url: '/home', icon: Home },
   { title: 'Usuarios', url: '/users', icon: Users, permission: 'users:view' },
   { title: 'Productos', url: '/products', icon: Package, permission: 'products:view' },
+  { title: 'Proveedores', url: '/suppliers', icon: Truck, permission: 'suppliers:view' },
   { title: 'Movimientos', url: '/moves', icon: ArrowLeftRight, permission: 'inventory:view-moves' },
 ]
 

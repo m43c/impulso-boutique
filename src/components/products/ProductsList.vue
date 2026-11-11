@@ -289,7 +289,7 @@ function toggleExpand(id) {
               v-if="!isLoading && !table.getRowModel().rows?.length"
               class="absolute inset-x-0 top-10 bottom-0 flex flex-col items-center justify-center px-6 text-center"
             >
-              <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
+              <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
                 <PackageSearch class="h-9 w-9" />
               </div>
               <h3 class="text-sm font-semibold">No se encontraron productos</h3>
