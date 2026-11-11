@@ -48,7 +48,7 @@ import {
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { formatCurrency } from '@/utils/currency'
 import { columns } from '@/components/products/columns'
-import { features } from '@/components/products/features'
+import { features } from '@/components/common/tableFeatures'
 import ProductCardSkeleton from '@/components/products/ProductCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
@@ -86,8 +86,8 @@ const sortOptions = [
   { label: 'Precio: más alto', columnId: 'price', desc: true, separator: true },
   { label: 'Stock: menor primero', columnId: 'stock', desc: false },
   { label: 'Stock: mayor primero', columnId: 'stock', desc: true, separator: true },
-  { label: 'Fecha: más recientes', columnId: 'updated_at', desc: true },
-  { label: 'Fecha: más antiguos', columnId: 'updated_at', desc: false },
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false },
 ]
 
 const filterableColumns = [
@@ -111,6 +111,7 @@ const table = useTable({
   enableMultiSort: false,
   globalFilterFn: 'includesStringNormalized',
   initialState: {
+    sorting: [{ id: 'created_at', desc: true }],
     pagination: {
       pageIndex: 0,
       pageSize: isDesktop.value ? 10 : 5,

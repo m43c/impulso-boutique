@@ -42,7 +42,7 @@ import {
 import { formatRole } from '@/utils/roles'
 import { formatDateTime, formatRelativeDate } from '@/utils/date'
 import { columns } from './columns'
-import { features } from './features'
+import { features } from '@/components/common/tableFeatures'
 import UserCardSkeleton from './UserCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'

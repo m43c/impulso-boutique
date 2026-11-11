@@ -12,7 +12,6 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 
 const props = defineProps({
   supplier: { type: Object, default: null },
-  mode: { type: String, default: null },
   isLoading: { type: Boolean, default: false },
   errorMessage: { type: String, default: null },
 })
