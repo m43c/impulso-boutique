@@ -61,7 +61,7 @@ const emptyDescription = computed(() =>
           <Input
             v-model="search"
             placeholder="Buscar proveedor..."
-            class="focus-visible:border-primary h-8 pl-8 text-[13px] focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
+            class="h-8 pl-8 text-[13px] lg:text-xs!"
           />
         </div>
         <!-- Refresh button -->

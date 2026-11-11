@@ -109,7 +109,7 @@ function handleCancel() {
             placeholder="Distribuidora Bolivia"
             :aria-invalid="!!errors.length"
             aria-required="true"
-            class="focus-visible:border-primary text-sm focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
+            class="text-sm lg:text-xs!"
           />
           <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
