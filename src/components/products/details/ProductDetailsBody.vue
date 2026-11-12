@@ -127,7 +127,7 @@ const props = defineProps({
                   : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
               "
             >
-              <span class="text-[10px]">{{ product.is_active ? 'Vigente' : 'Retirado' }}</span>
+              <span class="text-[10px]">{{ product.is_active ? 'Activo' : 'Inactivo' }}</span>
             </Badge>
           </div>
         </div>
@@ -256,7 +256,7 @@ const props = defineProps({
                   : 'border-rose-500/30 bg-rose-500/10 text-rose-500'
               "
             >
-              {{ product.is_active ? 'Vigente' : 'Retirado' }}
+              {{ product.is_active ? 'Activo' : 'Inactivo' }}
             </Badge>
           </div>
         </div>

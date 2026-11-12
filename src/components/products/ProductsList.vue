@@ -388,7 +388,7 @@ function toggleExpand(id) {
                           class="h-4 w-4"
                           :class="row.original.is_active ? 'text-destructive' : 'text-emerald-500'"
                         />
-                        <span>{{ row.original.is_active ? 'Retirar' : 'Reponer' }}</span>
+                        <span>{{ row.original.is_active ? 'Desactivar' : 'Activar' }}</span>
                       </DropdownMenuItem>
                     </template>
                   </DropdownMenuContent>
@@ -473,7 +473,7 @@ function toggleExpand(id) {
                           : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
                       "
                     >
-                      {{ row.original.is_active ? 'Vigente' : 'Retirado' }}
+                      {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
                     </Badge>
                   </div>
                 </div>

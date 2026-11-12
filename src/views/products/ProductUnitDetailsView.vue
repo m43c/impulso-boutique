@@ -378,7 +378,7 @@ onUnmounted(() => {
                         variant="outline"
                         class="border-rose-500/30 bg-rose-500/10 text-[11px] text-rose-400"
                       >
-                        Retirado
+                        Inactivo
                       </Badge>
                     </div>
                     <!-- Price -->

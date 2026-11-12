@@ -199,12 +199,12 @@ function handleCreateProductVariant(product) {
 }
 
 async function handleToggleStatus(product) {
-  const isRetiring = product.is_active
-  const actionText = isRetiring ? 'retirar' : 'reponer'
+  const isDeactivating = product.is_active
+  const actionText = isDeactivating ? 'desactivar' : 'activar'
 
   try {
-    await productsStore.toggleProductStatus(product.id, !isRetiring)
-    toast.success(`Producto ${isRetiring ? 'retirado' : 'repuesto'} correctamente`)
+    await productsStore.toggleProductStatus(product.id, !isDeactivating)
+    toast.success(`Producto ${isDeactivating ? 'desactivado' : 'activado'} correctamente`)
     loadProducts()
   } catch (error) {
     console.error(`Error al ${actionText} producto:`, error)

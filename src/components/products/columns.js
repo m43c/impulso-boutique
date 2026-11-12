@@ -193,7 +193,7 @@ export const columns = [
             ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[11px]'
             : 'border-rose-500/30 text-rose-400 bg-rose-500/10 text-[11px]',
         },
-        () => (isActive ? 'Vigente' : 'Retirado'),
+        () => (isActive ? 'Activo' : 'Inactivo'),
       )
     },
   },
@@ -406,7 +406,7 @@ export const columns = [
             h(
               DropdownMenuItem,
               {
-                'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
+                'aria-label': isActive ? `Desactivar ${product.name}` : `Activar ${product.name}`,
                 class: [
                   'cursor-pointer text-xs',
                   isActive
@@ -419,7 +419,7 @@ export const columns = [
                 h(isActive ? XCircle : PlusCircle, {
                   class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
                 }),
-                h('span', isActive ? 'Retirar' : 'Reponer'),
+                h('span', isActive ? 'Desactivar' : 'Activar'),
               ],
             ),
         ]),

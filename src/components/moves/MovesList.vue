@@ -320,7 +320,7 @@ function referenceText(row) {
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{{ row.original.product_is_active ? 'Vigente' : 'Retirado' }}</p>
+                        <p>{{ row.original.product_is_active ? 'Activo' : 'Inactivo' }}</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
