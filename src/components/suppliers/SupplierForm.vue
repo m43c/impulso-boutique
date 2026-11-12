@@ -54,7 +54,7 @@ const { handleSubmit, isSubmitting, resetForm } = useForm({
   initialValues: {
     name: '',
     phone: '',
-    country: 'Bolivia',
+    country: '',
     city: '',
   },
 })
@@ -65,13 +65,13 @@ function populateForm(supplier) {
       ? {
           name: supplier.name,
           phone: supplier.phone,
-          country: supplier.country ?? 'Bolivia',
+          country: supplier.country ?? '',
           city: supplier.city ?? '',
         }
       : {
           name: '',
           phone: '',
-          country: 'Bolivia',
+          country: '',
           city: '',
         },
   })
@@ -113,27 +113,28 @@ function handleCancel() {
           <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
         </Field>
       </VeeField>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <!-- Phone -->
-        <VeeField v-slot="{ componentField, errors }" name="phone">
-          <Field :data-invalid="!!errors.length">
-            <FieldLabel for="phone" class="lg:text-xs">Teléfono</FieldLabel>
-            <Input
-              id="phone"
-              v-bind="componentField"
-              type="tel"
-              placeholder="+591 67692197"
-              :aria-invalid="!!errors.length"
-              aria-required="true"
-              class="focus-visible:border-primary text-sm focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
-            />
-            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
-          </Field>
-        </VeeField>
+      <!-- Phone -->
+      <VeeField v-slot="{ componentField, errors }" name="phone">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="phone" class="lg:text-xs">Teléfono</FieldLabel>
+          <Input
+            id="phone"
+            v-bind="componentField"
+            type="tel"
+            placeholder="+591 67692197"
+            :aria-invalid="!!errors.length"
+            aria-required="true"
+            class="focus-visible:border-primary text-sm focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
+          />
+          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
+        </Field>
+      </VeeField>
+      <!-- Country & City -->
+      <div class="grid grid-cols-2 gap-4">
         <!-- Country -->
         <VeeField v-slot="{ componentField, errors }" name="country">
           <Field :data-invalid="!!errors.length">
-            <FieldLabel for="country" class="lg:text-xs">País</FieldLabel>
+            <FieldLabel for="country" class="lg:text-xs">País (opcional)</FieldLabel>
             <Input
               id="country"
               v-bind="componentField"
@@ -146,30 +147,30 @@ function handleCancel() {
             <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
           </Field>
         </VeeField>
+        <!-- City -->
+        <VeeField v-slot="{ componentField, errors }" name="city">
+          <Field :data-invalid="!!errors.length">
+            <FieldLabel for="city" class="lg:text-xs">Ciudad (opcional)</FieldLabel>
+            <Input
+              id="city"
+              v-bind="componentField"
+              type="text"
+              placeholder="Yacuíba"
+              :aria-invalid="!!errors.length"
+              class="focus-visible:border-primary text-sm focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
+            />
+            <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
+          </Field>
+        </VeeField>
       </div>
-      <!-- City -->
-      <VeeField v-slot="{ componentField, errors }" name="city">
-        <Field :data-invalid="!!errors.length">
-          <FieldLabel for="city" class="lg:text-xs">Ciudad (opcional)</FieldLabel>
-          <Input
-            id="city"
-            v-bind="componentField"
-            type="text"
-            placeholder="Yacuíba"
-            :aria-invalid="!!errors.length"
-            class="focus-visible:border-primary text-sm focus-visible:border focus-visible:ring-0 focus-visible:outline-none lg:text-xs!"
-          />
-          <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
-        </Field>
-      </VeeField>
     </FieldGroup>
     <!-- Actions buttons -->
-    <div class="grid grid-cols-1 gap-2 pt-6 md:grid-cols-2 md:gap-4">
+    <div class="flex flex-col gap-2 pt-6 md:flex-row md:justify-end md:gap-2">
       <Button
         type="submit"
         :size="isDesktop ? 'sm' : ''"
         :disabled="isSubmitting || isLoading"
-        class="w-full md:order-2"
+        class="w-full md:order-2 md:w-auto md:min-w-24"
       >
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />
         <span class="lg:text-xs">{{ isSubmitting || isLoading ? 'Guardando...' : 'Guardar' }}</span>
@@ -178,7 +179,7 @@ function handleCancel() {
         type="button"
         :size="isDesktop ? 'sm' : ''"
         variant="outline"
-        class="w-full md:order-1"
+        class="w-full md:order-1 md:w-auto md:min-w-0 md:px-4"
         @click="handleCancel"
       >
         <span class="lg:text-xs">Cancelar</span>
