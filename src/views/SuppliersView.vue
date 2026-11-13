@@ -18,6 +18,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import SupplierDeactivateModal from '@/components/suppliers/SupplierDeactivateModal.vue'
 import SupplierForm from '@/components/suppliers/SupplierForm.vue'
 import SuppliersList from '@/components/suppliers/SuppliersList.vue'
 import { getSupplierErrorMessage } from '@/utils/supplierErrors'
@@ -34,6 +35,9 @@ const fetchError = ref(null)
 const formError = ref(null)
 const formSupplier = ref(null)
 const formKey = ref(0)
+const isDeactivateOpen = ref(false)
+const supplierToDeactivate = ref(null)
+const deactivateProductCount = ref(0)
 
 const isEditing = computed(() => formSupplier.value !== null)
 
@@ -144,17 +148,73 @@ function handleEditSupplier(supplier) {
   isFormOpen.value = true
 }
 
-async function handleToggleStatus(supplier) {
-  const isDeactivating = supplier.is_active
+function closeDeactivateModal() {
+  isDeactivateOpen.value = false
+  supplierToDeactivate.value = null
+  deactivateProductCount.value = 0
+}
+
+function handleDeactivateOpenChange(open) {
+  if (open) {
+    isDeactivateOpen.value = true
+    return
+  }
+
+  if (suppliersStore.isTogglingStatus) {
+    return
+  }
+
+  closeDeactivateModal()
+}
+
+async function applyStatusToggle(supplier, isDeactivating) {
   const actionText = isDeactivating ? 'desactivar' : 'activar'
 
   try {
     await suppliersStore.toggleSupplierStatus(supplier)
     toast.success(`Proveedor ${isDeactivating ? 'desactivado' : 'activado'} correctamente`)
+
+    if (isDeactivating) {
+      closeDeactivateModal()
+    }
   } catch (error) {
     console.error(`Error al ${actionText} el proveedor:`, error)
     toast.error(getSupplierErrorMessage(error, `No se pudo ${actionText} el proveedor`))
   }
+}
+
+async function handleToggleStatus(supplier) {
+  const isDeactivating = supplier.is_active
+
+  if (!isDeactivating) {
+    await applyStatusToggle(supplier, false)
+    return
+  }
+
+  try {
+    const productCount = await suppliersStore.countSupplierProducts(supplier.id)
+
+    if (productCount > 0) {
+      supplierToDeactivate.value = supplier
+      deactivateProductCount.value = productCount
+      isDeactivateOpen.value = true
+      return
+    }
+  } catch (error) {
+    console.error('Error al verificar los productos del proveedor:', error)
+    toast.error(getSupplierErrorMessage(error, 'No se pudieron verificar los productos asociados'))
+    return
+  }
+
+  await applyStatusToggle(supplier, true)
+}
+
+function handleConfirmDeactivate() {
+  if (!supplierToDeactivate.value) {
+    return
+  }
+
+  applyStatusToggle(supplierToDeactivate.value, true)
 }
 </script>
 
@@ -164,7 +224,7 @@ async function handleToggleStatus(supplier) {
     <SuppliersList
       :suppliers="suppliersStore.suppliers"
       :is-loading="suppliersStore.isFetching"
-      :is-updating-status="suppliersStore.isTogglingStatus"
+      :is-updating-status="suppliersStore.isTogglingStatus || suppliersStore.isCountingProducts"
       :error="fetchError"
       @add-supplier="handleAddSupplier"
       @edit-supplier="handleEditSupplier"
@@ -230,5 +290,14 @@ async function handleToggleStatus(supplier) {
         />
       </DrawerContent>
     </Drawer>
+    <!-- Deactivate warning -->
+    <SupplierDeactivateModal
+      :open="isDeactivateOpen"
+      :supplier="supplierToDeactivate"
+      :product-count="deactivateProductCount"
+      :is-loading="suppliersStore.isTogglingStatus"
+      @update:open="handleDeactivateOpenChange"
+      @confirm="handleConfirmDeactivate"
+    />
   </div>
 </template>

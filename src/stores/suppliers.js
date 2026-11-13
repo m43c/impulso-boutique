@@ -7,6 +7,7 @@ export const useSuppliersStore = defineStore('suppliers', () => {
   const isFetching = ref(false)
   const isUpdating = ref(false)
   const isTogglingStatus = ref(false)
+  const isCountingProducts = ref(false)
 
   const suppliers = ref([])
 
@@ -74,6 +75,25 @@ export const useSuppliersStore = defineStore('suppliers', () => {
     }
   }
 
+  async function countSupplierProducts(supplierId) {
+    isCountingProducts.value = true
+
+    try {
+      const { count, error } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('supplier_id', supplierId)
+
+      if (error) {
+        throw error
+      }
+
+      return count ?? 0
+    } finally {
+      isCountingProducts.value = false
+    }
+  }
+
   async function fetchSuppliers() {
     isFetching.value = true
 
@@ -107,10 +127,12 @@ export const useSuppliersStore = defineStore('suppliers', () => {
     isFetching,
     isUpdating,
     isTogglingStatus,
+    isCountingProducts,
     suppliers,
     createSupplier,
     updateSupplier,
     toggleSupplierStatus,
+    countSupplierProducts,
     fetchSuppliers,
     clear,
   }
