@@ -99,7 +99,10 @@ export const useProductsStore = defineStore('products', () => {
 
     try {
       const [productsRes, stockRes] = await Promise.all([
-        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase
+          .from('products')
+          .select('*, supplier:suppliers(name)')
+          .order('created_at', { ascending: false }),
         supabase.from('product_stock').select('*'),
       ])
 
@@ -115,6 +118,7 @@ export const useProductsStore = defineStore('products', () => {
 
       products.value = productsRes.data.map((p) => ({
         ...p,
+        supplier_name: p.supplier?.name || null,
         ...(stockById.get(p.id) ?? {
           stock_available: 0,
           stock_sold: 0,
@@ -135,13 +139,20 @@ export const useProductsStore = defineStore('products', () => {
   }
 
   async function fetchProductById(id) {
-    const { data, error } = await supabase.from('products').select().eq('id', id).single()
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, supplier:suppliers(name)')
+      .eq('id', id)
+      .single()
 
     if (error) {
       throw error
     }
 
-    return data
+    return {
+      ...data,
+      supplier_name: data.supplier?.name || null,
+    }
   }
 
   async function fetchOptions() {

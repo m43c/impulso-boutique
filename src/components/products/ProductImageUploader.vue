@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
     <div v-else class="flex gap-4">
       <!-- Box 1: Image preview/empty state -->
       <div
-        class="bg-muted/20 border-border relative flex h-40 w-1/2 items-center justify-center overflow-hidden rounded-xl border"
+        class="bg-muted/20 border-border relative flex aspect-square w-1/2 items-center justify-center overflow-hidden rounded-xl border"
       >
         <template v-if="hasImage">
           <img :src="displayUrl" alt="Vista previa" class="h-full w-full object-cover" />
@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
       </div>
       <!-- Box 2: Dropzone -->
       <div
-        class="relative flex h-40 w-1/2 flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center transition-colors"
+        class="relative flex aspect-square w-1/2 flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center transition-colors"
         :class="[
           isDragging
             ? 'border-primary bg-primary/5'

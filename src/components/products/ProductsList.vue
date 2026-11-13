@@ -95,6 +95,12 @@ const filterableColumns = [
   { columnId: 'brand', label: 'Marca', useOriginalCasing: true, emptyLabel: 'Sin marca' },
   { columnId: 'color', label: 'Color', useOriginalCasing: true },
   { columnId: 'size', label: 'Talla', useOriginalCasing: true },
+  {
+    columnId: 'supplier_name',
+    label: 'Proveedor',
+    useOriginalCasing: true,
+    emptyLabel: 'Sin proveedor',
+  },
   { columnId: 'stock_status', label: 'Stock' },
 ]
 
@@ -395,7 +401,7 @@ function toggleExpand(id) {
                 </DropdownMenu>
               </div>
               <!-- Details -->
-              <div class="flex items-stretch gap-4 pb-2">
+              <div class="flex items-stretch gap-3 pb-2 lg:gap-4">
                 <!-- Image -->
                 <ProductImage
                   :public-id="row.original.image_public_id"

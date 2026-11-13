@@ -12,7 +12,7 @@ export const PERMISSIONS = {
   'products:update': ['admin'],
   'products:toggle-status': ['admin'],
   // suppliers
-  'suppliers:view': ['admin', 'advisor', 'cashier'],
+  'suppliers:view': ['admin'],
   'suppliers:create': ['admin'],
   'suppliers:update': ['admin'],
   'suppliers:toggle-status': ['admin'],

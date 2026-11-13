@@ -179,7 +179,7 @@ function handleCancel() {
         type="button"
         :size="isDesktop ? 'sm' : ''"
         variant="outline"
-        class="w-full md:order-1 md:w-auto md:min-w-0 md:px-4"
+        class="w-full md:order-1 md:w-auto md:min-w-0"
         @click="handleCancel"
       >
         <span class="lg:text-xs">Cancelar</span>

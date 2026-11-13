@@ -35,7 +35,7 @@ const props = defineProps({
           {{ product.name }}
         </p>
         <!-- Description -->
-        <p class="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
+        <p class="text-muted-foreground text-xs leading-relaxed">
           {{ product.description || 'Sin descripción' }}
         </p>
       </div>
@@ -52,20 +52,21 @@ const props = defineProps({
           />
         </div>
         <!-- Details -->
-        <div class="flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-none -mt-1">
+        <div class="-mt-1 flex min-w-0 flex-1 flex-col gap-2 text-xs leading-tight">
           <!-- Category -->
           <div class="flex min-w-0 gap-2">
-            <span class="text-muted-foreground shrink-0">Categoria:</span>
+            <span class="text-muted-foreground shrink-0">Categoría:</span>
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
                   class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  :class="!product.category ? 'text-muted-foreground italic' : ''"
                 >
-                  {{ product.category }}
+                  {{ product.category || 'Sin categoría' }}
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{{ product.category }}</p>
+                <p>{{ product.category || 'Sin categoría' }}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -76,6 +77,7 @@ const props = defineProps({
               <TooltipTrigger as-child>
                 <button
                   class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  :class="!product.brand ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.brand || 'Sin marca' }}
                 </button>
@@ -92,6 +94,7 @@ const props = defineProps({
               <TooltipTrigger as-child>
                 <button
                   class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  :class="!product.color ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.color || 'Sin color' }}
                 </button>
@@ -104,12 +107,38 @@ const props = defineProps({
           <!-- Size -->
           <div class="flex gap-2">
             <span class="text-muted-foreground shrink-0">Talla:</span>
-            <span class="min-w-0 truncate">{{ product.size || 'Sin talla' }}</span>
+            <span
+              class="min-w-0 truncate"
+              :class="!product.size ? 'text-muted-foreground italic' : ''"
+            >
+              {{ product.size || 'Sin talla' }}
+            </span>
           </div>
           <!-- Price -->
           <div class="flex gap-2">
             <span class="text-muted-foreground shrink-0">Precio:</span>
             <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
+          </div>
+          <!-- Supplier -->
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Proveedor:</span>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button
+                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  :class="
+                    !product.supplier_name && !product.supplier?.name
+                      ? 'text-muted-foreground italic'
+                      : ''
+                  "
+                >
+                  {{ product.supplier_name || 'Sin proveedor' }}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ product.supplier_name || 'Sin proveedor' }}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <!-- Min stock -->
           <div class="flex gap-2">
@@ -186,7 +215,7 @@ const props = defineProps({
       <!-- Name -->
       <h3 class="mb-3 text-sm leading-tight font-semibold">{{ product.name }}</h3>
       <!-- Image -->
-      <div class="mb-3 flex gap-4">
+      <div class="mb-3 flex gap-3">
         <ProductImage
           :public-id="product.image_public_id"
           :alt="product.name"
@@ -196,18 +225,21 @@ const props = defineProps({
           icon-class="text-muted-foreground h-6 w-6"
         />
         <!-- Details -->
-        <div class="flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-none -mt-1">
+        <div class="-mt-0.5 flex min-w-0 flex-1 flex-col gap-2 text-xs leading-tight">
           <!-- Category -->
           <div class="flex min-w-0 gap-2">
             <span class="text-muted-foreground shrink-0">Categoría:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 truncate">
-                  {{ product.category }}
+                <button
+                  class="min-w-0 truncate"
+                  :class="!product.category ? 'text-muted-foreground italic' : ''"
+                >
+                  {{ product.category || 'Sin categoría' }}
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{{ product.category }}</p>
+                <p>{{ product.category || 'Sin categoría' }}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -216,7 +248,10 @@ const props = defineProps({
             <span class="text-muted-foreground shrink-0">Marca:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 truncate">
+                <button
+                  class="min-w-0 truncate"
+                  :class="!product.brand ? 'text-muted-foreground italic' : ''"
+                >
                   {{ product.brand || 'Sin marca' }}
                 </button>
               </TooltipTrigger>
@@ -230,7 +265,10 @@ const props = defineProps({
             <span class="text-muted-foreground shrink-0">Color:</span>
             <Tooltip>
               <TooltipTrigger as-child>
-                <button class="min-w-0 truncate">
+                <button
+                  class="min-w-0 truncate"
+                  :class="!product.color ? 'text-muted-foreground italic' : ''"
+                >
                   {{ product.color || 'Sin color' }}
                 </button>
               </TooltipTrigger>
@@ -259,6 +297,11 @@ const props = defineProps({
               {{ product.is_active ? 'Activo' : 'Inactivo' }}
             </Badge>
           </div>
+          <!-- Price -->
+          <div class="flex gap-2">
+            <span class="text-muted-foreground shrink-0">Precio:</span>
+            <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
+          </div>
         </div>
       </div>
       <!-- Divisor -->
@@ -269,7 +312,7 @@ const props = defineProps({
         <div class="flex flex-col items-center text-xs">
           <Badge
             variant="outline"
-            class="h-8 w-8 rounded-full  border-emerald-500/30 bg-emerald-500/10 text-sm font-semibold text-emerald-400"
+            class="h-8 w-8 rounded-full border-emerald-500/30 bg-emerald-500/10 text-sm font-semibold text-emerald-400"
           >
             {{ stats.available }}
           </Badge>
@@ -306,14 +349,32 @@ const props = defineProps({
           </AccordionTrigger>
           <AccordionContent class="flex min-w-0 flex-col gap-2 pb-0! text-sm">
             <!-- Description -->
-            <p class="text-muted-foreground text-xs leading-relaxed">
-              {{ product.description || 'Sin descripción' }}
+            <p class="text-xs leading-relaxed">
+              <span class="text-muted-foreground mr-1">Descripción:</span>
+              <span :class="!product.description ? 'text-muted-foreground italic' : ''">
+                {{ product.description || 'Sin descripción' }}
+              </span>
             </p>
-            <div class="flex justify-between gap-2 text-xs">
-              <!-- Price -->
-              <div class="flex gap-2">
-                <p class="text-muted-foreground">Precio:</p>
-                <span class="font-semibold">{{ formatCurrency(product.price) }}</span>
+            <div class="flex flex-col gap-2 text-xs">
+              <div class="flex min-w-0 gap-2">
+                <span class="text-muted-foreground shrink-0">Proveedor:</span>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <button
+                      class="min-w-0 truncate"
+                      :class="
+                        !product.supplier_name && !product.supplier?.name
+                          ? 'text-muted-foreground italic'
+                          : ''
+                      "
+                    >
+                      {{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <!-- Min stock -->
               <div class="flex gap-2">

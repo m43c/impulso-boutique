@@ -302,12 +302,13 @@ function sortIcon(column) {
           <!-- Supplier data -->
           <Card v-for="row in table.getRowModel().rows" v-else :key="row.id" class="py-0">
             <CardContent class="flex flex-col gap-2 p-4 text-xs">
-              <div class="flex items-start justify-between gap-2">
+              <!-- Name and actions menu button -->
+              <div class="relative flex items-start gap-2">
                 <!-- Name -->
                 <Tooltip>
                   <TooltipTrigger as-child>
                     <button
-                      class="focus-visible:ring-ring line-clamp-2 min-w-0 flex-1 cursor-help rounded text-left text-sm leading-tight font-medium wrap-break-word whitespace-normal focus-visible:ring-1 focus-visible:outline-none"
+                      class="line-clamp-2 min-w-0 flex-1 cursor-help rounded pr-8 text-left text-sm leading-tight font-medium wrap-break-word whitespace-normal"
                     >
                       {{ row.original.name }}
                     </button>
@@ -322,7 +323,7 @@ function sortIcon(column) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      class="-mt-1 -mr-2 h-8 w-8 shrink-0 rounded-full"
+                      class="absolute top-0 right-0 -mt-1 -mr-2 h-8 w-8 shrink-0 rounded-full"
                       :aria-label="`Opciones para ${row.original.name}`"
                     >
                       <EllipsisVertical class="h-4 w-4" />
@@ -361,60 +362,63 @@ function sortIcon(column) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <!-- Phone -->
-              <div class="flex min-w-0 items-center gap-2">
-                <span class="text-muted-foreground shrink-0">Teléfono:</span>
-                <span class="truncate tabular-nums">{{ row.original.phone }}</span>
-              </div>
-              <!-- Country -->
-              <div class="flex min-w-0 items-center gap-2">
-                <span class="text-muted-foreground shrink-0">País:</span>
-                <span
-                  class="truncate"
-                  :class="!row.original.country ? 'text-muted-foreground italic' : ''"
-                >
-                  {{ row.original.country || 'Sin país' }}
-                </span>
-              </div>
-              <!-- City -->
-              <div class="flex min-w-0 items-center gap-2">
-                <span class="text-muted-foreground shrink-0">Ciudad:</span>
-                <span
-                  class="truncate"
-                  :class="!row.original.city ? 'text-muted-foreground italic' : ''"
-                >
-                  {{ row.original.city || 'Sin ciudad' }}
-                </span>
-              </div>
-              <!-- Status -->
-              <div class="flex items-center gap-2">
-                <span class="text-muted-foreground">Estado:</span>
-                <Badge
-                  variant="outline"
-                  class="px-1.5 py-0.5 text-[11px]"
-                  :class="
-                    row.original.is_active
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                      : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
-                  "
-                >
-                  {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
-                </Badge>
-              </div>
-              <!-- Date -->
-              <div class="text-muted-foreground flex items-center gap-1">
-                <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
-                <span v-else>Actualizado:</span>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <button type="button" class="cursor-default">
-                      {{ formatRelativeDate(row.original.updated_at) }}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{{ formatDateTime(row.original.updated_at) }}</p>
-                  </TooltipContent>
-                </Tooltip>
+              <!-- Other details -->
+              <div class="flex flex-col gap-2">
+                <!-- Phone -->
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="text-muted-foreground shrink-0">Teléfono:</span>
+                  <span class="truncate tabular-nums">{{ row.original.phone }}</span>
+                </div>
+                <!-- Country -->
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="text-muted-foreground shrink-0">País:</span>
+                  <span
+                    class="truncate"
+                    :class="!row.original.country ? 'text-muted-foreground italic' : ''"
+                  >
+                    {{ row.original.country || 'Sin país' }}
+                  </span>
+                </div>
+                <!-- City -->
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="text-muted-foreground shrink-0">Ciudad:</span>
+                  <span
+                    class="truncate"
+                    :class="!row.original.city ? 'text-muted-foreground italic' : ''"
+                  >
+                    {{ row.original.city || 'Sin ciudad' }}
+                  </span>
+                </div>
+                <!-- Status -->
+                <div class="flex items-center gap-2">
+                  <span class="text-muted-foreground">Estado:</span>
+                  <Badge
+                    variant="outline"
+                    class="px-1.5 py-0.5 text-[11px]"
+                    :class="
+                      row.original.is_active
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                        : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
+                    "
+                  >
+                    {{ row.original.is_active ? 'Activo' : 'Inactivo' }}
+                  </Badge>
+                </div>
+                <!-- Date -->
+                <div class="text-muted-foreground flex items-center gap-1">
+                  <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
+                  <span v-else>Actualizado:</span>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <button type="button" class="cursor-default">
+                        {{ formatRelativeDate(row.original.updated_at) }}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{{ formatDateTime(row.original.updated_at) }}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </CardContent>
           </Card>

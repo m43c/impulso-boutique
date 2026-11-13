@@ -52,7 +52,7 @@ const router = createRouter({
         {
           path: 'suppliers',
           name: 'suppliers',
-          component: () => import('@/views/suppliers/SuppliersView.vue'),
+          component: () => import('@/views/SuppliersView.vue'),
           meta: { title: 'Proveedores', permissions: ['suppliers:view'] },
         },
         {

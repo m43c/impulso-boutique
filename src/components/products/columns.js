@@ -162,6 +162,18 @@ export const columns = [
     cell: (info) => info.row.original.size || 'Sin talla',
   },
   {
+    accessorFn: (row) => normalizeText(row.supplier_name || ''),
+    id: 'supplier_name',
+    header: 'Proveedor',
+    enableSorting: false,
+    filterFn: filterFn_arrHas,
+    meta: {
+      headerClass: 'hidden',
+      cellClass: 'hidden',
+    },
+    cell: () => null,
+  },
+  {
     accessorKey: 'price',
     header: 'Precio',
     enableGlobalFilter: false,
