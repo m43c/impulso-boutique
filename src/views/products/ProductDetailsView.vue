@@ -28,6 +28,8 @@ const product = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 
+const isProductActive = computed(() => product.value?.is_active === true)
+
 const availableTabs = computed(() => {
   const tabs = []
   if (can('inventory:view-units')) tabs.push('units')
@@ -116,6 +118,11 @@ function handleLabelsClose(open) {
 }
 
 function openUnitsModal() {
+  if (!isProductActive.value) {
+    toast.error('El producto está inactivo. Actívalo para registrar unidades')
+    return
+  }
+
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur()
   }
@@ -308,6 +315,7 @@ onBeforeUnmount(() => {
                 :units="productsStore.productUnits"
                 :is-loading="productsStore.isFetchingUnits"
                 :highlight-ids="registeredUnitIds"
+                :product-is-active="isProductActive"
                 @add-units="openUnitsModal"
                 @view-qr="handleUnitViewQr"
                 @refresh="handleUnitsRefresh"
@@ -398,8 +406,10 @@ onBeforeUnmount(() => {
         v-if="can('inventory:register-entry')"
         size="icon"
         class="h-12 w-12 shrink-0 rounded-full shadow-lg"
-        aria-label="Agregar unidades"
-        :disabled="productsStore.isFetchingUnits"
+        :aria-label="
+          isProductActive ? 'Agregar unidades' : 'Producto inactivo: no se pueden agregar unidades'
+        "
+        :disabled="productsStore.isFetchingUnits || !isProductActive"
         @click="openUnitsModal"
       >
         <Boxes class="size-5" />

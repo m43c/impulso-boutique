@@ -29,6 +29,8 @@ const emit = defineEmits(['submit', 'cancel'])
 const productsStore = useProductsStore()
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
+const isProductActive = computed(() => props.product?.is_active === true)
+
 const reasons = [
   { value: 'purchase', label: 'Compra' },
   { value: 'count', label: 'Ajuste por conteo' },
@@ -80,6 +82,11 @@ const notePlaceholder = computed(() =>
 )
 
 const onSubmit = handleSubmit(async (formValues) => {
+  if (!isProductActive.value) {
+    errorMessage.value = 'El producto está inactivo. Actívalo para registrar unidades'
+    return
+  }
+
   errorMessage.value = null
 
   try {
@@ -110,9 +117,11 @@ function handleCancel() {
 <template>
   <form class="flex min-h-0 flex-1 flex-col gap-6" @submit="onSubmit">
     <!-- Error message -->
-    <div v-if="errorMessage" class="px-6 pt-2">
+    <div v-if="errorMessage || !isProductActive" class="px-6 pt-0">
       <Alert variant="destructive">
-        <AlertDescription class="lg:text-xs">{{ errorMessage }}</AlertDescription>
+        <AlertDescription class="lg:text-xs">
+          {{ errorMessage || 'El producto está inactivo. Actívalo para registrar unidades.' }}
+        </AlertDescription>
       </Alert>
     </div>
     <!-- Fiels -->
@@ -194,7 +203,11 @@ function handleCancel() {
       <Button type="button" :size="isDesktop ? 'sm' : ''" variant="outline" @click="handleCancel">
         <span class="lg:text-xs">Cancelar</span>
       </Button>
-      <Button type="submit" :size="isDesktop ? 'sm' : ''" :disabled="isSubmitting">
+      <Button
+        type="submit"
+        :size="isDesktop ? 'sm' : ''"
+        :disabled="isSubmitting || !isProductActive"
+      >
         <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
         <span class="lg:text-xs">{{ isSubmitting ? 'Registrando…' : submitLabel }}</span>
       </Button>

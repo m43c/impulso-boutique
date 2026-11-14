@@ -223,6 +223,7 @@ function handleCancel() {
         type="submit"
         :size="isDesktop ? 'sm' : ''"
         :disabled="isSubmitting"
+        class="lg:px-6"
         :class="!isDesktop ? 'order-1' : ''"
       >
         <Loader2 v-if="isSubmitting || isLoading" class="animate-spin" />

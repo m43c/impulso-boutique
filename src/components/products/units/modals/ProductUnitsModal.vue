@@ -43,7 +43,7 @@ function handleSubmit(payload) {
   <!-- Desktop -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
     <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
-      <DialogHeader class="border-border/60 px-6 pt-6">
+      <DialogHeader class="border-border/60 px-6 pt-6 gap-0.5">
         <DialogTitle class="text-sm">Agregar unidades</DialogTitle>
         <DialogDescription v-if="productName" class="pb-4 text-xs">
           {{ productName }}
@@ -55,7 +55,7 @@ function handleSubmit(payload) {
   <!-- Mobile -->
   <Drawer v-else v-model:open="openModel">
     <DrawerContent class="max-h-[85vh]">
-      <DrawerHeader class="border-border/60 px-6 pb-4 text-left">
+      <DrawerHeader class="border-border/60 px-6 pb-4 text-left gap-0.5">
         <DrawerTitle>Agregar unidades</DrawerTitle>
         <DrawerDescription v-if="productName">
           {{ productName }}
