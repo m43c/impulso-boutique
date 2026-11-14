@@ -246,7 +246,10 @@ onBeforeUnmount(() => {
         <ProductDetailsSkeleton />
       </div>
       <!-- Skeleton (Right column) -->
-      <ProductUnitsSkeleton />
+      <ProductUnitsSkeleton
+        :show-count="can('inventory:count')"
+        :show-add-units="can('inventory:register-entry')"
+      />
     </div>
     <!-- Error status -->
     <Card v-else-if="error" class="flex h-[calc(100vh-5rem)] flex-col">

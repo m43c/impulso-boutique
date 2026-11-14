@@ -12,6 +12,11 @@ import {
 } from '@/components/ui/table'
 import ProductUnitsCardSkeleton from '@/components/products/units/skeletons/ProductUnitsCardSkeleton.vue'
 
+const props = defineProps({
+  showCount: { type: Boolean, default: false },
+  showAddUnits: { type: Boolean, default: false },
+})
+
 const isDesktop = useMediaQuery('(min-width: 768px)')
 </script>
 
@@ -22,7 +27,7 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
       <div
         class="border-border/60 inline-flex w-full rounded-md border p-0.5 lg:w-auto lg:self-start"
       >
-        <Skeleton class="h-8 flex-1 bg-muted rounded lg:w-24" />
+        <Skeleton class="bg-muted h-8 flex-1 rounded lg:w-24" />
         <Skeleton class="ml-1 h-8 flex-1 rounded lg:w-24" />
       </div>
     </div>
@@ -36,11 +41,13 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
           <!-- Update button -->
           <Skeleton class="h-8 w-8 shrink-0 rounded-md" />
           <!-- Filters (Desktop/mobile) -->
-          <Skeleton class="lg:h-8 lg:w-20 h-9 w-9 shrink-0 rounded-md md:w-20" />
+          <Skeleton class="h-9 w-9 shrink-0 rounded-md md:w-20 lg:h-8 lg:w-20" />
           <!-- Sorting (Mobile) -->
           <Skeleton v-if="!isDesktop" class="h-9 w-9 shrink-0 rounded-md" />
+          <!-- Physical count button (Desktop) -->
+          <Skeleton v-if="isDesktop && showCount" class="h-8 w-28 shrink-0 rounded-md" />
           <!-- Add product unit button (Desktop) -->
-          <Skeleton v-if="isDesktop" class="h-8 w-37.5 shrink-0 rounded-md" />
+          <Skeleton v-if="isDesktop && showAddUnits" class="h-8 w-37.5 shrink-0 rounded-md" />
         </div>
         <!-- Main content -->
         <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -49,19 +56,19 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
             <Table class="border-separate border-spacing-0">
               <TableHeader>
                 <TableRow>
-                  <TableHead class=" border-b backdrop-blur">
+                  <TableHead class="border-b backdrop-blur">
                     <div class="flex justify-start"><Skeleton class="h-4 w-12" /></div>
                   </TableHead>
-                  <TableHead class=" border-b backdrop-blur">
+                  <TableHead class="border-b backdrop-blur">
                     <div class="flex justify-center"><Skeleton class="h-4 w-12" /></div>
                   </TableHead>
-                  <TableHead class=" border-b backdrop-blur">
+                  <TableHead class="border-b backdrop-blur">
                     <div class="flex justify-center"><Skeleton class="h-4 w-12" /></div>
                   </TableHead>
-                  <TableHead class=" border-b backdrop-blur">
+                  <TableHead class="border-b backdrop-blur">
                     <div class="flex justify-start"><Skeleton class="h-4 w-12" /></div>
                   </TableHead>
-                  <TableHead class=" w-12 border-b backdrop-blur"></TableHead>
+                  <TableHead class="w-12 border-b backdrop-blur"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

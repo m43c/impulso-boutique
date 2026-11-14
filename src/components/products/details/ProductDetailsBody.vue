@@ -26,7 +26,6 @@ const props = defineProps({
   },
 })
 
-// Aviso de stock: 'empty' (sin stock), 'low' (stock bajo) o null
 const stockAlert = computed(() => {
   const available = props.stats.available ?? 0
   if (available === 0) return 'empty'
@@ -44,10 +43,6 @@ const stockAlert = computed(() => {
         <p class="text-[13px] font-semibold">
           {{ product.name }}
         </p>
-        <!-- Description -->
-        <p class="text-muted-foreground text-xs leading-relaxed">
-          {{ product.description || 'Sin descripción' }}
-        </p>
       </div>
       <div class="flex items-start gap-4">
         <!-- Image -->
@@ -62,14 +57,14 @@ const stockAlert = computed(() => {
           />
         </div>
         <!-- Details -->
-        <div class="-mt-1 flex min-w-0 flex-1 flex-col gap-2 text-xs leading-tight">
+        <div class="-mt-1 flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-tight">
           <!-- Category -->
-          <div class="flex min-w-0 gap-2">
+          <div class="flex min-w-0 flex-wrap gap-2">
             <span class="text-muted-foreground shrink-0">Categoría:</span>
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
                   :class="!product.category ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.category || 'Sin categoría' }}
@@ -81,12 +76,12 @@ const stockAlert = computed(() => {
             </Tooltip>
           </div>
           <!-- Brand -->
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <span class="text-muted-foreground shrink-0">Marca:</span>
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
                   :class="!product.brand ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.brand || 'Sin marca' }}
@@ -98,12 +93,12 @@ const stockAlert = computed(() => {
             </Tooltip>
           </div>
           <!-- Color -->
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <span class="text-muted-foreground shrink-0">Color:</span>
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
+                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
                   :class="!product.color ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.color || 'Sin color' }}
@@ -124,37 +119,6 @@ const stockAlert = computed(() => {
               {{ product.size || 'Sin talla' }}
             </span>
           </div>
-          <!-- Price -->
-          <div class="flex gap-2">
-            <span class="text-muted-foreground shrink-0">Precio:</span>
-            <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
-          </div>
-          <!-- Supplier -->
-          <div class="flex gap-2">
-            <span class="text-muted-foreground shrink-0">Proveedor:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button
-                  class="border-muted-foreground/50 min-w-0 cursor-help truncate border-b border-dashed"
-                  :class="
-                    !product.supplier_name && !product.supplier?.name
-                      ? 'text-muted-foreground italic'
-                      : ''
-                  "
-                >
-                  {{ product.supplier_name || 'Sin proveedor' }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ product.supplier_name || 'Sin proveedor' }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <!-- Min stock -->
-          <div class="flex gap-2">
-            <span class="text-muted-foreground shrink-0">Stock mín.:</span>
-            <span class="min-w-0 truncate">{{ product.min_stock }}</span>
-          </div>
           <!-- Status -->
           <div class="flex items-center gap-2">
             <span class="text-muted-foreground shrink-0">Estado:</span>
@@ -171,8 +135,34 @@ const stockAlert = computed(() => {
           </div>
         </div>
       </div>
+      <!-- Price + min stock -->
+      <div class="mt-1 flex justify-between gap-4 border-t pt-2 lg:text-xs">
+        <!-- Price -->
+        <div class="flex gap-2">
+          <span class="text-muted-foreground shrink-0">Precio:</span>
+          <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
+        </div>
+        <!-- Min stock (alert when low or empty) -->
+        <span
+          class="inline-flex items-center gap-1 text-xs tabular-nums"
+          :class="
+            stockAlert === 'empty'
+              ? 'font-medium text-rose-400'
+              : stockAlert === 'low'
+                ? 'font-medium text-amber-400'
+                : 'text-muted-foreground'
+          "
+        >
+          <CircleX v-if="stockAlert === 'empty'" class="h-3.5 w-3.5" />
+          <CircleAlert v-else-if="stockAlert === 'low'" class="h-3.5 w-3.5" />
+          <div class="flex gap-2">
+            <span>Stock mín:</span>
+            <span>{{ product.min_stock }}</span>
+          </div>
+        </span>
+      </div>
       <!-- KPIs -->
-      <div class="flex justify-evenly gap-2 border-y py-4">
+      <div class="flex justify-evenly gap-2 pt-2">
         <!-- Available -->
         <div class="flex flex-col items-center">
           <Badge
@@ -204,19 +194,50 @@ const stockAlert = computed(() => {
           <span class="mt-1 text-xs text-amber-500">No disponibles</span>
         </div>
       </div>
-      <!-- Dates -->
-      <div class="flex flex-col gap-1 text-xs">
-        <div class="flex items-center gap-1">
-          <span class="text-muted-foreground">Creado el</span>
-          <span class="text-foreground">
-            {{ formatDateTime(product.created_at).replace(',', ' a las') }}
-          </span>
+      <!-- More details -->
+      <div class="-mt-1 flex flex-col gap-1">
+        <!-- Description -->
+        <div>
+          <span class="text-muted-foreground lg:text-xs">Descripción:</span>
+          <p class="text-xs leading-relaxed">
+            {{ product.description || 'Sin descripción' }}
+          </p>
         </div>
-        <div class="flex items-center gap-1">
-          <span class="text-muted-foreground">Actualizado el</span>
-          <span class="text-foreground">
-            {{ formatDateTime(product.updated_at).replace(',', ' a las') }}
-          </span>
+        <!-- Supplier -->
+        <div class="flex flex-col gap-1 pb-1 lg:text-xs">
+          <span class="text-muted-foreground shrink-0">Proveedor:</span>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <button
+                class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
+                :class="
+                  !product.supplier_name && !product.supplier?.name
+                    ? 'text-muted-foreground italic'
+                    : ''
+                "
+              >
+                {{ product.supplier_name || 'Sin proveedor' }}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{{ product.supplier_name || 'Sin proveedor' }}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <!-- Dates -->
+        <div class="mt-2 flex flex-col gap-1 border-t pt-2 text-xs">
+          <div class="flex items-center gap-1">
+            <span class="text-muted-foreground">Creado el</span>
+            <span class="text-foreground">
+              {{ formatDateTime(product.created_at).replace(',', ' a las') }}
+            </span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-muted-foreground">Actualizado el</span>
+            <span class="text-foreground">
+              {{ formatDateTime(product.updated_at).replace(',', ' a las') }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -293,10 +314,13 @@ const stockAlert = computed(() => {
           </Badge>
         </div>
       </div>
-      <!-- Price + Min stock -->
+      <!-- Price + min stock -->
       <div class="mt-3 flex items-center justify-between gap-4 border-t pt-2">
         <!-- Price -->
-        <span class="text-sm font-semibold">{{ formatCurrency(product.price) }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-muted-foreground text-xs">Precio:</span>
+          <span class="text-sm font-semibold">{{ formatCurrency(product.price) }}</span>
+        </div>
         <!-- Min stock (alert when low or empty) -->
         <span
           class="inline-flex items-center gap-1 text-xs tabular-nums"
@@ -310,7 +334,10 @@ const stockAlert = computed(() => {
         >
           <CircleX v-if="stockAlert === 'empty'" class="h-3.5 w-3.5" />
           <CircleAlert v-else-if="stockAlert === 'low'" class="h-3.5 w-3.5" />
-          Stock mín.: {{ product.min_stock }}
+          <div class="flex gap-2">
+            <span>Stock mín:</span>
+            <span>{{ product.min_stock }}</span>
+          </div>
         </span>
       </div>
       <!-- KPIs -->
