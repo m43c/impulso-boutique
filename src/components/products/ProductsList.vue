@@ -9,8 +9,6 @@ import {
   CircleAlert,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
   LayersPlus,
   EllipsisVertical,
   Eye,
@@ -327,7 +325,7 @@ function toggleExpand(id) {
           </div>
           <!-- Product data -->
           <Card v-for="row in table.getRowModel().rows" v-else :key="row.id" class="py-0">
-            <CardContent class="flex flex-col gap-1 p-4">
+            <CardContent class="flex flex-col gap-0 p-4">
               <div class="flex items-start justify-between gap-2">
                 <!-- Name -->
                 <Tooltip>
@@ -407,13 +405,13 @@ function toggleExpand(id) {
                   :public-id="row.original.image_public_id"
                   :alt="row.original.name"
                   :size="IMAGE_SIZES.card"
-                  image-class="aspect-5/5 w-32 shrink-0 rounded-md object-cover"
-                  fallback-class="bg-muted flex aspect-5/5 w-32 shrink-0 items-center justify-center rounded-md"
+                  image-class="aspect-square w-26 shrink-0 rounded-md object-cover"
+                  fallback-class="bg-muted flex aspect-square w-26 shrink-0 items-center justify-center rounded-md"
                   icon-class="text-muted-foreground h-6 w-6"
                 />
-                <div class="-mt-0.5 flex min-w-0 flex-1 flex-col gap-2.5 text-xs leading-none">
+                <div class="-mt-0.5 flex min-w-0 flex-1 flex-col gap-2 text-xs leading-tight">
                   <!-- Category -->
-                  <div class="flex min-w-0 items-center gap-2">
+                  <div class="flex min-w-0 items-center gap-1.5">
                     <span class="text-muted-foreground shrink-0">Categoría:</span>
                     <Tooltip>
                       <TooltipTrigger as-child>
@@ -427,7 +425,7 @@ function toggleExpand(id) {
                     </Tooltip>
                   </div>
                   <!-- Brand -->
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5">
                     <span class="text-muted-foreground shrink-0">Marca:</span>
                     <Tooltip>
                       <TooltipTrigger as-child>
@@ -444,12 +442,12 @@ function toggleExpand(id) {
                     </Tooltip>
                   </div>
                   <!-- Color -->
-                  <div class="flex min-w-0 items-center gap-2">
+                  <div class="flex min-w-0 items-center gap-1.5">
                     <span class="text-muted-foreground shrink-0">Color:</span>
                     <Tooltip>
                       <TooltipTrigger as-child>
                         <button
-                          class="min-w-0 truncate border-b text-left"
+                          class="min-w-0 truncate text-left"
                           :class="!row.original.color ? 'text-muted-foreground italic' : ''"
                         >
                           {{ row.original.color || 'Sin color' }}
@@ -461,14 +459,14 @@ function toggleExpand(id) {
                     </Tooltip>
                   </div>
                   <!-- Size -->
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5">
                     <span class="text-muted-foreground">Talla:</span>
                     <span :class="!row.original.size ? 'text-muted-foreground italic' : ''">
                       {{ row.original.size || 'Sin talla' }}
                     </span>
                   </div>
                   <!-- Status -->
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5">
                     <span class="text-muted-foreground">Estado:</span>
                     <Badge
                       variant="outline"
@@ -484,76 +482,58 @@ function toggleExpand(id) {
                   </div>
                 </div>
               </div>
-              <!-- Description -->
-              <div class="flex flex-col items-start pb-1">
-                <p
-                  class="text-muted-foreground text-xs leading-relaxed wrap-break-word transition-all"
-                  :class="[
-                    !row.original.description ? 'italic' : '',
-                    expandedCards.has(row.original.id) ? '' : 'line-clamp-2',
-                  ]"
-                >
-                  {{ row.original.description || 'Sin descripción' }}
-                </p>
-                <!-- Show more button -->
-                <button
-                  v-if="row.original.description && row.original.description.length > 80"
-                  @click="toggleExpand(row.original.id)"
-                  :aria-expanded="expandedCards.has(row.original.id)"
-                  class="text-primary hover:text-primary/80 focus-visible:ring-ring mt-1 -ml-1 flex items-center gap-0.5 rounded px-1 py-1 text-[11px] font-medium transition-colors hover:underline focus-visible:ring-1 focus-visible:outline-none"
-                >
-                  {{ expandedCards.has(row.original.id) ? 'Ver menos' : 'Ver más' }}
-                  <component
-                    :is="expandedCards.has(row.original.id) ? ChevronUp : ChevronDown"
-                    class="h-3 w-3"
-                  />
-                </button>
-              </div>
-              <div class="flex flex-col gap-1 border-t pt-2">
-                <div class="flex justify-between">
-                  <!-- Price -->
-                  <span class="text-sm font-semibold">
-                    {{ formatCurrency(row.original.price) }}
+              <!-- Price + Stock -->
+              <div class="flex items-start justify-between border-t mt-1 pt-2">
+                <!-- Price -->
+                <span class="text-sm font-semibold">
+                  {{ formatCurrency(row.original.price) }}
+                </span>
+                <!-- Stock -->
+                <div class="flex flex-col items-end gap-0.5">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-xs font-medium tabular-nums"
+                    :class="
+                      (row.original.stock_available ?? 0) === 0
+                        ? 'text-rose-400'
+                        : row.original.is_low_stock
+                          ? 'text-amber-400'
+                          : 'text-emerald-400'
+                    "
+                  >
+                    <CircleAlert
+                      v-if="row.original.is_low_stock && (row.original.stock_available ?? 0) > 0"
+                      class="h-3.5 w-3.5"
+                    />
+                    <span v-else class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                    <template v-if="(row.original.stock_available ?? 0) === 0">Sin stock</template>
+                    <template v-else>
+                      {{ row.original.stock_available }}
+                      {{ row.original.stock_available === 1 ? 'disponible' : 'disponibles' }}
+                    </template>
                   </span>
-                  <!-- Stock -->
-                  <div class="flex flex-col items-end gap-0.5">
-                    <span
-                      class="inline-flex items-center gap-1 text-xs font-medium tabular-nums"
-                      :class="
-                        (row.original.stock_available ?? 0) === 0
-                          ? 'text-rose-400'
-                          : row.original.is_low_stock
-                            ? 'text-amber-400'
-                            : ''
-                      "
-                    >
-                      Disponibles: {{ row.original.stock_available ?? 0 }}
-                      <CircleAlert
-                        v-if="row.original.is_low_stock && (row.original.stock_available ?? 0) > 0"
-                        class="h-3 w-3"
-                      />
-                    </span>
-                    <!-- Stock min. -->
-                    <span class="text-muted-foreground text-[11px]">
-                      Stock mín.: {{ row.original.min_stock }}
-                    </span>
-                  </div>
+                  <!-- Min stock (only on low stock) -->
+                  <span
+                    v-if="row.original.is_low_stock && (row.original.stock_available ?? 0) > 0"
+                    class="text-muted-foreground text-[11px]"
+                  >
+                    Mínimo: {{ row.original.min_stock }}
+                  </span>
                 </div>
-                <!-- Date -->
-                <div class="text-muted-foreground flex gap-2 text-xs">
-                  <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
-                  <span v-else>Actualizado:</span>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <button class="text-left">
-                        {{ formatRelativeDate(row.original.updated_at) }}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{{ formatDateTime(row.original.updated_at) }}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+              </div>
+              <!-- Date -->
+              <div class="text-muted-foreground flex gap-1.5 text-xs">
+                <span v-if="row.original.created_at === row.original.updated_at">Creado:</span>
+                <span v-else>Actualizado:</span>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <button class="text-left">
+                      {{ formatRelativeDate(row.original.updated_at) }}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ formatDateTime(row.original.updated_at) }}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </CardContent>
           </Card>
