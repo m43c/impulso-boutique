@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
 import {
   CircleAlert,
+  CircleX,
   EllipsisVertical,
   Eye,
   LayersPlus,
@@ -235,7 +236,14 @@ export const columns = [
                 empty ? 'text-rose-400' : low ? 'text-amber-400' : '',
               ],
             },
-            [available, low && !empty ? h(CircleAlert, { class: 'h-3.5 w-3.5' }) : null],
+            [
+              available,
+              empty
+                ? h(CircleX, { class: 'h-3.5 w-3.5' })
+                : low
+                  ? h(CircleAlert, { class: 'h-3.5 w-3.5' })
+                  : null,
+            ],
           ),
         ),
         h(TooltipContent, () =>

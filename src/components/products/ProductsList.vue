@@ -7,6 +7,8 @@ import {
   ArrowUp,
   ArrowUpDown,
   CircleAlert,
+  CircleCheck,
+  CircleX,
   ChevronLeft,
   ChevronRight,
   LayersPlus,
@@ -483,7 +485,7 @@ function toggleExpand(id) {
                 </div>
               </div>
               <!-- Price + Stock -->
-              <div class="flex items-start justify-between border-t mt-1 pt-2">
+              <div class="mt-1 flex items-start justify-between border-t pt-2">
                 <!-- Price -->
                 <span class="text-sm font-semibold">
                   {{ formatCurrency(row.original.price) }}
@@ -497,14 +499,11 @@ function toggleExpand(id) {
                         ? 'text-rose-400'
                         : row.original.is_low_stock
                           ? 'text-amber-400'
-                          : 'text-emerald-400'
+                          : ''
                     "
                   >
-                    <CircleAlert
-                      v-if="row.original.is_low_stock && (row.original.stock_available ?? 0) > 0"
-                      class="h-3.5 w-3.5"
-                    />
-                    <span v-else class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                    <CircleX v-if="(row.original.stock_available ?? 0) === 0" class="h-3.5 w-3.5" />
+                    <CircleAlert v-else-if="row.original.is_low_stock" class="h-3.5 w-3.5" />
                     <template v-if="(row.original.stock_available ?? 0) === 0">Sin stock</template>
                     <template v-else>
                       {{ row.original.stock_available }}

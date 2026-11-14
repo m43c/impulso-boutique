@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+import { CircleAlert, CircleX } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -22,6 +24,14 @@ const props = defineProps({
       unavailable: 0,
     }),
   },
+})
+
+// Aviso de stock: 'empty' (sin stock), 'low' (stock bajo) o null
+const stockAlert = computed(() => {
+  const available = props.stats.available ?? 0
+  if (available === 0) return 'empty'
+  const isLow = props.product.is_low_stock ?? available <= (props.product.min_stock ?? 0)
+  return isLow ? 'low' : null
 })
 </script>
 
@@ -213,101 +223,98 @@ const props = defineProps({
     <!-- Mobile view -->
     <div class="flex w-full min-w-0 flex-col lg:hidden">
       <!-- Name -->
-      <h3 class="mb-3 text-sm leading-tight font-semibold">{{ product.name }}</h3>
+      <h3 class="mb-3 text-sm leading-tight font-semibold wrap-break-word">{{ product.name }}</h3>
       <!-- Image -->
-      <div class="mb-3 flex gap-3">
+      <div class="mb-3 flex justify-center">
         <ProductImage
           :public-id="product.image_public_id"
           :alt="product.name"
           :size="IMAGE_SIZES.detail"
-          image-class="aspect-square w-32 shrink-0 rounded-lg object-cover"
-          fallback-class="bg-muted flex justify-center h-32 shrink-0 w-32 justify-center items-center rounded-lg"
-          icon-class="text-muted-foreground h-6 w-6"
+          image-class="aspect-square w-40 shrink-0 rounded-lg object-cover"
+          fallback-class="bg-muted flex aspect-square w-40 shrink-0 items-center justify-center rounded-lg"
+          icon-class="text-muted-foreground h-8 w-8"
         />
-        <!-- Details -->
-        <div class="-mt-0.5 flex min-w-0 flex-1 flex-col gap-2 text-xs leading-tight">
-          <!-- Category -->
-          <div class="flex min-w-0 gap-2">
-            <span class="text-muted-foreground shrink-0">Categoría:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button
-                  class="min-w-0 truncate"
-                  :class="!product.category ? 'text-muted-foreground italic' : ''"
-                >
-                  {{ product.category || 'Sin categoría' }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ product.category || 'Sin categoría' }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <!-- Brand -->
-          <div class="flex min-w-0 gap-2">
-            <span class="text-muted-foreground shrink-0">Marca:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button
-                  class="min-w-0 truncate"
-                  :class="!product.brand ? 'text-muted-foreground italic' : ''"
-                >
-                  {{ product.brand || 'Sin marca' }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ product.brand || 'Sin marca' }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <!-- Color -->
-          <div class="flex min-w-0 gap-2">
-            <span class="text-muted-foreground shrink-0">Color:</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button
-                  class="min-w-0 truncate"
-                  :class="!product.color ? 'text-muted-foreground italic' : ''"
-                >
-                  {{ product.color || 'Sin color' }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ product.color || 'Sin color' }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <!-- Size -->
-          <div class="flex gap-2">
-            <span class="text-muted-foreground">Talla:</span>
-            <span>{{ product.size || 'Sin talla' }}</span>
-          </div>
-          <!-- Status -->
-          <div class="flex items-center gap-2">
-            <span class="text-muted-foreground">Estado:</span>
-            <Badge
-              variant="outline"
-              class="px-1.5 py-0.5 text-[11px]"
-              :class="
-                product.is_active
-                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
-                  : 'border-rose-500/30 bg-rose-500/10 text-rose-500'
-              "
-            >
-              {{ product.is_active ? 'Activo' : 'Inactivo' }}
-            </Badge>
-          </div>
-          <!-- Price -->
-          <div class="flex gap-2">
-            <span class="text-muted-foreground shrink-0">Precio:</span>
-            <span class="min-w-0 truncate font-semibold">{{ formatCurrency(product.price) }}</span>
-          </div>
+      </div>
+      <!-- Details -->
+      <div class="flex flex-col gap-2 text-xs leading-tight">
+        <!-- Category -->
+        <div class="flex items-center gap-2">
+          <span class="text-muted-foreground shrink-0">Categoría:</span>
+          <span
+            class="min-w-0 text-right wrap-break-word"
+            :class="!product.category ? 'text-muted-foreground italic' : ''"
+          >
+            {{ product.category || 'Sin categoría' }}
+          </span>
+        </div>
+        <!-- Brand -->
+        <div class="flex items-center gap-2">
+          <span class="text-muted-foreground shrink-0">Marca:</span>
+          <span
+            class="min-w-0 text-right wrap-break-word"
+            :class="!product.brand ? 'text-muted-foreground italic' : ''"
+          >
+            {{ product.brand || 'Sin marca' }}
+          </span>
+        </div>
+        <!-- Color -->
+        <div class="flex items-center gap-2">
+          <span class="text-muted-foreground shrink-0">Color:</span>
+          <span
+            class="min-w-0 text-right wrap-break-word"
+            :class="!product.color ? 'text-muted-foreground italic' : ''"
+          >
+            {{ product.color || 'Sin color' }}
+          </span>
+        </div>
+        <!-- Size -->
+        <div class="flex items-center gap-2">
+          <span class="text-muted-foreground shrink-0">Talla:</span>
+          <span
+            class="min-w-0 text-right wrap-break-word"
+            :class="!product.size ? 'text-muted-foreground italic' : ''"
+          >
+            {{ product.size || 'Sin talla' }}
+          </span>
+        </div>
+        <!-- Status -->
+        <div class="items-ccenter flex gap-2">
+          <span class="text-muted-foreground shrink-0">Estado:</span>
+          <Badge
+            variant="outline"
+            class="text-[11px]"
+            :class="
+              product.is_active
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
+            "
+          >
+            {{ product.is_active ? 'Activo' : 'Inactivo' }}
+          </Badge>
         </div>
       </div>
-      <!-- Divisor -->
-      <div class="my-1 border-t"></div>
+      <!-- Price + Min stock -->
+      <div class="mt-3 flex items-center justify-between gap-4 border-t pt-2">
+        <!-- Price -->
+        <span class="text-sm font-semibold">{{ formatCurrency(product.price) }}</span>
+        <!-- Min stock (alert when low or empty) -->
+        <span
+          class="inline-flex items-center gap-1 text-xs tabular-nums"
+          :class="
+            stockAlert === 'empty'
+              ? 'font-medium text-rose-400'
+              : stockAlert === 'low'
+                ? 'font-medium text-amber-400'
+                : 'text-muted-foreground'
+          "
+        >
+          <CircleX v-if="stockAlert === 'empty'" class="h-3.5 w-3.5" />
+          <CircleAlert v-else-if="stockAlert === 'low'" class="h-3.5 w-3.5" />
+          Stock mín.: {{ product.min_stock }}
+        </span>
+      </div>
       <!-- KPIs -->
-      <div class="grid grid-cols-3 gap-1 pt-3">
+      <div class="grid grid-cols-3 gap-1 pt-4">
         <!-- Available -->
         <div class="flex flex-col items-center text-xs">
           <Badge
@@ -345,9 +352,9 @@ const props = defineProps({
           <AccordionTrigger
             class="flex items-center justify-center gap-2 py-2 text-sm font-medium hover:no-underline [&[data-state=open]>svg]:rotate-180"
           >
-            <span class="text-xs">Ver mas detalles</span>
+            <span class="text-xs">Ver más detalles</span>
           </AccordionTrigger>
-          <AccordionContent class="flex min-w-0 flex-col gap-2 pb-0! text-sm">
+          <AccordionContent class="flex min-w-0 flex-col gap-1 pb-0! text-sm">
             <!-- Description -->
             <p class="text-xs leading-relaxed">
               <span class="text-muted-foreground mr-1">Descripción:</span>
@@ -355,35 +362,29 @@ const props = defineProps({
                 {{ product.description || 'Sin descripción' }}
               </span>
             </p>
-            <div class="flex flex-col gap-2 text-xs">
-              <div class="flex min-w-0 gap-2">
-                <span class="text-muted-foreground shrink-0">Proveedor:</span>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <button
-                      class="min-w-0 truncate"
-                      :class="
-                        !product.supplier_name && !product.supplier?.name
-                          ? 'text-muted-foreground italic'
-                          : ''
-                      "
-                    >
-                      {{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <!-- Min stock -->
-              <div class="flex gap-2">
-                <p class="text-muted-foreground">Stock min.:</p>
-                <span>{{ product.min_stock }}</span>
-              </div>
+            <!-- Supplier -->
+            <div class="flex min-w-0 gap-2 pb-2 text-xs">
+              <span class="text-muted-foreground shrink-0">Proveedor:</span>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button
+                    class="min-w-0 truncate"
+                    :class="
+                      !product.supplier_name && !product.supplier?.name
+                        ? 'text-muted-foreground italic'
+                        : ''
+                    "
+                  >
+                    {{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{{ product.supplier_name || product.supplier?.name || 'Sin proveedor' }}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <!-- Divisor -->
-            <div class="border-t"></div>
+            <div class="border-t pt-1"></div>
             <!-- Date -->
             <div class="flex flex-col gap-1 text-xs">
               <div class="flex items-center gap-1">
