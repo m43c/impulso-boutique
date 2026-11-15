@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
       <Skeleton class="-mt-1 h-4 w-48" />
       <div class="flex items-stretch gap-3 pt-1.5 pb-2">
         <!-- Image -->
-        <Skeleton class="aspect-5/5 w-32 shrink-0 rounded-md" />
+        <Skeleton class="aspect-square w-26 shrink-0 rounded-md" />
         <div class="flex min-w-0 flex-1 flex-col justify-between py-0.5">
           <!-- Category -->
           <div class="flex items-center gap-2">
@@ -43,11 +43,6 @@ import { Skeleton } from '@/components/ui/skeleton'
             <Skeleton class="h-4 w-14" />
           </div>
         </div>
-      </div>
-      <!-- Description -->
-      <div class="flex flex-col gap-1 pb-1.5">
-        <Skeleton class="h-3 w-full" />
-        <Skeleton class="h-3 w-48" />
       </div>
       <div class="flex flex-col gap-2 border-t pt-3">
         <div class="flex justify-between">

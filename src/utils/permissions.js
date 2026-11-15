@@ -11,6 +11,11 @@ export const PERMISSIONS = {
   'products:create': ['admin'],
   'products:update': ['admin'],
   'products:toggle-status': ['admin'],
+  // suppliers
+  'suppliers:view': ['admin'],
+  'suppliers:create': ['admin'],
+  'suppliers:update': ['admin'],
+  'suppliers:toggle-status': ['admin'],
   // inventory
   'inventory:view-units': ['admin', 'advisor', 'cashier'],
   'inventory:view-history': ['admin'],

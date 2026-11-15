@@ -33,7 +33,7 @@ import { formatDateTime } from '@/utils/date'
 import { formatMoveType, formatMoveReason } from '@/utils/inventoryMoves'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { columns } from '@/components/moves/columns'
-import { features } from '@/components/products/features'
+import { features } from '@/components/common/tableFeatures'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import MovesCardSkeleton from '@/components/moves/MovesCardSkeleton.vue'
@@ -320,7 +320,7 @@ function referenceText(row) {
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{{ row.original.product_is_active ? 'Vigente' : 'Retirado' }}</p>
+                        <p>{{ row.original.product_is_active ? 'Activo' : 'Inactivo' }}</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>

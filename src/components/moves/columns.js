@@ -79,7 +79,7 @@ export const columns = [
             ],
           ),
         ),
-        h(TooltipContent, { side: 'top' }, () => h('p', isActive ? 'Vigente' : 'Retirado')),
+        h(TooltipContent, { side: 'top' }, () => h('p', isActive ? 'Activo' : 'Inactivo')),
       ])
 
       const nameNode = h(Tooltip, () => [

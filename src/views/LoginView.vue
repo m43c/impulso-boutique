@@ -76,7 +76,9 @@ const onSubmit = handleSubmit(async (credentials) => {
       <Card class="gap-4">
         <CardHeader class="gap-0">
           <CardTitle class="text-lg">Inicia Sesión</CardTitle>
-          <CardDescription class="lg:text-xs">Ingresa tus credenciales para acceder al sistema</CardDescription>
+          <CardDescription class="lg:text-xs">
+            Ingresa tus credenciales para acceder al sistema
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form @submit="onSubmit">
@@ -99,7 +101,7 @@ const onSubmit = handleSubmit(async (credentials) => {
                     :aria-invalid="!!errors.length"
                     class="text-sm! lg:text-xs!"
                   />
-                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs"/>
+                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
                 </Field>
               </VeeField>
               <!-- Password -->
@@ -126,14 +128,16 @@ const onSubmit = handleSubmit(async (credentials) => {
                       <EyeOff v-else class="h-4 w-4" />
                     </button>
                   </div>
-                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs"/>
+                  <FieldError v-if="errors.length" :errors="[errors[0]]" class="lg:text-xs" />
                 </Field>
               </VeeField>
               <!-- Submit button -->
               <Field class="mt-2">
                 <Button type="submit" :size="isDesktop ? 'sm' : ''" :disabled="isSubmitting">
                   <Loader2 v-if="isSubmitting" class="animate-spin" />
-                  <span class="lg:text-xs">{{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}</span>
+                  <span class="lg:text-xs">
+                    {{ isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+                  </span>
                 </Button>
               </Field>
             </FieldGroup>

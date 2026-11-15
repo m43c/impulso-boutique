@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
 import {
   CircleAlert,
+  CircleX,
   EllipsisVertical,
   Eye,
   LayersPlus,
@@ -68,6 +69,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.category),
     id: 'category',
     header: 'Categoría',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -95,6 +97,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.brand),
     id: 'brand',
     header: 'Marca',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -122,6 +125,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.color),
     id: 'color',
     header: 'Color',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       cellClass: 'text-xs max-w-[120px]',
@@ -149,6 +153,7 @@ export const columns = [
     accessorFn: (row) => normalizeText(row.size),
     id: 'size',
     header: 'Talla',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
@@ -156,6 +161,18 @@ export const columns = [
       skeletonClass: 'mx-auto h-4 w-12',
     },
     cell: (info) => info.row.original.size || 'Sin talla',
+  },
+  {
+    accessorFn: (row) => normalizeText(row.supplier_name || ''),
+    id: 'supplier_name',
+    header: 'Proveedor',
+    enableSorting: false,
+    filterFn: filterFn_arrHas,
+    meta: {
+      headerClass: 'hidden',
+      cellClass: 'hidden',
+    },
+    cell: () => null,
   },
   {
     accessorKey: 'price',
@@ -171,6 +188,7 @@ export const columns = [
   {
     accessorKey: 'is_active',
     header: 'Estado',
+    enableSorting: false,
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
@@ -188,7 +206,7 @@ export const columns = [
             ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[11px]'
             : 'border-rose-500/30 text-rose-400 bg-rose-500/10 text-[11px]',
         },
-        () => (isActive ? 'Vigente' : 'Retirado'),
+        () => (isActive ? 'Activo' : 'Inactivo'),
       )
     },
   },
@@ -218,7 +236,14 @@ export const columns = [
                 empty ? 'text-rose-400' : low ? 'text-amber-400' : '',
               ],
             },
-            [available, low && !empty ? h(CircleAlert, { class: 'h-3.5 w-3.5' }) : null],
+            [
+              available,
+              empty
+                ? h(CircleX, { class: 'h-3.5 w-3.5' })
+                : low
+                  ? h(CircleAlert, { class: 'h-3.5 w-3.5' })
+                  : null,
+            ],
           ),
         ),
         h(TooltipContent, () =>
@@ -273,6 +298,7 @@ export const columns = [
   {
     accessorKey: 'created_at',
     header: 'Creación',
+    enableSorting: false,
     enableGlobalFilter: false,
     meta: {
       headerClass: 'justify-center',
@@ -400,7 +426,7 @@ export const columns = [
             h(
               DropdownMenuItem,
               {
-                'aria-label': isActive ? `Retirar ${product.name}` : `Reponer ${product.name}`,
+                'aria-label': isActive ? `Desactivar ${product.name}` : `Activar ${product.name}`,
                 class: [
                   'cursor-pointer text-xs',
                   isActive
@@ -413,7 +439,7 @@ export const columns = [
                 h(isActive ? XCircle : PlusCircle, {
                   class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
                 }),
-                h('span', isActive ? 'Retirar' : 'Reponer'),
+                h('span', isActive ? 'Desactivar' : 'Activar'),
               ],
             ),
         ]),

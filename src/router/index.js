@@ -48,6 +48,13 @@ const router = createRouter({
           component: () => import('@/views/products/ProductsView.vue'),
           meta: { title: 'Productos' },
         },
+        // Supplier routes
+        {
+          path: 'suppliers',
+          name: 'suppliers',
+          component: () => import('@/views/SuppliersView.vue'),
+          meta: { title: 'Proveedores', permissions: ['suppliers:view'] },
+        },
         {
           path: 'products/:id',
           name: 'product-details',

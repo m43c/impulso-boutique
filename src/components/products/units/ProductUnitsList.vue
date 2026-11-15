@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   Boxes,
   ChevronLeft,
+  CircleAlert,
   ClipboardCheck,
   ChevronRight,
   EllipsisVertical,
@@ -30,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -43,7 +45,7 @@ import { formatDate } from '@/utils/date'
 import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
 import { columns } from '@/components/products/units/columns'
-import { features } from '@/components/products/features'
+import { features } from '@/components/common/tableFeatures'
 import ProductUnitsCardSkeleton from '@/components/products/units/skeletons/ProductUnitsCardSkeleton.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
@@ -53,6 +55,7 @@ const props = defineProps({
   units: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
   highlightIds: { type: Array, default: () => [] },
+  productIsActive: { type: Boolean, default: true },
 })
 
 const emit = defineEmits([
@@ -149,6 +152,15 @@ function isHighlighted(unit) {
 <template>
   <TooltipProvider :delay-duration="200">
     <div class="flex h-full min-h-0 flex-1 flex-col">
+      <!-- Inactive product notice -->
+      <div v-if="!productIsActive && can('inventory:register-entry')" class="shrink-0 px-2 pt-2">
+        <Alert class="block border-amber-500/30 bg-amber-500/10 p-3 text-amber-500">
+          <div class="m-0 text-xs leading-relaxed text-amber-500">
+            <CircleAlert class="-mt-0.5 mr-1 inline-block h-4 w-4 shrink-0 align-middle" />
+            Producto inactivo. Actívalo para registrar nuevas unidades.
+          </div>
+        </Alert>
+      </div>
       <!-- Toolbar -->
       <div class="lg:bg-card flex shrink-0 items-center justify-between gap-2 border-b p-2">
         <!-- Search (Desktop) -->
@@ -208,16 +220,25 @@ function isHighlighted(unit) {
           </TooltipContent>
         </Tooltip>
         <!-- Add product units button -->
-        <Button
-          v-if="can('inventory:register-entry')"
-          size="sm"
-          :disabled="isLoading"
-          class="hidden text-xs md:flex"
-          @click="emit('add-units')"
-        >
-          <Boxes class="h-4 w-4" />
-          Agregar unidades
-        </Button>
+        <Tooltip v-if="can('inventory:register-entry')">
+          <TooltipTrigger as-child>
+            <span class="hidden md:flex">
+              <Button
+                size="sm"
+                :disabled="isLoading || !productIsActive"
+                class="text-xs"
+                @click="emit('add-units')"
+              >
+                <Boxes class="h-4 w-4" />
+                Agregar unidades
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p v-if="!productIsActive">Producto inactivo: actívalo para registrar unidades</p>
+            <p v-else>Registrar una o varias unidades</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div class="bg-background flex min-h-0 flex-1 flex-col overflow-y-auto">
         <!-- Desktop view -->

@@ -2,6 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
+import { useSuppliersStore } from '@/stores/suppliers'
 import { useMediaQuery } from '@vueuse/core'
 import { PackagePlus } from '@lucide/vue'
 import { toast } from 'vue-sonner'
@@ -27,6 +28,7 @@ import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
 const productsStore = useProductsStore()
+const suppliersStore = useSuppliersStore()
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
@@ -73,6 +75,10 @@ async function loadProducts() {
 function loadOptions() {
   productsStore.fetchOptions().catch((error) => {
     console.error('Error al cargar las sugerencias:', error)
+  })
+
+  suppliersStore.fetchSuppliers().catch((error) => {
+    console.error('Error al cargar los proveedores:', error)
   })
 }
 
@@ -124,6 +130,8 @@ async function handleSubmit(formData) {
       size: formData.size,
       price: formData.price,
       min_stock: formData.minStock,
+      supplier_id: formData.supplierId || null,
+      is_active: formData.isActive,
     }
 
     if (mode === 'edit') {
@@ -199,12 +207,12 @@ function handleCreateProductVariant(product) {
 }
 
 async function handleToggleStatus(product) {
-  const isRetiring = product.is_active
-  const actionText = isRetiring ? 'retirar' : 'reponer'
+  const isDeactivating = product.is_active
+  const actionText = isDeactivating ? 'desactivar' : 'activar'
 
   try {
-    await productsStore.toggleProductStatus(product.id, !isRetiring)
-    toast.success(`Producto ${isRetiring ? 'retirado' : 'repuesto'} correctamente`)
+    await productsStore.toggleProductStatus(product.id, !isDeactivating)
+    toast.success(`Producto ${isDeactivating ? 'desactivado' : 'activado'} correctamente`)
     loadProducts()
   } catch (error) {
     console.error(`Error al ${actionText} producto:`, error)
@@ -260,6 +268,7 @@ async function handleToggleStatus(product) {
           :is-loading="productsStore.isCreating || productsStore.isUpdating"
           :error-message="formError"
           :options="productsStore.options"
+          :suppliers="suppliersStore.suppliers"
           @submit="handleSubmit"
           @cancel="handleCancel"
         />
@@ -271,7 +280,7 @@ async function handleToggleStatus(product) {
         v-if="can('products:create') || can('products:update')"
         class="flex h-[90dvh] flex-col pb-1"
       >
-        <DrawerHeader class="px-5 pt-3 pb-2 text-left">
+        <DrawerHeader class="px-5 pt-3 pb-2 text-left gap-0">
           <DrawerTitle class="text-sm">{{ formTitle }}</DrawerTitle>
           <DrawerDescription class="text-xs">{{ formDescription }}</DrawerDescription>
         </DrawerHeader>
@@ -283,6 +292,7 @@ async function handleToggleStatus(product) {
           :is-loading="productsStore.isCreating || productsStore.isUpdating"
           :error-message="formError"
           :options="productsStore.options"
+          :suppliers="suppliersStore.suppliers"
           @submit="handleSubmit"
           @cancel="handleCancel"
         />

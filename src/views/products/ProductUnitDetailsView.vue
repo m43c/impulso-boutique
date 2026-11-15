@@ -252,7 +252,9 @@ onUnmounted(() => {
   <TooltipProvider :delay-duration="200">
     <!-- Skeleton -->
     <div v-if="productsStore.isFetchingScannedUnit" class="w-full px-4 pb-6 lg:px-6 lg:pb-0">
-      <ProductUnitDetailsSkeleton />
+      <ProductUnitDetailsSkeleton
+        :show-actions="can('inventory:register-exit') || can('inventory:reactivate-unit')"
+      />
     </div>
     <!-- Not found -->
     <div
@@ -317,7 +319,7 @@ onUnmounted(() => {
                 </div>
                 <!-- Details -->
                 <div class="-mt-0.5 flex min-w-0 flex-1 flex-col justify-between lg:-mt-1">
-                  <div class="flex flex-col gap-2.5 text-xs leading-none lg:leading-tight">
+                  <div class="flex flex-col gap-2.5 text-xs leading-tight">
                     <!-- Category -->
                     <div class="flex min-w-0 gap-2">
                       <span class="text-muted-foreground shrink-0">Categoría:</span>
@@ -372,13 +374,17 @@ onUnmounted(() => {
                       <span>{{ scannedProduct.size || 'Sin talla' }}</span>
                     </div>
                     <!-- Status -->
-                    <div v-if="!scannedProduct.is_active" class="flex items-center gap-2">
-                      <span class="text-muted-foreground">Estado</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-muted-foreground">Estado:</span>
                       <Badge
                         variant="outline"
-                        class="border-rose-500/30 bg-rose-500/10 text-[11px] text-rose-400"
+                        :class="
+                          scannedProduct.is_active
+                            ? 'border-emerald-500/30 bg-emerald-500/10 text-[11px] text-emerald-400'
+                            : 'border-rose-500/30 bg-rose-500/10 text-[11px] text-rose-400'
+                        "
                       >
-                        Retirado
+                        {{ scannedProduct.is_active ? 'Activo' : 'Inactivo' }}
                       </Badge>
                     </div>
                     <!-- Price -->

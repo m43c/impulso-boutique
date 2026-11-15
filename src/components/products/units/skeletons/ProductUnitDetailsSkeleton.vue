@@ -1,6 +1,10 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
+
+defineProps({
+  showActions: { type: Boolean, default: false },
+})
 </script>
 
 <template>
@@ -19,7 +23,6 @@ import { Card, CardContent } from '@/components/ui/card'
             <Skeleton class="h-5 w-full" />
             <Skeleton class="h-3 w-full" />
             <Skeleton class="h-3 w-5/6" />
-            <Skeleton class="h-3 w-2/3" />
           </div>
           <!-- Image and details -->
           <div class="flex w-full flex-wrap items-stretch gap-4 lg:gap-5">
@@ -49,6 +52,11 @@ import { Card, CardContent } from '@/components/ui/card'
                 <div class="flex items-center gap-2">
                   <Skeleton class="h-3 w-10 shrink-0" />
                   <Skeleton class="h-3 w-full max-w-12.5" />
+                </div>
+                <!-- Status -->
+                <div class="flex items-center gap-2">
+                  <Skeleton class="h-3 w-12" />
+                  <Skeleton class="h-5 w-14 rounded-full" />
                 </div>
                 <!-- Price -->
                 <div class="flex items-center gap-2">
@@ -86,7 +94,7 @@ import { Card, CardContent } from '@/components/ui/card'
           <!-- Action buttons -->
           <div class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Skeleton class="h-9 w-full rounded-md sm:w-36" />
-            <Skeleton class="h-9 w-full rounded-md sm:w-44" />
+            <Skeleton v-if="showActions" class="h-9 w-full rounded-md sm:w-24" />
           </div>
         </CardContent>
       </Card>
