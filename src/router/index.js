@@ -66,7 +66,7 @@ const router = createRouter({
         },
         // Inventary routes
         {
-          path: 'units/:unitId',
+          path: 'units/:id',
           name: 'unit-details',
           component: () => import('@/views/products/ProductUnitDetailsView.vue'),
           meta: {

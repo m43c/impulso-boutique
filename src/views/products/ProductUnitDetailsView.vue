@@ -97,7 +97,7 @@ async function loadUnit(unitId) {
         { title: 'Productos', to: { name: 'products' } },
         {
           title: 'Detalles de unidad',
-          to: { name: 'unit-details', params: { unitId: result.unit.id } },
+          to: { name: 'unit-details', params: { id: result.unit.id } },
         },
         {
           title: result.product.name,
@@ -226,16 +226,16 @@ async function refreshVariants() {
 async function handleExitSuccess({ reason }) {
   const label = reason === 'damage' ? 'daño' : 'pérdida'
   toast.success(`Unidad dada de baja por ${label}`)
-  await loadUnit(route.params.unitId)
+  await loadUnit(route.params.id)
 }
 
 async function handleReactivateSuccess() {
   toast.success('Unidad reactivada (mismo QR)')
-  await loadUnit(route.params.unitId)
+  await loadUnit(route.params.id)
 }
 
 watch(
-  () => route.params.unitId,
+  () => route.params.id,
   async (unitId) => {
     await loadUnit(unitId)
   },
