@@ -147,11 +147,11 @@ watch(
           <!-- Botón de voltear -->
           <button
             @click="isMirrored = !isMirrored"
-            class="bg-background/60 hover:bg-background/90 text-foreground absolute top-2 right-2 z-20 rounded-md p-1.5 backdrop-blur-sm transition-colors"
+            class="bg-background/60 hover:bg-background/90 text-foreground absolute top-1.5 right-1.5 z-20 rounded-md p-1.5 backdrop-blur-sm transition-colors"
             title="Alternar efecto espejo"
             type="button"
           >
-            <FlipHorizontal class="h-4 w-4" />
+            <FlipHorizontal class="h-3.5 w-3.5" />
           </button>
           <div
             v-if="isStarting"
@@ -189,9 +189,9 @@ watch(
           v-if="scanError"
           class="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2 rounded-md border p-3 py-2 text-xs"
         >
-          <div class="min-w-0 flex-1">
+          <div class="flex min-w-0 flex-1 gap-2">
             <p>{{ scanError }}</p>
-            <Button variant="link" size="sm" class="h-auto p-0 text-xs" @click="handleRetry">
+            <Button variant="outline" size="sm" class="h-auto px-2 text-xs" @click="handleRetry">
               Reintentar
             </Button>
           </div>
@@ -227,7 +227,9 @@ watch(
     <DrawerContent>
       <DrawerHeader class="gap-0 px-6 pb-2 text-left">
         <DrawerTitle class="text-sm">Escanear código QR</DrawerTitle>
-        <DrawerDescription class="text-xs">Apunta la cámara a la etiqueta de la unidad</DrawerDescription>
+        <DrawerDescription class="text-xs">
+          Apunta la cámara a la etiqueta de la unidad
+        </DrawerDescription>
       </DrawerHeader>
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6 pt-2">
         <!-- QR scanner -->
@@ -271,9 +273,9 @@ watch(
           v-if="scanError"
           class="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2 rounded-md border p-3 py-2 text-xs"
         >
-          <div class="min-w-0 flex-1">
+          <div class="flex min-w-0 flex-1 gap-2">
             <p>{{ scanError }}</p>
-            <Button variant="link" size="sm" class="h-auto p-0 text-xs" @click="handleRetry">
+            <Button variant="outline" size="sm" class="h-auto px-2 text-xs" @click="handleRetry">
               Reintentar
             </Button>
           </div>

@@ -2,6 +2,7 @@
 import { computed, ref, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
+import { useSaleStore } from '@/stores/sale'
 import { storeToRefs } from 'pinia'
 import { useMediaQuery } from '@vueuse/core'
 import { toast } from 'vue-sonner'
@@ -9,10 +10,13 @@ import {
   CheckCircle2,
   Check,
   Copy,
+  ExternalLink,
   Loader2,
   Minus,
+  PackageX,
   RefreshCw,
   RotateCcw,
+  ShoppingBag,
   XCircle,
 } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
@@ -43,6 +47,7 @@ const route = useRoute()
 const router = useRouter()
 
 const productsStore = useProductsStore()
+const saleStore = useSaleStore()
 const { setBreadcrumbs, clearBreadcrumbs } = useBreadcrumbs()
 const { can } = usePermissions()
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -75,7 +80,9 @@ const fullStatusText = computed(() => {
 })
 
 const viewProductVariant = computed(() => {
-  return showExitButton.value || showReactivateButton.value ? 'outline' : 'default'
+  return showExitButton.value || showReactivateButton.value || showSaleButton.value
+    ? 'outline'
+    : 'default'
 })
 
 const showExitButton = computed(
@@ -84,6 +91,33 @@ const showExitButton = computed(
 const showReactivateButton = computed(
   () => scannedUnit.value?.status === 'unavailable' && can('inventory:reactivate-unit'),
 )
+
+const showSaleButton = computed(() => {
+  return can('sales:create') && scannedUnit.value?.status === 'available'
+})
+
+const isSaleButtonDisabled = computed(() => {
+  if (!scannedUnit.value || !scannedProduct.value) {
+    return true
+  }
+
+  const alreadyInSale = saleStore.hasUnit(scannedUnit.value.id)
+  const isProductInactive = !scannedProduct.value.is_active
+
+  return alreadyInSale || isProductInactive
+})
+
+const saleButtonLabel = computed(() => {
+  if (!scannedUnit.value) {
+    return 'Agregar a venta'
+  }
+
+  if (saleStore.hasUnit(scannedUnit.value.id)) {
+    return 'Ya está en la venta'
+  }
+
+  return 'Agregar a venta'
+})
 
 async function loadUnit(unitId) {
   try {
@@ -140,13 +174,13 @@ async function handleCopyUnitId(unitId) {
 const statusBannerClasses = computed(() => {
   switch (scannedUnit.value?.status) {
     case 'available':
-      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+      return 'border-emerald-400/30 bg-emerald-400/10 text-emerald-400'
     case 'sold':
-      return 'border-sky-500/30 bg-sky-500/10 text-sky-500'
+      return 'border-sky-400/30 bg-sky-400/10 text-sky-400'
     case 'returned':
-      return 'border-amber-500/30 bg-amber-500/10 text-amber-500'
+      return 'border-amber-400/30 bg-amber-400/10 text-amber-400'
     case 'unavailable':
-      return 'border-rose-500/30 bg-rose-500/10 text-rose-500'
+      return 'border-rose-400/30 bg-rose-400/10 text-rose-400'
     default:
       return 'border-muted bg-muted text-muted-foreground'
   }
@@ -232,6 +266,37 @@ async function handleExitSuccess({ reason }) {
 async function handleReactivateSuccess() {
   toast.success('Unidad reactivada (mismo QR)')
   await loadUnit(route.params.id)
+}
+
+function handleAddToSale() {
+  if (!scannedUnit.value || !scannedProduct.value) {
+    return
+  }
+
+  const payload = {
+    id: scannedUnit.value.id,
+    productId: scannedProduct.value.id,
+    productName: scannedProduct.value.name,
+    imagePublicId: scannedProduct.value.image_public_id,
+    color: scannedProduct.value.color,
+    size: scannedProduct.value.size,
+    price: scannedProduct.value.price,
+    status: scannedUnit.value.status,
+    isActive: scannedProduct.value.is_active,
+  }
+
+  const result = saleStore.addUnit(payload)
+
+  if (result.ok) {
+    toast.success('Prenda agregada a la venta', {
+      action: {
+        label: 'Ir a la venta',
+        onClick: () => router.push({ name: 'sale-new' }),
+      },
+    })
+  } else {
+    toast.error(result.message)
+  }
 }
 
 watch(
@@ -461,38 +526,63 @@ onUnmounted(() => {
                 </div>
               </div>
               <!-- Action buttons -->
-              <div class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <div
+                class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-evenly"
+              >
                 <!-- View full product -->
                 <Button
                   :variant="viewProductVariant"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full sm:w-auto"
+                  class="w-full shrink-0 sm:w-auto flex-1"
                   @click="
                     router.push({ name: 'product-details', params: { id: scannedProduct.id } })
                   "
                 >
-                  <span class="lg:text-xs">Ver producto completo</span>
+                  <ExternalLink class="h-4 w-4" />
+                  <span class="lg:text-xs">Ver producto</span>
                 </Button>
                 <!-- Register exit -->
                 <Button
                   v-if="showExitButton"
+                  variant="destructive"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full sm:w-auto"
+                  class="w-full shrink-0 sm:w-auto flex-1"
                   @click="isExitModalOpen = true"
                 >
+                  <PackageX class="h-4 w-4" />
                   <span class="lg:text-xs">Dar de baja</span>
                 </Button>
                 <!-- Reactive unit -->
                 <Button
                   v-if="showReactivateButton"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full sm:w-auto"
+                  class="w-full shrink-0 sm:w-auto flex-1"
                   @click="isReactivateModalOpen = true"
                 >
                   <RotateCcw class="h-4 w-4" />
                   <span class="lg:text-xs">Reactivar</span>
                 </Button>
+                <!-- Add to sale -->
+                <div v-if="showSaleButton" class="flex w-full shrink-0 flex-col sm:w-auto flex-1">
+                  <Button
+                    :variant="saleStore.hasUnit(scannedUnit.id) ? 'secondary' : 'default'"
+                    :size="isDesktop ? 'sm' : ''"
+                    :disabled="isSaleButtonDisabled"
+                    @click="handleAddToSale"
+                  >
+                    <Check v-if="saleStore.hasUnit(scannedUnit.id)" class="h-4 w-4" />
+                    <ShoppingBag v-else class="h-4 w-4" />
+                    <span class="lg:text-xs">{{ saleButtonLabel }}</span>
+                  </Button>
+                </div>
               </div>
+              <!-- Hint -->
+              <p
+                v-if="!scannedProduct.is_active"
+                class="text-muted-foreground text-left text-[11px] leading-tight"
+              >
+                Producto retirado: no se puede vender
+              </p>
             </CardContent>
           </Card>
         </div>

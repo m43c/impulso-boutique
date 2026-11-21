@@ -7,7 +7,6 @@ import {
   ArrowUp,
   ArrowUpDown,
   CircleAlert,
-  CircleCheck,
   CircleX,
   ChevronLeft,
   ChevronRight,

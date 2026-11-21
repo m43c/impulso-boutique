@@ -8,6 +8,7 @@ import {
   Home,
   Package,
   LogOut,
+  ShoppingBag,
   Store,
   Truck,
   User,
@@ -48,6 +49,7 @@ const items = [
   { title: 'Productos', url: '/products', icon: Package, permission: 'products:view' },
   { title: 'Proveedores', url: '/suppliers', icon: Truck, permission: 'suppliers:view' },
   { title: 'Movimientos', url: '/moves', icon: ArrowLeftRight, permission: 'inventory:view-moves' },
+  { title: 'Ventas', url: '/sales', icon: ShoppingBag, permission: 'sales:view-recent' },
 ]
 
 const isDesktop = useMediaQuery('(min-width: 768px)')

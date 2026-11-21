@@ -80,6 +80,23 @@ const router = createRouter({
           component: () => import('@/views/MovesView.vue'),
           meta: { title: 'Movimientos', permissions: ['inventory:view-moves'] },
         },
+        // Sales routes
+        {
+          path: 'sales',
+          name: 'sales',
+          component: () => import('@/views/sales/SalesView.vue'),
+          meta: { title: 'Ventas', permissions: ['sales:view-recent'] },
+        },
+        {
+          path: 'sales/new',
+          name: 'sale-new',
+          component: () => import('@/views/sales/SaleNewView.vue'),
+          meta: {
+            title: 'Nueva venta',
+            permissions: ['sales:create'],
+            breadcrumb: [{ title: 'Ventas', to: { name: 'sales' } }],
+          },
+        },
       ],
     },
     // 404 not found

@@ -12,7 +12,7 @@ export function mapQrScannerError(error) {
     /NotAllowedError|Permission denied|denied/i.test(message) ||
     errorName === 'NotAllowedError'
   ) {
-    return 'Permiso de cámara denegado. Actívalo en el navegador para escanear'
+    return 'Permiso de cámara denegado. Actívalo en el navegador para escanear.'
   }
 
   if (/NotFoundError|DevicesNotFound|no camera/i.test(message) || errorName === 'NotFoundError') {
@@ -20,11 +20,11 @@ export function mapQrScannerError(error) {
   }
 
   if (/NotReadableError|in use|busy/i.test(message) || errorName === 'NotReadableError') {
-    return 'La cámara está en uso por otra aplicación. Ciérrala e intenta de nuevo'
+    return 'La cámara está en uso por otra aplicación. Ciérrala e intenta de nuevo.'
   }
 
   if (/NotSupportedError|insecure|https/i.test(message)) {
-    return 'El escaneo requiere HTTPS o localhost'
+    return 'El escaneo requiere HTTPS o localhost.'
   }
 
   return QR_ERRORS.GENERIC_START
