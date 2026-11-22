@@ -31,13 +31,13 @@ function variantLabel(item) {
 
 <template>
   <!-- Desktop view -->
-  <Table v-if="isDesktop">
-    <TableHeader>
+  <Table v-if="isDesktop" class="border-separate border-spacing-0">
+    <TableHeader class="sticky top-0 z-10">
       <TableRow>
-        <TableHead class="lg:text-xs">Prenda</TableHead>
-        <TableHead class="w-28 lg:text-xs">Código</TableHead>
-        <TableHead class="w-32 text-right lg:text-xs">Precio</TableHead>
-        <TableHead class="w-12 lg:text-xs" />
+        <TableHead class="bg-background border-b lg:text-xs">Prenda</TableHead>
+        <TableHead class="bg-background w-28 border-b lg:text-xs">Código</TableHead>
+        <TableHead class="bg-background w-32 border-b text-right lg:text-xs">Precio</TableHead>
+        <TableHead class="bg-background w-12 border-b lg:text-xs" />
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -46,7 +46,7 @@ function variantLabel(item) {
         :key="item.id"
         :class="failedUnitId === item.id ? 'bg-destructive/10 hover:bg-destructive/10' : ''"
       >
-        <TableCell>
+        <TableCell class="border-b">
           <div class="flex items-center gap-3">
             <ProductImage
               :public-id="item.imagePublicId"
@@ -62,13 +62,13 @@ function variantLabel(item) {
           </div>
         </TableCell>
         <TableCell
-          class="font-mono text-xs"
+          class="border-b font-mono text-xs"
           :class="failedUnitId === item.id ? 'text-destructive font-semibold' : ''"
         >
           {{ shortId(item.id) }}
         </TableCell>
-        <TableCell class="text-right text-xs">{{ formatCurrency(item.price) }}</TableCell>
-        <TableCell class="text-right">
+        <TableCell class="border-b text-right text-xs">{{ formatCurrency(item.price) }}</TableCell>
+        <TableCell class="border-b text-right">
           <Button
             variant="ghost"
             size="icon"
@@ -115,7 +115,7 @@ function variantLabel(item) {
       <Button
         variant="ghost"
         size="icon"
-        class="size-8 shrink-0 -mt-1 -mr-2"
+        class="-mt-1 -mr-2 size-8 shrink-0"
         aria-label="Quitar prenda"
         @click="emit('remove', item.id)"
       >

@@ -1,3 +1,5 @@
+import { formatCurrency } from '@/utils/currency'
+
 const PAYMENT_METHOD_LABELS = {
   cash: 'Efectivo',
   qr_transfer: 'Transferencia QR',
@@ -14,4 +16,18 @@ export function formatPaymentMethod(paymentMethod) {
   }
 
   return PAYMENT_METHOD_LABELS[paymentMethod] ?? paymentMethod
+}
+
+export function formatSaleTotal(totalAmount) {
+  const total = Number(totalAmount ?? 0)
+  return total > 0 ? formatCurrency(total) : '—'
+}
+
+// export function formatSaleTotal(totalAmount) {
+//   return formatCurrency(Number(totalAmount ?? 0)) // 0 → "Bs. 0,00"
+// }
+
+export function formatItemsCount(itemsCount) {
+  const count = Number(itemsCount ?? 0)
+  return `${count} ${count === 1 ? 'prenda' : 'prendas'}`
 }

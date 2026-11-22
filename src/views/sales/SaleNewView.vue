@@ -151,10 +151,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 md:pb-6"
+    class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 md:h-[calc(100dvh-5rem)] md:flex-none md:overflow-hidden md:pb-0"
     :class="saleStore.count > 0 ? 'pb-44' : 'pb-6'"
   >
-    <div class="flex flex-1 flex-col gap-4">
+    <div class="flex min-h-0 flex-1 flex-col gap-4">
       <!-- Add controls -->
       <div class="flex flex-col gap-3 md:flex-row md:items-center lg:gap-2">
         <Button
@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
             @click="handleAddCode"
           >
             <Loader2 v-if="saleStore.isResolving" class="size-4 animate-spin" />
-            <Plus v-else class="size-4 lg:size-3.5" />
+            <Plus v-else class="size-3.5" />
             Agregar
           </Button>
         </div>
@@ -246,8 +246,8 @@ onBeforeUnmount(() => {
       </div>
       <!-- Current sale -->
       <template v-else>
-        <div class="rounded-lg border">
-          <div class="flex items-center justify-between gap-2 border-b px-4 py-3">
+        <div class="flex flex-col rounded-lg border md:min-h-0 md:overflow-hidden">
+          <div class="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
             <p class="font-medium lg:text-xs">
               Venta en curso · {{ saleStore.count }} {{ itemLabel }}
             </p>
@@ -256,14 +256,16 @@ onBeforeUnmount(() => {
               Vaciar
             </Button>
           </div>
-          <SaleItemsList
-            :items="saleStore.items"
-            :failed-unit-id="saleStore.failedUnitId"
-            @remove="handleRemove"
-          />
+          <div class="relative isolate min-h-0 md:overflow-auto">
+            <SaleItemsList
+              :items="saleStore.items"
+              :failed-unit-id="saleStore.failedUnitId"
+              @remove="handleRemove"
+            />
+          </div>
         </div>
         <!-- Desktop summary -->
-        <div class="hidden flex-col gap-3 md:flex">
+        <div class="hidden shrink-0 flex-col gap-3 md:flex">
           <div class="flex items-center justify-between">
             <span class="text-sm">Total referencial</span>
             <span class="text-base font-semibold">{{ formatCurrency(saleStore.total) }}</span>
@@ -299,7 +301,7 @@ onBeforeUnmount(() => {
   <!-- Mobile bottom bar -->
   <div
     v-if="saleStore.count > 0"
-    class="bg-background/95 fixed inset-x-0 bottom-0 z-40 flex flex-col gap-1.5 border-t px-4 pt-2 pb-4 backdrop-blur md:hidden"
+    class="bg-background fixed inset-x-0 bottom-0 z-40 flex flex-col gap-1.5 border-t px-4 pt-2 pb-4 backdrop-blur md:hidden"
   >
     <div class="flex items-center justify-between">
       <span class="text-lg">Total referencial</span>
