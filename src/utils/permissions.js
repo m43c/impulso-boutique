@@ -24,6 +24,9 @@ export const PERMISSIONS = {
   'inventory:register-exit': ['admin'],
   'inventory:reactivate-unit': ['admin'],
   'inventory:count': ['admin'],
+  // sales
+  'sales:view-recent': ['admin', 'cashier'],
+  'sales:create': ['admin', 'cashier'],
 }
 
 export function hasPermission(role, permission) {

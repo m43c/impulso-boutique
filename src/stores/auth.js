@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { toast } from 'vue-sonner'
 import router from '@/router'
 import { supabase } from '@/lib/supabase'
+import { useSaleStore } from '@/stores/sale'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -36,6 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = null
     lastFetchedUserId = null
     unsubscribeFromProfileChanges()
+    useSaleStore().clear()
   }
 
   async function forceLogoutInactive() {

@@ -179,7 +179,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
   <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
     <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
-      <DialogHeader class="border-border/60 gap-0 px-6 pt-6 pb-3">
+      <DialogHeader class="border-border/60 gap-0 px-6 pt-5 pb-3">
         <!-- Title -->
         <DialogTitle class="text-sm">{{ title }}</DialogTitle>
         <!-- Product name -->
@@ -187,7 +187,7 @@ const isSubmitting = computed(() => productsStore.isRegisteringCount)
           <Tooltip>
             <TooltipTrigger as-child>
               <div
-                class="line-clamp-2 w-full cursor-default pt-1 pb-2.5 text-left text-xs font-medium wrap-break-word"
+                class="line-clamp-2 w-full cursor-default pb-2.5 text-left text-xs font-medium wrap-break-word"
               >
                 {{ product.name }}
               </div>

@@ -1,24 +1,9 @@
 const RELATIVE_UNITS = [
-  {
-    unit: 'year',
-    seconds: 31536000,
-  },
-  {
-    unit: 'month',
-    seconds: 2592000,
-  },
-  {
-    unit: 'day',
-    seconds: 86400,
-  },
-  {
-    unit: 'hour',
-    seconds: 3600,
-  },
-  {
-    unit: 'minute',
-    seconds: 60,
-  },
+  { unit: 'year', seconds: 31536000 },
+  { unit: 'month', seconds: 2592000 },
+  { unit: 'day', seconds: 86400 },
+  { unit: 'hour', seconds: 3600 },
+  { unit: 'minute', seconds: 60 },
 ]
 
 export function formatDate(isoString) {
@@ -29,14 +14,21 @@ export function formatDate(isoString) {
   })
 }
 
-export function formatDateTime(isoString) {
+export const LA_PAZ_TZ = 'America/La_Paz'
+
+export function formatDateTime(isoString, options = {}) {
   return new Date(isoString).toLocaleString('es-BO', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    ...options,
   })
+}
+
+export function formatDateTimeLaPaz(isoString) {
+  return formatDateTime(isoString, { timeZone: LA_PAZ_TZ })
 }
 
 const relativeFormatter = new Intl.RelativeTimeFormat('es-BO', { numeric: 'auto' })

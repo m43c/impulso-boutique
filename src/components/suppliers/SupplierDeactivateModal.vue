@@ -92,7 +92,7 @@ function handleConfirm() {
         >
           <span class="text-xs">Cancelar</span>
         </Button>
-        <Button type="button" size="sm" :disabled="isLoading" @click="handleConfirm">
+        <Button type="button" variant="destructive" size="sm" :disabled="isLoading" @click="handleConfirm">
           <Loader2 v-if="isLoading" class="h-4 w-4 animate-spin" />
           <span class="text-xs">{{ isLoading ? 'Desactivando…' : 'Desactivar proveedor' }}</span>
         </Button>

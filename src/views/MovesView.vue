@@ -46,7 +46,7 @@ function handleViewUnit(unitId) {
     return
   }
 
-  router.push({ name: 'unit-details', params: { unitId } })
+  router.push({ name: 'unit-details', params: { id: unitId } })
 }
 </script>
 

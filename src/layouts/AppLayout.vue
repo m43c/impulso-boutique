@@ -45,7 +45,7 @@ function openScanner() {
 
 function handleQrDetected(rawId) {
   const unitId = rawId.startsWith('/units/') ? rawId.split('/').pop() : rawId
-  router.push({ name: 'unit-details', params: { unitId } })
+  router.push({ name: 'unit-details', params: { id: unitId } })
 }
 
 let isSubscribedToAlerts = false
