@@ -82,6 +82,25 @@ function handleNewSale() {
   router.push({ name: 'sale-new' })
 }
 
+async function handleReturnRegistered(payload) {
+  await loadSales(search.value)
+
+  const saleId = payload?.saleId
+
+  if (!saleId) {
+    return
+  }
+
+  const updated = sales.value.find((sale) => sale.id === saleId)
+
+  if (updated) {
+    selectedSale.value = updated
+  } else {
+    isDetailOpen.value = false
+    selectedSale.value = null
+  }
+}
+
 const isScrollingDown = ref(false)
 let lastScrollY = 0
 
@@ -151,6 +170,10 @@ onBeforeUnmount(() => {
       <Plus class="size-5" />
     </Button>
     <!-- Sale detail (sheet/drawer) -->
-    <SaleDetail v-model:open="isDetailOpen" :sale="selectedSale" />
+    <SaleDetail
+      v-model:open="isDetailOpen"
+      :sale="selectedSale"
+      @return-registered="handleReturnRegistered"
+    />
   </div>
 </template>

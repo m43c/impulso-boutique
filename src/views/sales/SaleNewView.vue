@@ -52,7 +52,7 @@ const isResultOpen = computed({
   },
 })
 
-const itemLabel = computed(() => (saleStore.count === 1 ? 'prenda' : 'prendas'))
+const itemLabel = computed(() => (saleStore.count === 1 ? 'unidad' : 'unidades'))
 
 function showNotice(type, message) {
   notice.value = { type, message }
@@ -164,12 +164,12 @@ onBeforeUnmount(() => {
           @click="handleOpenScanner"
         >
           <ScanLine class="size-4 lg:size-3.5" />
-          Escanear prenda
+          Escanear
         </Button>
         <div class="flex flex-1 gap-2">
           <Input
             v-model="manualCode"
-            placeholder="Ingresar código de prenda..."
+            placeholder="Ingresar código de unidad..."
             class="font-mono text-[13px]! lg:h-8 lg:text-xs!"
             autocomplete="off"
             spellcheck="false"
@@ -240,7 +240,7 @@ onBeforeUnmount(() => {
         <div>
           <p class="text-sm font-medium">Venta en curso</p>
           <p class="text-muted-foreground text-xs">
-            Escanea la primera prenda o escribe su código para empezar
+            Escanea la primera unidad o escribe su código para empezar
           </p>
         </div>
       </div>
@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
           <p class="text-[13px] font-semibold">Venta registrada</p>
           <p class="text-muted-foreground mt-1 text-xs">
             #{{ shortId(saleStore.lastSale?.id) }} · {{ saleStore.lastSale?.itemsCount }}
-            {{ saleStore.lastSale?.itemsCount === 1 ? 'prenda' : 'prendas' }}
+            {{ saleStore.lastSale?.itemsCount === 1 ? 'unidad' : 'unidades' }}
           </p>
           <p class="mt-1 text-xs font-medium">
             {{ formatCurrency(saleStore.lastSale?.totalAmount) }} ·
@@ -377,7 +377,7 @@ onBeforeUnmount(() => {
           <p class="text-base font-semibold">Venta registrada</p>
           <p class="text-muted-foreground mt-1 text-sm">
             #{{ shortId(saleStore.lastSale?.id) }} · {{ saleStore.lastSale?.itemsCount }}
-            {{ saleStore.lastSale?.itemsCount === 1 ? 'prenda' : 'prendas' }}
+            {{ saleStore.lastSale?.itemsCount === 1 ? 'unidad' : 'unidades' }}
           </p>
           <p class="mt-1 text-sm font-medium">
             {{ formatCurrency(saleStore.lastSale?.totalAmount) }} ·

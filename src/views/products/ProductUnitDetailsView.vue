@@ -10,13 +10,9 @@ import {
   CheckCircle2,
   Check,
   Copy,
-  ExternalLink,
   Loader2,
   Minus,
-  PackageX,
   RefreshCw,
-  RotateCcw,
-  ShoppingBag,
   XCircle,
 } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
@@ -533,12 +529,11 @@ onUnmounted(() => {
                 <Button
                   :variant="viewProductVariant"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="
                     router.push({ name: 'product-details', params: { id: scannedProduct.id } })
                   "
                 >
-                  <ExternalLink class="h-4 w-4" />
                   <span class="lg:text-xs">Ver producto</span>
                 </Button>
                 <!-- Register exit -->
@@ -546,32 +541,28 @@ onUnmounted(() => {
                   v-if="showExitButton"
                   variant="destructive"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="isExitModalOpen = true"
                 >
-                  <PackageX class="h-4 w-4" />
                   <span class="lg:text-xs">Dar de baja</span>
                 </Button>
                 <!-- Reactive unit -->
                 <Button
                   v-if="showReactivateButton"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="isReactivateModalOpen = true"
                 >
-                  <RotateCcw class="h-4 w-4" />
                   <span class="lg:text-xs">Reactivar</span>
                 </Button>
                 <!-- Add to sale -->
-                <div v-if="showSaleButton" class="flex w-full shrink-0 flex-col sm:w-auto flex-1">
+                <div v-if="showSaleButton" class="flex w-full flex-1 shrink-0 flex-col sm:w-auto">
                   <Button
                     :variant="saleStore.hasUnit(scannedUnit.id) ? 'secondary' : 'default'"
                     :size="isDesktop ? 'sm' : ''"
                     :disabled="isSaleButtonDisabled"
                     @click="handleAddToSale"
                   >
-                    <Check v-if="saleStore.hasUnit(scannedUnit.id)" class="h-4 w-4" />
-                    <ShoppingBag v-else class="h-4 w-4" />
                     <span class="lg:text-xs">{{ saleButtonLabel }}</span>
                   </Button>
                 </div>

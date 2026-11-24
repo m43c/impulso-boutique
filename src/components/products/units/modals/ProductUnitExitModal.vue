@@ -112,8 +112,8 @@ function handleCancel() {
       </DialogHeader>
       <div class="flex flex-col gap-4 px-6">
         <!-- Error message -->
-        <Alert v-if="errorMessage" variant="destructive">
-          <AlertDescription class="text-sm">{{ errorMessage }}</AlertDescription>
+        <Alert v-if="errorMessage" variant="destructive" class="px-3 py-2">
+          <AlertDescription class="text-xs">{{ errorMessage }}</AlertDescription>
         </Alert>
         <Field>
           <!-- Reason -->

@@ -7,6 +7,7 @@ const moveReasonLabels = {
   damage: 'Daño',
   count: 'Conteo',
   correction: 'Corrección',
+  review: 'Revisión',
 }
 
 export function formatMoveReason(reason) {

@@ -18,16 +18,16 @@ export function formatPaymentMethod(paymentMethod) {
   return PAYMENT_METHOD_LABELS[paymentMethod] ?? paymentMethod
 }
 
-export function formatSaleTotal(totalAmount) {
-  const total = Number(totalAmount ?? 0)
-  return total > 0 ? formatCurrency(total) : '—'
-}
-
 // export function formatSaleTotal(totalAmount) {
-//   return formatCurrency(Number(totalAmount ?? 0)) // 0 → "Bs. 0,00"
+//   const total = Number(totalAmount ?? 0)
+//   return total > 0 ? formatCurrency(total) : '—'
 // }
+
+export function formatSaleTotal(totalAmount) {
+  return formatCurrency(Number(totalAmount ?? 0))
+}
 
 export function formatItemsCount(itemsCount) {
   const count = Number(itemsCount ?? 0)
-  return `${count} ${count === 1 ? 'prenda' : 'prendas'}`
+  return `${count} ${count === 1 ? 'unidad' : 'unidades'}`
 }

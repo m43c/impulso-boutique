@@ -34,7 +34,7 @@ function variantLabel(item) {
   <Table v-if="isDesktop" class="border-separate border-spacing-0">
     <TableHeader class="sticky top-0 z-10">
       <TableRow>
-        <TableHead class="bg-background border-b lg:text-xs">Prenda</TableHead>
+        <TableHead class="bg-background border-b lg:text-xs">Unidad</TableHead>
         <TableHead class="bg-background w-28 border-b lg:text-xs">Código</TableHead>
         <TableHead class="bg-background w-32 border-b text-right lg:text-xs">Precio</TableHead>
         <TableHead class="bg-background w-12 border-b lg:text-xs" />
@@ -73,7 +73,7 @@ function variantLabel(item) {
             variant="ghost"
             size="icon"
             class="size-7 rounded-full"
-            aria-label="Quitar prenda"
+            aria-label="Quitar unidad"
             @click="emit('remove', item.id)"
           >
             <X class="size-4" />
@@ -116,7 +116,7 @@ function variantLabel(item) {
         variant="ghost"
         size="icon"
         class="-mt-1 -mr-2 size-8 shrink-0"
-        aria-label="Quitar prenda"
+        aria-label="Quitar unidad"
         @click="emit('remove', item.id)"
       >
         <X class="size-4" />

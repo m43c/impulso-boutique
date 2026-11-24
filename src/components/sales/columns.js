@@ -1,12 +1,14 @@
 import { h } from 'vue'
-import { ChevronRight } from '@lucide/vue'
+import { ChevronRight, Undo2 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { formatDateTimeLaPaz } from '@/utils/date'
+import { countReturnedLines, formatReturnedMarker } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
 
 const PAYMENT_STYLES = {
   cash: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
   qr_transfer: 'border-sky-500/30 bg-sky-500/10 text-sky-400',
+  exchange: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
 }
 
 export function saleItemsPreview(sale) {
@@ -36,16 +38,31 @@ export const columns = [
   {
     id: 'items',
     accessorFn: (row) => saleItemsPreview(row),
-    header: 'Prendas',
+    header: 'Productos',
     enableSorting: false,
     enableGlobalFilter: false,
     meta: { skeletonClass: 'h-4 w-44', cellClass: 'max-w-[260px] text-xs' },
     cell: (info) => {
       const count = Number(info.row.original.items_count ?? 0)
+      const returned = countReturnedLines(info.row.original)
 
       return h('div', { class: 'flex min-w-0 items-center gap-1' }, [
         h('span', { class: 'truncate' }, info.getValue()),
         count > 0 ? h('span', { class: 'text-muted-foreground shrink-0' }, `(${count})`) : null,
+        returned > 0
+          ? h(
+              'span',
+              {
+                class:
+                  'inline-flex shrink-0 items-center gap-0.5 text-xs text-amber-400 dark:text-amber-400',
+                title: `${returned} ${returned === 1 ? 'línea devuelta' : 'líneas devueltas'}`,
+              },
+              [
+                h(Undo2, { class: 'h-3.5 w-3.5', 'aria-hidden': 'true' }),
+                formatReturnedMarker(returned),
+              ],
+            )
+          : null,
       ])
     },
   },
@@ -78,10 +95,11 @@ export const columns = [
     },
     cell: (info) => {
       const method = info.row.original.payment_method
+      const styleKey = method ?? 'exchange'
 
       return h(
         Badge,
-        { variant: 'outline', class: [PAYMENT_STYLES[method] ?? '', 'text-[11px]'] },
+        { variant: 'outline', class: [PAYMENT_STYLES[styleKey] ?? '', 'text-[11px]'] },
         () => formatPaymentMethod(method),
       )
     },

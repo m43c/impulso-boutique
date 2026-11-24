@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
         <Skeleton class="h-3.5 w-28" />
         <Skeleton class="h-4 w-16" />
       </div>
-      <!-- Items/Garments -->
+      <!-- Units -->
       <Skeleton class="h-4 w-3/4" />
       <!-- Quantity + payment -->
       <div class="flex items-center justify-between gap-2">

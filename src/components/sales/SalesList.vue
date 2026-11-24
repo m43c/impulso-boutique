@@ -36,6 +36,7 @@ import { columns, saleItemsPreview } from '@/components/sales/columns'
 import { features } from '@/components/common/tableFeatures'
 import SalesCardSkeleton from '@/components/sales/SalesCardSkeleton.vue'
 import { formatDateTimeLaPaz } from '@/utils/date'
+import { countReturnedLines, formatReturnedLinesCount } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
 import { usePermissions } from '@/composables/usePermissions'
 
@@ -72,7 +73,7 @@ const table = useTable({
     sorting: [{ id: 'created_at', desc: true }],
     pagination: {
       pageIndex: 0,
-      pageSize: isDesktop.value ? 15 : 6,
+      pageSize: isDesktop.value ? 15 : 10,
     },
   },
 })
@@ -317,6 +318,9 @@ function handleClearSearch() {
                   <span class="text-muted-foreground min-w-0 truncate text-xs">
                     {{ formatItemsCount(row.original.items_count) }} ·
                     {{ formatPaymentMethod(row.original.payment_method) }}
+                    <template v-if="countReturnedLines(row.original)">
+                      · {{ formatReturnedLinesCount(countReturnedLines(row.original)) }}
+                    </template>
                   </span>
                   <ChevronRight class="text-muted-foreground h-4 w-4 shrink-0" />
                 </div>
