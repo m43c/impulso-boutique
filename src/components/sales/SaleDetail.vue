@@ -15,7 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import SaleDetailLines from '@/components/sales/SaleDetailLines.vue'
+import SaleDetailUnits from '@/components/sales/SaleDetailUnits.vue'
 import ReturnModal from '@/components/sales/ReturnModal.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { formatDateTimeLaPaz } from '@/utils/date'
@@ -35,7 +35,7 @@ const { can } = usePermissions()
 
 const canCreateReturn = computed(() => can('returns:create'))
 
-const returnLine = ref(null)
+const returnUnit = ref(null)
 const isReturnModalOpen = ref(false)
 
 const now = ref(Date.now())
@@ -74,8 +74,8 @@ const deadlineText = computed(() =>
     : null,
 )
 
-async function openReturnModal(line) {
-  returnLine.value = line
+async function openReturnModal(unit) {
+  returnUnit.value = unit
 
   if (!isDesktop.value) {
     open.value = false
@@ -90,7 +90,7 @@ watch(isReturnModalOpen, (isOpen) => {
     return
   }
 
-  returnLine.value = null
+  returnUnit.value = null
 
   if (!isDesktop.value) {
     open.value = true
@@ -128,10 +128,10 @@ function handleReturnSuccess(payload) {
           <span>{{ deadlineText }}</span>
         </div>
         <div class="mt-4 min-h-0 flex-1 overflow-y-auto">
-          <SaleDetailLines
-            :lines="sale.lines"
+          <SaleDetailUnits
+            :units="sale.units"
             :can-create-return="canCreateReturn"
-            @return-line="openReturnModal"
+            @return-unit="openReturnModal"
           />
         </div>
         <div class="mt-4 flex items-center justify-between border-t pt-3">
@@ -166,10 +166,10 @@ function handleReturnSuccess(payload) {
           <span>{{ deadlineText }}</span>
         </div>
         <div class="mt-4 min-h-0 flex-1 overflow-y-auto">
-          <SaleDetailLines
-            :lines="sale.lines"
+          <SaleDetailUnits
+            :units="sale.units"
             :can-create-return="canCreateReturn"
-            @return-line="openReturnModal"
+            @return-unit="openReturnModal"
           />
         </div>
         <div class="mt-4 flex items-center justify-between border-t pt-3">
@@ -184,7 +184,7 @@ function handleReturnSuccess(payload) {
   <ReturnModal
     v-model:open="isReturnModalOpen"
     :sale="sale"
-    :line="returnLine"
+    :unit="returnUnit"
     @success="handleReturnSuccess"
   />
 </template>

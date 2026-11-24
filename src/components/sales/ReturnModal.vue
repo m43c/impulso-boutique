@@ -38,7 +38,7 @@ import { buildReturnSuccessMessage, RETURN_REASONS } from '@/utils/returns'
 
 const props = defineProps({
   sale: { type: Object, default: null },
-  line: { type: Object, default: null },
+  unit: { type: Object, default: null },
 })
 
 const open = defineModel('open', { type: Boolean, default: false })
@@ -61,16 +61,16 @@ const isScannerOpen = ref(false)
 const isSubmitting = computed(() => returnsStore.isRegistering)
 const isResolving = computed(() => returnsStore.isResolvingReplacement)
 
-const lineLabel = computed(() =>
-  [props.line?.product_name, props.line?.color, props.line?.size].filter(Boolean).join(' · '),
+const unitLabel = computed(() =>
+  [props.unit?.product_name, props.unit?.color, props.unit?.size].filter(Boolean).join(' · '),
 )
 
 const saleCaption = computed(() => {
-  if (!props.sale || !props.line) {
+  if (!props.sale || !props.unit) {
     return ''
   }
 
-  const price = formatCurrency(props.line.unit_price)
+  const price = formatCurrency(props.unit.unit_price)
   const method = props.sale.payment_method
     ? formatPaymentMethod(props.sale.payment_method)
     : 'sin cobro'
@@ -78,14 +78,14 @@ const saleCaption = computed(() => {
   return `${props.sale.payment_method ? 'Pagó' : ''} ${price} · ${method} · venta #${shortId(props.sale.id)}`.trim()
 })
 
-const canRefund = computed(() => !!props.line?.can_refund)
+const canRefund = computed(() => !!props.unit?.can_refund)
 
 const exchangeOnlyMessage = computed(() => {
   if (canRefund.value) {
     return null
   }
 
-  if (props.line?.is_replacement_line) {
+  if (props.unit?.is_replacement_unit) {
     return 'Se recibió en un cambio: solo puede cambiarse'
   }
 
@@ -96,7 +96,7 @@ const exchangeOnlyMessage = computed(() => {
   return 'Solo puede cambiarse'
 })
 
-const refundAmount = computed(() => Number(props.line?.unit_price ?? 0))
+const refundAmount = computed(() => Number(props.unit?.unit_price ?? 0))
 
 const refundText = computed(() => {
   const amount = formatCurrency(refundAmount.value)
@@ -109,15 +109,15 @@ const refundText = computed(() => {
 })
 
 const replacementWarnings = computed(() => {
-  if (!replacement.value || !props.line) {
+  if (!replacement.value || !props.unit) {
     return []
   }
 
   const warnings = []
-  const paidPrice = Number(props.line.unit_price)
+  const paidPrice = Number(props.unit.unit_price)
   const replacementPrice = Number(replacement.value.price)
 
-  if (replacement.value.id === props.line.unit_id) {
+  if (replacement.value.id === props.unit.unit_id) {
     warnings.push('Es la misma unidad que se devuelve.')
   }
 
@@ -139,7 +139,7 @@ const replacementWarnings = computed(() => {
 })
 
 const canConfirm = computed(() => {
-  if (!props.line || !props.sale || isSubmitting.value || isResolving.value) {
+  if (!props.unit || !props.sale || isSubmitting.value || isResolving.value) {
     return false
   }
 
@@ -163,7 +163,7 @@ const isReplacementHighlighted = computed(
 )
 
 watch(
-  () => [open.value, props.line?.sale_detail_id, props.sale?.id],
+  () => [open.value, props.unit?.sale_detail_id, props.sale?.id],
   ([isOpen]) => {
     if (!isOpen) {
       return
@@ -237,7 +237,7 @@ async function submit() {
   resetError()
 
   const result = await returnsStore.registerReturn({
-    saleDetailId: props.line.sale_detail_id,
+    saleDetailId: props.unit.sale_detail_id,
     type: type.value,
     reason: reason.value,
     note: note.value,
@@ -274,11 +274,11 @@ async function submit() {
     <DialogContent class="flex max-h-[90dvh] flex-col gap-0 p-0 sm:max-w-lg">
       <DialogHeader class="px-6 pt-6 pb-3">
         <DialogTitle class="text-sm">Registrar devolución</DialogTitle>
-        <DialogDescription v-if="line" class="text-xs">
-          {{ lineLabel }} · {{ shortId(line.unit_id) }}
+        <DialogDescription v-if="unit" class="text-xs">
+          {{ unitLabel }} · {{ shortId(unit.unit_id) }}
         </DialogDescription>
       </DialogHeader>
-      <div v-if="line && sale" class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pb-4">
+      <div v-if="unit && sale" class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pb-4">
         <p class="text-muted-foreground text-xs">{{ saleCaption }}</p>
         <!-- Return type -->
         <div class="flex flex-col gap-2">
@@ -338,7 +338,7 @@ async function submit() {
         <template v-if="type === 'exchange'">
           <div class="flex flex-col gap-2">
             <p class="text-xs font-medium">
-              Unidad de reemplazo debe costar {{ formatCurrency(line.unit_price) }}
+              Unidad de reemplazo debe costar {{ formatCurrency(unit.unit_price) }}
             </p>
             <div class="flex flex-wrap items-center gap-2">
               <Button
@@ -458,7 +458,7 @@ async function submit() {
           </div>
         </div>
       </div>
-      <div v-if="line && sale" class="flex justify-end gap-2 border-t px-6 py-4">
+      <div v-if="unit && sale" class="flex justify-end gap-2 border-t px-6 py-4">
         <Button variant="outline" size="sm" :disabled="isSubmitting" @click="open = false">
           <span class="text-xs">Cancelar</span>
         </Button>
@@ -474,11 +474,11 @@ async function submit() {
     <DrawerContent class="flex max-h-[92dvh] flex-col pb-5">
       <DrawerHeader class="gap-0 px-5 pt-3 pb-2 text-left">
         <DrawerTitle class="text-sm">Registrar devolución</DrawerTitle>
-        <DrawerDescription v-if="line" class="text-xs">
-          {{ lineLabel }} · {{ shortId(line.unit_id) }}
+        <DrawerDescription v-if="unit" class="text-xs">
+          {{ unitLabel }} · {{ shortId(unit.unit_id) }}
         </DrawerDescription>
       </DrawerHeader>
-      <div v-if="line && sale" class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-3">
+      <div v-if="unit && sale" class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-3">
         <p class="text-muted-foreground text-xs">{{ saleCaption }}</p>
         <!-- Return type -->
         <div class="flex flex-col gap-2">
@@ -541,7 +541,7 @@ async function submit() {
         <template v-if="type === 'exchange'">
           <div class="flex flex-col gap-2">
             <p class="text-xs font-medium">
-              Unidad de reemplazo debe costar {{ formatCurrency(line.unit_price) }}
+              Unidad de reemplazo debe costar {{ formatCurrency(unit.unit_price) }}
             </p>
             <Button
               variant="outline"
@@ -657,7 +657,7 @@ async function submit() {
           </div>
         </div>
       </div>
-      <div v-if="line && sale" class="mt-auto flex flex-col gap-2 border-t px-5 pt-3">
+      <div v-if="unit && sale" class="mt-auto flex flex-col gap-2 border-t px-5 pt-3">
         <Button size="sm" class="w-full" :disabled="!canConfirm" @click="submit">
           <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
           <span class="text-xs">{{ confirmLabel }}</span>

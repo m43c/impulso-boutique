@@ -36,7 +36,7 @@ import { columns, saleItemsPreview } from '@/components/sales/columns'
 import { features } from '@/components/common/tableFeatures'
 import SalesCardSkeleton from '@/components/sales/SalesCardSkeleton.vue'
 import { formatDateTimeLaPaz } from '@/utils/date'
-import { countReturnedLines, formatReturnedLinesCount } from '@/utils/returns'
+import { countReturnedUnits, formatReturnedUnitsCount } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
 import { usePermissions } from '@/composables/usePermissions'
 
@@ -294,7 +294,7 @@ function handleClearSearch() {
         <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
-            <SalesCardSkeleton v-for="card in 5" :key="`sk-card-${card}`" />
+            <SalesCardSkeleton v-for="card in 10" :key="`sk-card-${card}`" />
           </template>
           <!-- Data -->
           <template v-else-if="table.getRowModel().rows?.length">
@@ -318,8 +318,8 @@ function handleClearSearch() {
                   <span class="text-muted-foreground min-w-0 truncate text-xs">
                     {{ formatItemsCount(row.original.items_count) }} ·
                     {{ formatPaymentMethod(row.original.payment_method) }}
-                    <template v-if="countReturnedLines(row.original)">
-                      · {{ formatReturnedLinesCount(countReturnedLines(row.original)) }}
+                    <template v-if="countReturnedUnits(row.original)">
+                      · {{ formatReturnedUnitsCount(countReturnedUnits(row.original)) }}
                     </template>
                   </span>
                   <ChevronRight class="text-muted-foreground h-4 w-4 shrink-0" />

@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { ChevronRight, Undo2 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { formatDateTimeLaPaz } from '@/utils/date'
-import { countReturnedLines, formatReturnedMarker } from '@/utils/returns'
+import { countReturnedUnits, formatReturnedMarker } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
 
 const PAYMENT_STYLES = {
@@ -12,8 +12,8 @@ const PAYMENT_STYLES = {
 }
 
 export function saleItemsPreview(sale) {
-  const lines = sale.lines ?? []
-  const names = lines.map((line) => line.product_name).filter(Boolean)
+  const units = sale.units ?? []
+  const names = units.map((unit) => unit.product_name).filter(Boolean)
   const total = Number(sale.items_count ?? names.length)
 
   if (!names.length) {
@@ -44,7 +44,7 @@ export const columns = [
     meta: { skeletonClass: 'h-4 w-44', cellClass: 'max-w-[260px] text-xs' },
     cell: (info) => {
       const count = Number(info.row.original.items_count ?? 0)
-      const returned = countReturnedLines(info.row.original)
+      const returned = countReturnedUnits(info.row.original)
 
       return h('div', { class: 'flex min-w-0 items-center gap-1' }, [
         h('span', { class: 'truncate' }, info.getValue()),
@@ -55,7 +55,7 @@ export const columns = [
               {
                 class:
                   'inline-flex shrink-0 items-center gap-0.5 text-xs text-amber-400 dark:text-amber-400',
-                title: `${returned} ${returned === 1 ? 'línea devuelta' : 'líneas devueltas'}`,
+                title: `${returned} ${returned === 1 ? 'unidad devuelta' : 'unidades devueltas'}`,
               },
               [
                 h(Undo2, { class: 'h-3.5 w-3.5', 'aria-hidden': 'true' }),

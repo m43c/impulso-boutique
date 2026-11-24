@@ -29,15 +29,15 @@ export function formatReturnReason(reason) {
   return RETURN_REASON_LABELS[reason] ?? reason ?? '—'
 }
 
-export function countReturnedLines(sale) {
-  return (sale?.lines ?? []).filter((line) => !!line.return_info).length
+export function countReturnedUnits(sale) {
+  return (sale?.units ?? []).filter((unit) => !!unit.return_info).length
 }
 
 export function formatReturnedMarker(count) {
   return count
 }
 
-export function formatReturnedLinesCount(count) {
+export function formatReturnedUnitsCount(count) {
   return `${count} ${count === 1 ? 'devuelta' : 'devueltas'}`
 }
 
