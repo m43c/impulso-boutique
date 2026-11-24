@@ -74,7 +74,7 @@ async function handleDetected(unitId) {
       showFeedback('error', result.message)
     }
   } catch (error) {
-    showFeedback('error', getSaleErrorMessage(error, 'No se pudo agregar la prenda'))
+    showFeedback('error', getSaleErrorMessage(error, 'No se pudo agregar la unidad'))
   }
 }
 
@@ -134,16 +134,16 @@ onBeforeUnmount(() => {
   <Dialog v-if="isDesktop" v-model:open="openModel">
     <DialogContent class="pt-4 sm:max-w-sm">
       <DialogHeader class="gap-0.5">
-        <DialogTitle class="text-sm">Escanear prenda</DialogTitle>
+        <DialogTitle class="text-sm">Escanear unidad</DialogTitle>
         <DialogDescription class="text-xs">
-          Apunta la cámara a la etiqueta de la prenda
+          Apunta la cámara a la etiqueta de la unidad
         </DialogDescription>
       </DialogHeader>
       <div class="flex flex-col gap-3">
         <!-- Progress -->
         <div class="mb-1 flex items-center justify-between text-xs">
           <span class="text-muted-foreground">En la venta</span>
-          <span class="font-semibold">{{ saleStore.count }} prendas</span>
+          <span class="font-semibold">{{ saleStore.count }} unidades</span>
         </div>
         <!-- QR scanner -->
         <div
@@ -232,16 +232,16 @@ onBeforeUnmount(() => {
   <Drawer v-else v-model:open="openModel">
     <DrawerContent>
       <DrawerHeader class="gap-0 px-6 pb-2 text-left">
-        <DrawerTitle class="text-sm">Escanear prenda</DrawerTitle>
+        <DrawerTitle class="text-sm">Escanear unidad</DrawerTitle>
         <DrawerDescription class="text-xs">
-          Apunta la cámara a la etiqueta de la prenda
+          Apunta la cámara a la etiqueta de la unidad
         </DrawerDescription>
       </DrawerHeader>
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6 pt-2">
         <!-- Progress -->
         <div class="flex items-center justify-between text-xs">
           <span class="text-muted-foreground">En la venta</span>
-          <span class="font-semibold">{{ saleStore.count }} prendas</span>
+          <span class="font-semibold">{{ saleStore.count }} unidades</span>
         </div>
         <!-- QR scanner -->
         <div

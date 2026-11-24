@@ -284,7 +284,7 @@ function handleAddToSale() {
   const result = saleStore.addUnit(payload)
 
   if (result.ok) {
-    toast.success('Prenda agregada a la venta', {
+    toast.success('Unidad agregada a la venta', {
       action: {
         label: 'Ir a la venta',
         onClick: () => router.push({ name: 'sale-new' }),

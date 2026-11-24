@@ -67,7 +67,7 @@ export const useSaleStore = defineStore('sale', () => {
     }
 
     if (items.value.length >= SALE_MAX_UNITS) {
-      return { ok: false, code: 'S6002', message: `Máximo ${SALE_MAX_UNITS} prendas por venta` }
+      return { ok: false, code: 'S6002', message: `Máximo ${SALE_MAX_UNITS} unidades por venta` }
     }
 
     items.value.push(unit)
@@ -104,7 +104,7 @@ export const useSaleStore = defineStore('sale', () => {
     } catch (error) {
       return {
         ok: false,
-        message: getSaleErrorMessage(error, 'No se pudo agregar la prenda'),
+        message: getSaleErrorMessage(error, 'No se pudo agregar la unidad'),
         code: error?.code,
       }
     } finally {

@@ -65,7 +65,7 @@ function handlePrint() {
       <!-- QR codes -->
       <div class="flex flex-col gap-4 px-5">
         <p class="text-muted-foreground pt-2 text-xs">
-          Imprime las etiquetas y pégalas en cada prenda
+          Imprime las etiquetas y pégalas en cada unidad
         </p>
         <div class="max-h-[55vh] overflow-y-auto pr-0 pb-4">
           <div class="grid grid-cols-4 gap-3">
@@ -116,7 +116,7 @@ function handlePrint() {
       </DrawerHeader>
       <!-- QR codes -->
       <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-3 pb-6">
-        <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada prenda</p>
+        <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada unidad</p>
         <div class="min-h-0 flex-1 overflow-y-auto">
           <div class="grid grid-cols-2 gap-3">
             <div

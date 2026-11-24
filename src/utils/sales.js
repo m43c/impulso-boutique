@@ -18,12 +18,10 @@ export function formatPaymentMethod(paymentMethod) {
   return PAYMENT_METHOD_LABELS[paymentMethod] ?? paymentMethod
 }
 
-// export function formatSaleTotal(totalAmount) {
-//   const total = Number(totalAmount ?? 0)
-//   return total > 0 ? formatCurrency(total) : '—'
-// }
-
 export function formatSaleTotal(totalAmount) {
+  // const total = Number(totalAmount ?? 0)
+  // return total > 0 ? formatCurrency(total) : '—'
+
   return formatCurrency(Number(totalAmount ?? 0))
 }
 
