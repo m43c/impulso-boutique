@@ -1,14 +1,24 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 import { supabase } from '@/lib/supabase'
 import { Plus } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import SalesList from '@/components/sales/SalesList.vue'
 import SaleDetail from '@/components/sales/SaleDetail.vue'
+import ReturnedUnitsList from '@/components/sales/ReturnedUnitsList.vue'
+import ReturnReviewModal from '@/components/sales/ReturnReviewModal.vue'
+import ProductUnitsLabelsModal from '@/components/products/units/modals/ProductUnitsLabelsModal.vue'
+import { useAlertsStore } from '@/stores/alerts'
+import { useReturnsStore } from '@/stores/returns'
 import { usePermissions } from '@/composables/usePermissions'
 
+const route = useRoute()
 const router = useRouter()
+const alertsStore = useAlertsStore()
+const returnsStore = useReturnsStore()
 const { can } = usePermissions()
 
 const sales = ref([])
@@ -18,9 +28,74 @@ const search = ref('')
 const selectedSale = ref(null)
 const isDetailOpen = ref(false)
 
+const returnedUnits = ref([])
+const returnedUnitsError = ref(null)
+const hasLoadedReturnedUnits = ref(false)
+const isLoadingReturnedUnits = ref(false)
+const isReturnedListDirty = ref(false)
+
+const isReviewModalOpen = ref(false)
+const reviewTarget = ref(null)
+const reviewApprove = ref(true)
+const reviewError = ref(null)
+
+const isLabelsModalOpen = ref(false)
+const labelsProduct = ref(null)
+const labelsUnitIds = ref([])
+
+const availableTabs = computed(() => {
+  const tabs = []
+
+  if (can('sales:view-recent')) {
+    tabs.push('sales')
+  }
+
+  if (can('returns:review')) {
+    tabs.push('returns')
+  }
+
+  return tabs
+})
+
+const showTabs = computed(() => availableTabs.value.length > 1)
+const activeTab = ref(resolveTab())
+const isSalesTab = computed(() => activeTab.value === 'sales')
+const isReturnsTab = computed(() => activeTab.value === 'returns')
+
+const returnedTabLabel = computed(() => {
+  const count = alertsStore.returnedCount
+
+  return count > 0 ? `Devoluciones (${count})` : 'Devoluciones'
+})
+
 const SEARCH_DEBOUNCE_MS = 300
+
 let searchTimer = null
 let requestId = 0
+let returnedRequestId = 0
+let pendingReturnedLoad = null
+let returnedRefreshPending = false
+let unregisterReturnedListener = null
+
+function resolveTab() {
+  return route.query.tab === 'returns' && can('returns:review') ? 'returns' : 'sales'
+}
+
+function replaceTabQuery(tab) {
+  if (tab === resolveTab()) {
+    return
+  }
+
+  const query = { ...route.query }
+
+  if (tab === 'returns') {
+    query.tab = 'returns'
+  } else {
+    delete query.tab
+  }
+
+  router.replace({ name: 'sales', query })
+}
 
 async function loadSales(searchTerm = '') {
   const id = ++requestId
@@ -85,6 +160,10 @@ function handleNewSale() {
 async function handleReturnRegistered(payload) {
   await loadSales(search.value)
 
+  if (can('returns:review')) {
+    alertsStore.fetchReturnedCount({ queueIfLoading: true })
+  }
+
   const saleId = payload?.saleId
 
   if (!saleId) {
@@ -99,6 +178,113 @@ async function handleReturnRegistered(payload) {
     isDetailOpen.value = false
     selectedSale.value = null
   }
+}
+
+async function loadReturnedUnits() {
+  if (!can('returns:review')) {
+    return
+  }
+
+  if (pendingReturnedLoad) {
+    returnedRefreshPending = true
+    return
+  }
+
+  const id = ++returnedRequestId
+
+  isLoadingReturnedUnits.value = true
+  returnedUnitsError.value = null
+  isReturnedListDirty.value = false
+
+  pendingReturnedLoad = returnsStore.fetchReturnedUnits()
+
+  try {
+    const result = await pendingReturnedLoad
+
+    if (id !== returnedRequestId) {
+      return
+    }
+
+    if (!result.ok) {
+      returnedUnitsError.value = result.message
+      return
+    }
+
+    returnedUnits.value = result.units
+    hasLoadedReturnedUnits.value = true
+  } finally {
+    if (id === returnedRequestId) {
+      isLoadingReturnedUnits.value = false
+    }
+
+    pendingReturnedLoad = null
+
+    if (returnedRefreshPending) {
+      returnedRefreshPending = false
+      loadReturnedUnits()
+    }
+  }
+}
+
+function handleReturnedUnitsChanged() {
+  if (isReturnsTab.value) {
+    loadReturnedUnits()
+  } else {
+    isReturnedListDirty.value = true
+  }
+}
+
+function openReview(unit, approve) {
+  if (returnsStore.isReviewing) {
+    return
+  }
+
+  reviewTarget.value = unit
+  reviewApprove.value = approve
+  reviewError.value = null
+  isReviewModalOpen.value = true
+}
+
+async function handleReviewConfirm(note) {
+  const unit = reviewTarget.value
+
+  if (!unit || returnsStore.isReviewing) {
+    return
+  }
+
+  reviewError.value = null
+
+  const result = await returnsStore.reviewReturnedUnit({
+    unitId: unit.unit_id,
+    approve: reviewApprove.value,
+    note,
+  })
+
+  if (!result.ok) {
+    if (result.code === 'S7008') {
+      isReviewModalOpen.value = false
+      toast.error(result.message)
+      loadReturnedUnits()
+      alertsStore.fetchReturnedCount({ queueIfLoading: true })
+      return
+    }
+
+    reviewError.value = result.message
+    return
+  }
+
+  isReviewModalOpen.value = false
+  returnedUnits.value = returnedUnits.value.filter((item) => item.unit_id !== unit.unit_id)
+
+  toast.success(reviewApprove.value ? 'Unidad aprobada: vuelve al stock' : 'Unidad descartada')
+
+  await Promise.all([loadReturnedUnits(), alertsStore.fetchReturnedCount({ queueIfLoading: true })])
+}
+
+function handleReprint(unit) {
+  labelsProduct.value = { name: unit.product_name }
+  labelsUnitIds.value = [unit.unit_id]
+  isLabelsModalOpen.value = true
 }
 
 const isScrollingDown = ref(false)
@@ -126,36 +312,118 @@ function handleScroll() {
   }
 }
 
+watch(
+  () => route.query.tab,
+  () => {
+    const nextTab = resolveTab()
+
+    if (nextTab !== activeTab.value) {
+      activeTab.value = nextTab
+    }
+  },
+)
+
+watch(
+  activeTab,
+  (tab) => {
+    replaceTabQuery(tab)
+
+    if (tab === 'returns') {
+      isDetailOpen.value = false
+
+      if (!hasLoadedReturnedUnits.value || isReturnedListDirty.value) {
+        loadReturnedUnits()
+      }
+    } else {
+      isReviewModalOpen.value = false
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   loadSales('')
   window.addEventListener('scroll', handleScroll, { passive: true })
+
+  if (can('returns:review')) {
+    unregisterReturnedListener = alertsStore.subscribeToReturnedUnits(handleReturnedUnitsChanged)
+  }
 })
 
 onBeforeUnmount(() => {
   clearTimeout(searchTimer)
   requestId++
+  returnedRequestId++
+  returnedRefreshPending = false
+  unregisterReturnedListener?.()
+  unregisterReturnedListener = null
   window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-4 px-6">
-    <!-- Sales list -->
-    <SalesList
-      :sales="sales"
-      :is-loading="isLoading"
-      :error="error"
-      :search="search"
-      @search-input="handleSearchInput"
-      @clear-search="clearSearch"
-      @refresh="refresh"
-      @retry="refresh"
-      @open-sale="handleOpenSale"
-      @new-sale="handleNewSale"
-    />
+    <Tabs v-model="activeTab" class="flex min-h-0 flex-1 flex-col gap-4">
+      <TabsList
+        v-if="showTabs"
+        class="border-border/60 inline-flex h-auto w-full items-center justify-start gap-0 rounded-md border bg-transparent p-0.5 lg:w-auto lg:self-start"
+      >
+        <TabsTrigger
+          value="sales"
+          class="text-muted-foreground hover:text-foreground data-[state=active]:text-foreground dark:data-[state=active]:bg-muted flex-1 rounded px-3 py-2 text-xs font-medium transition data-[state=active]:bg-zinc-100 data-[state=active]:shadow-none lg:flex-none lg:py-1.5"
+        >
+          Ventas
+        </TabsTrigger>
+        <TabsTrigger
+          v-if="can('returns:review')"
+          value="returns"
+          class="text-muted-foreground hover:text-foreground data-[state=active]:text-foreground dark:data-[state=active]:bg-muted flex-1 rounded px-3 py-2 text-xs font-medium transition data-[state=active]:bg-zinc-100 data-[state=active]:shadow-none lg:flex-none lg:py-1.5"
+        >
+          {{ returnedTabLabel }}
+        </TabsTrigger>
+      </TabsList>
+      <!-- Sales -->
+      <TabsContent
+        value="sales"
+        class="m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-0 focus-visible:outline-none"
+      >
+        <SalesList
+          :sales="sales"
+          :is-loading="isLoading"
+          :error="error"
+          :search="search"
+          :show-new-sale="isSalesTab"
+          @search-input="handleSearchInput"
+          @clear-search="clearSearch"
+          @refresh="refresh"
+          @retry="refresh"
+          @open-sale="handleOpenSale"
+          @new-sale="handleNewSale"
+        />
+      </TabsContent>
+      <!-- Returns -->
+      <TabsContent
+        v-if="can('returns:review')"
+        value="returns"
+        class="m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-0 focus-visible:outline-none"
+      >
+        <ReturnedUnitsList
+          :units="returnedUnits"
+          :is-loading="isLoadingReturnedUnits"
+          :is-reviewing="returnsStore.isReviewing"
+          :error="returnedUnitsError"
+          :count="alertsStore.returnedCount"
+          @refresh="loadReturnedUnits"
+          @retry="loadReturnedUnits"
+          @approve="(unit) => openReview(unit, true)"
+          @discard="(unit) => openReview(unit, false)"
+          @reprint="handleReprint"
+        />
+      </TabsContent>
+    </Tabs>
     <!-- Floating new sale button -->
     <Button
-      v-if="can('sales:create') && !error"
+      v-if="isSalesTab && can('sales:create') && !error"
       size="icon"
       :class="[
         'fixed right-4 bottom-4 z-50 h-12 w-12 rounded-full shadow-lg transition-all duration-300 md:hidden',
@@ -174,6 +442,21 @@ onBeforeUnmount(() => {
       v-model:open="isDetailOpen"
       :sale="selectedSale"
       @return-registered="handleReturnRegistered"
+    />
+    <!-- Review confirmation -->
+    <ReturnReviewModal
+      v-model:open="isReviewModalOpen"
+      :unit="reviewTarget"
+      :approve="reviewApprove"
+      :is-submitting="returnsStore.isReviewing"
+      :error="reviewError"
+      @confirm="handleReviewConfirm"
+    />
+    <!-- QR reprint -->
+    <ProductUnitsLabelsModal
+      v-model:open="isLabelsModalOpen"
+      :product="labelsProduct"
+      :unit-ids="labelsUnitIds"
     />
   </div>
 </template>

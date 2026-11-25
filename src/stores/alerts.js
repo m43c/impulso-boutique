@@ -16,6 +16,7 @@ export const useAlertsStore = defineStore('alerts', () => {
   let channel = null
   let returnedRefreshPending = false
   let returnedRequestId = 0
+  const returnedListListeners = new Set()
 
   async function fetchLowStockAlerts() {
     if (isLoading.value) {
@@ -139,6 +140,24 @@ export const useAlertsStore = defineStore('alerts', () => {
     isLoadingReturned.value = false
   }
 
+  function subscribeToReturnedUnits(listener) {
+    if (typeof listener !== 'function') {
+      return () => {}
+    }
+
+    returnedListListeners.add(listener)
+
+    return () => {
+      returnedListListeners.delete(listener)
+    }
+  }
+
+  function notifyReturnedUnitsChanged() {
+    for (const listener of returnedListListeners) {
+      listener()
+    }
+  }
+
   function subscribeToStockChanges() {
     if (channel) {
       return
@@ -151,6 +170,7 @@ export const useAlertsStore = defineStore('alerts', () => {
 
         if (isReturnedAlertsEnabled.value) {
           fetchReturnedCount({ queueIfLoading: true })
+          notifyReturnedUnitsChanged()
         }
       })
       .subscribe()
@@ -171,6 +191,7 @@ export const useAlertsStore = defineStore('alerts', () => {
     isLoadingReturned.value = false
     returnedRefreshPending = false
     returnedRequestId += 1
+    returnedListListeners.clear()
     unsubscribeFromStockChanges()
   }
 
@@ -184,6 +205,7 @@ export const useAlertsStore = defineStore('alerts', () => {
     fetchLowStockAlerts,
     fetchReturnedCount,
     setReturnedAlertsEnabled,
+    subscribeToReturnedUnits,
     subscribeToStockChanges,
     unsubscribeFromStockChanges,
     clear,

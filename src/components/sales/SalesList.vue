@@ -45,6 +45,7 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
   error: { type: String, default: null },
   search: { type: String, default: '' },
+  showNewSale: { type: Boolean, default: true },
 })
 
 const emit = defineEmits([
@@ -113,7 +114,7 @@ function handleClearSearch() {
 <template>
   <TooltipProvider :delay-duration="200">
     <div
-      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-5rem)] lg:flex-none lg:overflow-hidden lg:pb-0"
+      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-8rem)] lg:flex-none lg:overflow-hidden lg:pb-0"
     >
       <!-- Error message -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
@@ -183,7 +184,7 @@ function handleClearSearch() {
           </Tooltip>
           <!-- New sale (desktop) -->
           <Button
-            v-if="isDesktop && can('sales:create')"
+            v-if="isDesktop && showNewSale && can('sales:create')"
             size="sm"
             :disabled="isLoading"
             @click="emit('new-sale')"
