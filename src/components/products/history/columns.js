@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime } from '@/utils/date'
 import { formatMoveType, formatMoveReason } from '@/utils/inventoryMoves'
 

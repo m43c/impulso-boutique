@@ -21,15 +21,23 @@ const props = defineProps({
     default: () => ({
       available: 0,
       sold: 0,
+      returned: 0,
       unavailable: 0,
     }),
   },
 })
 
+const returnedUnits = computed(() => props.stats.returned ?? 0)
+
 const stockAlert = computed(() => {
   const available = props.stats.available ?? 0
-  if (available === 0) return 'empty'
+
+  if (available === 0) {
+    return 'empty'
+  }
+
   const isLow = props.product.is_low_stock ?? available <= (props.product.min_stock ?? 0)
+
   return isLow ? 'low' : null
 })
 </script>
@@ -193,6 +201,16 @@ const stockAlert = computed(() => {
           </Badge>
           <span class="mt-1 text-xs text-amber-500">No disponibles</span>
         </div>
+        <!-- Returned/in review -->
+        <div v-if="returnedUnits > 0" class="flex flex-col items-center">
+          <Badge
+            variant="outline"
+            class="h-10 w-10 rounded-full border-zinc-600/25 bg-zinc-500/10 text-sm font-semibold text-zinc-700 dark:border-zinc-400/30 dark:bg-zinc-500/15 dark:text-zinc-300"
+          >
+            {{ returnedUnits }}
+          </Badge>
+          <span class="mt-1 text-xs text-zinc-600 dark:text-zinc-400">En revisión</span>
+        </div>
       </div>
       <!-- More details -->
       <div class="-mt-1 flex flex-col gap-1">
@@ -341,7 +359,7 @@ const stockAlert = computed(() => {
         </span>
       </div>
       <!-- KPIs -->
-      <div class="grid grid-cols-3 gap-1 pt-4">
+      <div class="grid gap-1 pt-4" :class="returnedUnits > 0 ? 'grid-cols-4' : 'grid-cols-3'">
         <!-- Available -->
         <div class="flex flex-col items-center text-xs">
           <Badge
@@ -371,6 +389,16 @@ const stockAlert = computed(() => {
             {{ stats.unavailable }}
           </Badge>
           <span class="mt-1 text-xs text-amber-500">No disponibles</span>
+        </div>
+        <!-- Returned / in review -->
+        <div v-if="returnedUnits > 0" class="flex flex-col items-center">
+          <Badge
+            variant="outline"
+            class="h-8 w-8 rounded-full border-orange-500/30 bg-orange-500/10 text-sm font-semibold text-orange-400"
+          >
+            {{ returnedUnits }}
+          </Badge>
+          <span class="mt-1 text-xs text-orange-500">En revisión</span>
         </div>
       </div>
       <!-- Hidden details -->

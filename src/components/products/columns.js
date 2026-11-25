@@ -249,8 +249,8 @@ export const columns = [
         h(TooltipContent, () =>
           h('div', { class: 'flex flex-col gap-0.5 text-xs' }, [
             h('p', `Disponibles: ${available}`),
-            h('p', { class: 'text-muted-foreground' }, `Vendidos: ${s.stock_sold ?? 0}`),
-            h('p', { class: 'text-muted-foreground' }, `Devueltos: ${s.stock_returned ?? 0}`),
+            h('p', { class: 'text-muted-foreground' }, `Vendidas: ${s.stock_sold ?? 0}`),
+            h('p', { class: 'text-muted-foreground' }, `Devueltas: ${s.stock_returned ?? 0}`),
             h(
               'p',
               { class: 'text-muted-foreground' },

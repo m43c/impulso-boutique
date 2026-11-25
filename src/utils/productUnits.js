@@ -1,7 +1,7 @@
 const unitStatusLabels = {
   available: 'Disponible',
-  sold: 'Vendido',
-  returned: 'Devuelto',
+  sold: 'Vendida',
+  returned: 'Devuelta',
   unavailable: 'No disponible',
 }
 

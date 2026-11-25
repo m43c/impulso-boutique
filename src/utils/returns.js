@@ -103,7 +103,7 @@ export function formatReturnReplacement(returnInfo) {
   const code = returnInfo.replacement_unit_code ? ` (${returnInfo.replacement_unit_code})` : ''
   const variant = formatVariantSuffix(returnInfo.replacement_color, returnInfo.replacement_size)
 
-  return `Por: ${returnInfo.replacement_product_name}${variant}${code}`
+  return `${returnInfo.replacement_product_name}${variant}${code}`
 }
 
 export function formatReplacedUnit(replacedInfo) {
@@ -114,7 +114,7 @@ export function formatReplacedUnit(replacedInfo) {
   const code = replacedInfo.unit_code ? ` (${replacedInfo.unit_code})` : ''
   const variant = formatVariantSuffix(replacedInfo.color, replacedInfo.size)
 
-  return `Cambio de: ${replacedInfo.product_name}${variant}${code}`
+  return `${replacedInfo.product_name}${variant}${code}`
 }
 
 export function buildReturnSuccessMessage({ type, refundAmount, refundMethod, replacement } = {}) {

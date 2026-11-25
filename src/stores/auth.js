@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { toast } from 'vue-sonner'
 import router from '@/router'
 import { supabase } from '@/lib/supabase'
+import { useAlertsStore } from '@/stores/alerts'
 import { useSaleStore } from '@/stores/sale'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -37,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = null
     lastFetchedUserId = null
     unsubscribeFromProfileChanges()
+    useAlertsStore().clear()
     useSaleStore().clear()
   }
 

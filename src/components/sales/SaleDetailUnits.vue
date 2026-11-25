@@ -48,28 +48,33 @@ function variantLabel(unit) {
           <Button
             v-if="canCreateReturn && unit.can_return"
             size="sm"
-            class="h-6 rounded-sm px-2 lg:pt-0.5 lg:text-[11px] text-xs"
+            class="h-6 rounded-sm px-2 text-xs lg:pt-0.5 lg:text-[11px]"
             @click="emit('return-unit', unit)"
           >
             {{ unit.is_replacement_unit ? 'Cambiar otra vez' : 'Devolver' }}
           </Button>
         </div>
       </div>
+      <!-- Return info -->
       <div v-if="unit.return_info" class="flex flex-col">
+        <!-- Status + type move -->
         <span class="text-[11px] font-medium text-amber-400 dark:text-amber-400">
           Devuelta · {{ formatReturnType(unit.return_info.type) }}
         </span>
-        <span class="text-muted-foreground text-[11px]">
-          Motivo: {{ formatReturnReason(unit.return_info.reason) }}
-        </span>
-        <span
-          v-if="formatReturnReplacement(unit.return_info)"
-          class="text-muted-foreground text-[11px]"
-        >
-          {{ formatReturnReplacement(unit.return_info) }}
-        </span>
+        <!-- Reason -->
+        <div class="flex gap-1.5">
+          <span class="text-muted-foreground text-[11px]">Motivo:</span>
+          <span class="text-[11px]">{{ formatReturnReason(unit.return_info.reason) }}</span>
+        </div>
+        <div v-if="formatReturnReplacement(unit.return_info)" class="flex gap-1.5">
+          <span class="text-muted-foreground text-[11px]">Por:</span>
+          <span class="text-[11px]">
+            {{ formatReturnReplacement(unit.return_info) }}
+          </span>
+        </div>
       </div>
-      <p v-if="formatReplacedUnit(unit.replaced_info)" class="text-muted-foreground text-[11px]">
+      <p v-if="formatReplacedUnit(unit.replaced_info)" class="-mt-1 text-[11px]">
+        <span class="text-muted-foreground text-[11px] mr-1">Cambio de:</span>
         {{ formatReplacedUnit(unit.replaced_info) }}
       </p>
     </div>
