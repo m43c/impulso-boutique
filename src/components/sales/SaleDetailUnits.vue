@@ -56,7 +56,7 @@ function variantLabel(unit) {
         </div>
       </div>
       <div v-if="unit.return_info" class="flex flex-col">
-        <span class="text-[11px] font-medium text-amber-500 dark:text-amber-500">
+        <span class="text-[11px] font-medium text-amber-400 dark:text-amber-400">
           Devuelta · {{ formatReturnType(unit.return_info.type) }}
         </span>
         <span class="text-muted-foreground text-[11px]">

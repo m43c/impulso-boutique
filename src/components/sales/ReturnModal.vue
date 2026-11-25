@@ -309,8 +309,8 @@ async function submit() {
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-medium" for="return-reason-desktop">Motivo</label>
           <Select v-model="reason">
-            <SelectTrigger id="return-reason-desktop" class="h-7! text-xs">
-              <SelectValue placeholder="Selecciona un motivo" />
+            <SelectTrigger id="return-reason-desktop" class="h-8! text-xs">
+              <SelectValue placeholder="Selecciona un motivo" class="mb-0.5" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -359,7 +359,8 @@ async function submit() {
               />
               <Button
                 size="sm"
-                :disabled="isResolving || isSubmitting || !replacementCode.trim()" class="pb-0.5"
+                :disabled="isResolving || isSubmitting || !replacementCode.trim()"
+                class="pb-0.5"
                 @click="addReplacementByCode"
               >
                 <Loader2 v-if="isResolving" class="h-4 w-4 animate-spin" />
@@ -393,13 +394,23 @@ async function submit() {
             />
             <div class="-mt-0.5 min-w-0 flex-1">
               <p class="truncate text-xs font-medium">{{ replacement.productName }}</p>
-              <p class="text-muted-foreground truncate text-xs mt-1.5">
+              <p class="text-muted-foreground mt-1.5 truncate text-xs">
                 {{ [replacement.color, replacement.size].filter(Boolean).join(' · ') }}
               </p>
               <p class="text-muted-foreground font-mono text-[11px]">
                 {{ shortId(replacement.id) }}
               </p>
-              <p class="mt-1 flex items-center gap-1.5 text-xs">
+            </div>
+            <div class="flex shrink-0 flex-col items-end justify-between self-stretch">
+              <Button
+                variant="outline"
+                size="sm"
+                :disabled="isSubmitting"
+                @click="clearReplacement"
+              >
+                <span class="text-xs">Cambiar</span>
+              </Button>
+              <p class="flex items-center gap-1.5 text-xs">
                 <span class="font-medium tabular-nums">
                   {{ formatCurrency(replacement.price) }}
                 </span>
@@ -427,9 +438,6 @@ async function submit() {
                 </span>
               </p>
             </div>
-            <Button variant="outline" size="sm" :disabled="isSubmitting" @click="clearReplacement">
-              <span class="text-xs">Cambiar</span>
-            </Button>
           </div>
           <ul v-if="replacementWarnings.length" class="flex flex-col gap-1">
             <li
@@ -443,7 +451,7 @@ async function submit() {
           </ul>
         </template>
         <!-- Refund -->
-        <p v-else class="bg-muted/50 text-muted-foreground rounded-md px-3 py-2 text-xs">
+        <p v-else class="text-muted-foreground text-xs">
           {{ refundText }}
         </p>
         <!-- Register error -->
@@ -458,6 +466,7 @@ async function submit() {
           </div>
         </div>
       </div>
+      <!-- Action buttons -->
       <div v-if="unit && sale" class="flex justify-end gap-2 border-t px-6 py-4">
         <Button variant="outline" size="sm" :disabled="isSubmitting" @click="open = false">
           <span class="text-xs">Cancelar</span>
@@ -501,10 +510,7 @@ async function submit() {
           <p v-if="exchangeOnlyMessage" class="text-muted-foreground text-xs">
             {{ exchangeOnlyMessage }}
           </p>
-          <p
-            v-if="type === 'exchange'"
-            class="text-muted-foreground text-xs"
-          >
+          <p v-if="type === 'exchange'" class="text-muted-foreground text-xs">
             Política de la tienda: ofrece primero un cambio por una unidad del mismo precio.
           </p>
         </div>
@@ -594,15 +600,25 @@ async function submit() {
               image-class="h-12 w-12 shrink-0 rounded-md object-cover"
               fallback-class="bg-muted flex h-12 w-12 shrink-0 items-center justify-center rounded-md"
             />
-            <div class="min-w-0 flex-1">
+            <div class="-mt-1 min-w-0 flex-1">
               <p class="truncate text-[13px] font-medium">{{ replacement.productName }}</p>
-              <p class="text-muted-foreground truncate text-xs">
+              <p class="text-muted-foreground truncate text-xs mt-1">
                 {{ [replacement.color, replacement.size].filter(Boolean).join(' · ') }}
               </p>
               <p class="text-muted-foreground font-mono text-[11px]">
                 {{ shortId(replacement.id) }}
               </p>
-              <p class="mt-1 flex items-center gap-1.5 text-xs">
+            </div>
+            <div class="flex shrink-0 flex-col items-end justify-between self-stretch">
+              <Button
+                variant="outline"
+                size="sm"
+                :disabled="isSubmitting"
+                @click="clearReplacement"
+              >
+                <span class="text-xs">Cambiar</span>
+              </Button>
+              <p class="flex items-center gap-1.5 text-xs">
                 <span class="font-medium tabular-nums">
                   {{ formatCurrency(replacement.price) }}
                 </span>
@@ -614,6 +630,10 @@ async function submit() {
                       : 'text-destructive'
                   "
                 >
+                  <Check
+                    v-if="replacement.status === 'available' && replacement.isActive"
+                    class="inline h-3 w-3"
+                  />
                   {{
                     replacement.status === 'available'
                       ? 'disponible'
@@ -626,9 +646,6 @@ async function submit() {
                 </span>
               </p>
             </div>
-            <Button variant="outline" size="sm" :disabled="isSubmitting" @click="clearReplacement">
-              <span class="text-xs">Cambiar</span>
-            </Button>
           </div>
           <ul v-if="replacementWarnings.length" class="flex flex-col gap-1">
             <li
@@ -642,7 +659,7 @@ async function submit() {
           </ul>
         </template>
         <!-- Refund -->
-        <p v-else class="bg-muted/50 text-muted-foreground rounded-md px-3 py-2 text-xs">
+        <p v-else class="text-muted-foreground text-xs">
           {{ refundText }}
         </p>
         <!-- Register error -->

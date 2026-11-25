@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
       <template v-else>
         <div class="flex flex-col rounded-lg border md:min-h-0 md:overflow-hidden">
           <div class="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
-            <p class="font-medium lg:text-xs">
+            <p class="font-medium text-sm lg:text-xs">
               Venta en curso · {{ saleStore.count }} {{ itemLabel }}
             </p>
             <Button variant="outline" size="sm" class="lg:text-xs" @click="handleClear">
