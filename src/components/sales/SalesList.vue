@@ -87,7 +87,6 @@ watch(
 )
 
 const hasSearch = computed(() => props.search.trim().length > 0)
-const isAtLimit = computed(() => props.sales.length >= 200)
 
 const sortOptions = [
   { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
@@ -418,7 +417,6 @@ function handleClearSearch() {
           <p class="text-muted-foreground text-xs">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}
-            <span v-if="isAtLimit" class="ml-1">· Mostrando las últimas 200</span>
           </p>
           <div class="flex items-center justify-center gap-2">
             <!-- Previous -->
