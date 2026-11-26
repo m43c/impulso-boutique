@@ -129,7 +129,6 @@ const hasActiveFilters = computed(
     }, 0) > 0,
 )
 const hasQuery = computed(() => hasSearch.value || hasActiveFilters.value)
-const isAtLimit = computed(() => props.units.length >= 200)
 
 function clearAll() {
   table.setGlobalFilter('')
@@ -489,7 +488,6 @@ function sortIcon(column) {
           <p class="text-muted-foreground text-xs">
             Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
             {{ Math.max(table.getPageCount(), 1) }}
-            <span v-if="isAtLimit" class="ml-1">· Mostrando las últimas 200</span>
           </p>
           <div class="flex items-center justify-center gap-2">
             <!-- Previous -->
