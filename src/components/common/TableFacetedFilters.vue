@@ -12,6 +12,7 @@ import TableFacetedFiltersBody from './TableFacetedFiltersBody.vue'
 const props = defineProps({
   table: { type: Object, required: true },
   filterableColumns: { type: Array, required: true },
+  facets: { type: Array, default: null },
 })
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -60,12 +61,39 @@ function resolveOriginalCasingLabels(table, columnId) {
   return labels
 }
 
+const facetsByColumn = computed(() => {
+  const map = new Map()
+
+  props.facets?.forEach((group) => {
+    if (group?.columnId) {
+      map.set(group.columnId, group)
+    }
+  })
+
+  return map
+})
+
 const groups = computed(() =>
   props.filterableColumns.map(
     ({ columnId, label, getOptionLabel, emptyLabel, useOriginalCasing }) => {
       const column = props.table.getColumn(columnId)
-      const facetedValues = column?.getFacetedUniqueValues() ?? new Map()
       const selected = column?.getFilterValue() ?? []
+      const serverGroup = facetsByColumn.value.get(columnId)
+
+      if (serverGroup) {
+        return {
+          columnId,
+          label: serverGroup.label ?? label,
+          options: (serverGroup.options ?? []).map((option) => ({
+            value: option.value,
+            label: option.label ?? String(option.value ?? ''),
+            count: Number(option.count ?? 0),
+          })),
+          selected,
+        }
+      }
+
+      const facetedValues = column?.getFacetedUniqueValues() ?? new Map()
 
       const originalCasingLabels = useOriginalCasing
         ? resolveOriginalCasingLabels(props.table, columnId)
@@ -107,14 +135,20 @@ function handleToggle(columnId, value) {
   const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
 
   column?.setFilterValue(next.length ? next : undefined)
-  props.table.setPageIndex(0)
+
+  if (!props.table.options?.manualFiltering) {
+    props.table.setPageIndex(0)
+  }
 }
 
 function handleClear() {
   props.filterableColumns.forEach(({ columnId }) => {
     props.table.getColumn(columnId)?.setFilterValue(undefined)
   })
-  props.table.setPageIndex(0)
+
+  if (!props.table.options?.manualFiltering) {
+    props.table.setPageIndex(0)
+  }
 }
 </script>
 

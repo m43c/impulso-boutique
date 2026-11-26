@@ -3,6 +3,7 @@ import { formatCurrency } from '@/utils/currency'
 const PAYMENT_METHOD_LABELS = {
   cash: 'Efectivo',
   qr_transfer: 'Transferencia QR',
+  exchange: 'Cambio',
 }
 
 export function shortId(id) {
@@ -12,7 +13,7 @@ export function shortId(id) {
 
 export function formatPaymentMethod(paymentMethod) {
   if (!paymentMethod) {
-    return 'Cambio'
+    return PAYMENT_METHOD_LABELS.exchange
   }
 
   return PAYMENT_METHOD_LABELS[paymentMethod] ?? paymentMethod
