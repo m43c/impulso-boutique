@@ -421,7 +421,7 @@ function isHighlighted(unit) {
             <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
               <Package class="h-9 w-9" />
             </div>
-            <h3 class="text-sm font-semibold">Aún no hay unidades</h3>
+            <h3 class="text-xs font-semibold">Aún no hay unidades</h3>
             <p class="text-muted-foreground max-w-xs text-xs">
               Registra la primera compra para generar QR
             </p>
@@ -435,7 +435,7 @@ function isHighlighted(unit) {
           <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
             <Package class="h-9 w-9" />
           </div>
-          <h3 class="text-[13px] font-semibold">Aún no hay unidades</h3>
+          <h3 class="text-xs font-semibold">Aún no hay unidades</h3>
           <p class="text-muted-foreground max-w-xs text-xs">
             Registra la primera compra para generar QR
           </p>

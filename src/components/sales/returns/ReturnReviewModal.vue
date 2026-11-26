@@ -39,9 +39,23 @@ const description = computed(() => {
     return ''
   }
 
-  return [props.unit.product_name, props.unit.color, props.unit.size, props.unit.unit_code]
-    .filter(Boolean)
-    .join(' · ')
+  const lines = []
+
+  if (props.unit.product_name) {
+    lines.push(props.unit.product_name)
+  }
+
+  const variant = [props.unit.color, props.unit.size].filter(Boolean).join(' · ')
+
+  if (variant) {
+    lines.push(variant)
+  }
+
+  if (props.unit.unit_code) {
+    lines.push(props.unit.unit_code)
+  }
+
+  return lines.join('\n')
 })
 
 const explanation = computed(() =>
@@ -68,14 +82,14 @@ function submit() {
 <template>
   <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="open">
-    <DialogContent class="gap-0 p-0 sm:max-w-md">
-      <DialogHeader class="px-6 pt-6 pb-3">
-        <DialogTitle class="text-sm">{{ title }}</DialogTitle>
-        <DialogDescription v-if="description" class="text-xs">
+    <DialogContent class="gap-0 p-0 sm:max-w-sm">
+      <DialogHeader class="gap-1 px-6 pt-5 pb-2">
+        <DialogTitle class="text-[13px]">{{ title }}</DialogTitle>
+        <DialogDescription v-if="description" class="text-xs whitespace-pre-line">
           {{ description }}
         </DialogDescription>
       </DialogHeader>
-      <div class="flex flex-col gap-4 px-6 pb-4">
+      <div class="flex flex-col gap-2 px-6 pb-4">
         <p class="text-muted-foreground text-xs">{{ explanation }}</p>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-medium" for="return-review-note-desktop">
@@ -119,7 +133,7 @@ function submit() {
     <DrawerContent class="flex flex-col pb-5">
       <DrawerHeader class="gap-0 px-5 pt-3 pb-2 text-left">
         <DrawerTitle class="text-sm">{{ title }}</DrawerTitle>
-        <DrawerDescription v-if="description" class="text-xs">
+        <DrawerDescription v-if="description" class="text-xs whitespace-pre-line">
           {{ description }}
         </DrawerDescription>
       </DrawerHeader>

@@ -1,18 +1,18 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
+import { useAlertsStore } from '@/stores/alerts'
+import { useReturnsStore } from '@/stores/returns'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'vue-sonner'
 import { Plus } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import SalesList from '@/components/sales/SalesList.vue'
 import SaleDetail from '@/components/sales/SaleDetail.vue'
-import ReturnedUnitsList from '@/components/sales/ReturnedUnitsList.vue'
-import ReturnReviewModal from '@/components/sales/ReturnReviewModal.vue'
+import ReturnedUnitsList from '@/components/sales/returns/ReturnedUnitsList.vue'
+import ReturnReviewModal from '@/components/sales/returns/ReturnReviewModal.vue'
 import ProductUnitsLabelsModal from '@/components/products/units/modals/ProductUnitsLabelsModal.vue'
-import { useAlertsStore } from '@/stores/alerts'
-import { useReturnsStore } from '@/stores/returns'
 import { usePermissions } from '@/composables/usePermissions'
 
 const route = useRoute()
@@ -68,7 +68,7 @@ const returnedTabLabel = computed(() => {
   return count > 0 ? `Devoluciones (${count})` : 'Devoluciones'
 })
 
-const SEARCH_DEBOUNCE_MS = 300
+const SEARCH_DEBOUNCE_MS = 400
 
 let searchTimer = null
 let requestId = 0
@@ -134,6 +134,13 @@ async function loadSales(searchTerm = '') {
 function handleSearchInput(value) {
   search.value = value
   clearTimeout(searchTimer)
+
+  const term = value.trim()
+
+  if (term.length === 1) {
+    return
+  }
+
   searchTimer = setTimeout(() => loadSales(value), SEARCH_DEBOUNCE_MS)
 }
 
@@ -412,7 +419,6 @@ onBeforeUnmount(() => {
           :is-loading="isLoadingReturnedUnits"
           :is-reviewing="returnsStore.isReviewing"
           :error="returnedUnitsError"
-          :count="alertsStore.returnedCount"
           @refresh="loadReturnedUnits"
           @retry="loadReturnedUnits"
           @approve="(unit) => openReview(unit, true)"

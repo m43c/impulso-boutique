@@ -16,7 +16,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer'
 import SaleDetailUnits from '@/components/sales/SaleDetailUnits.vue'
-import ReturnModal from '@/components/sales/ReturnModal.vue'
+import ReturnModal from '@/components/sales/returns/ReturnModal.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { formatDateTimeLaPaz } from '@/utils/date'
 import { formatReturnDeadline } from '@/utils/returns'

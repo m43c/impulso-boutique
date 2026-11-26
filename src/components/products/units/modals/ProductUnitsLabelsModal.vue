@@ -68,11 +68,11 @@ function handlePrint() {
           Imprime las etiquetas y pégalas en cada unidad
         </p>
         <div class="max-h-[55vh] overflow-y-auto pr-0 pb-4">
-          <div class="grid grid-cols-4 gap-3">
+          <div class="flex flex-wrap justify-center gap-3">
             <div
               v-for="id in unitIds"
               :key="id"
-              class="border-border flex flex-col items-center rounded-lg border p-3 lg:rounded-md"
+              class="border-border flex w-[calc((100%-2.25rem)/4)] flex-col items-center rounded-lg border p-3 lg:rounded-md"
             >
               <QrcodeVue
                 :value="buildUnitUrl(id)"
@@ -118,11 +118,11 @@ function handlePrint() {
       <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-3 pb-6">
         <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada unidad</p>
         <div class="min-h-0 flex-1 overflow-y-auto">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-wrap justify-center gap-3">
             <div
               v-for="id in unitIds"
               :key="id"
-              class="border-border/60 flex flex-col items-center rounded-lg border p-3"
+              class="border-border/60 flex w-[calc((100%-0.75rem)/2)] flex-col items-center rounded-lg border p-3"
             >
               <QrcodeVue
                 :value="buildUnitUrl(id)"

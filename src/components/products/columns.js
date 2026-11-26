@@ -6,8 +6,8 @@ import {
   EllipsisVertical,
   Eye,
   LayersPlus,
-  PlusCircle,
-  XCircle,
+  Check,
+  X,
   Pencil,
 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
@@ -53,8 +53,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
+              class: 'inline-block max-w-full text-left truncate cursor-help',
             },
             name,
           ),
@@ -83,8 +82,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full text-left border-muted-foreground/50 truncate cursor-help border-b border-dashed',
+              class: 'inline-block max-w-full text-left truncate cursor-help',
             },
             category,
           ),
@@ -111,8 +109,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-muted-foreground/50 cursor-help border-b border-dashed ',
+              class: 'inline-block max-w-full truncate text-left cursor-help',
             },
             brand,
           ),
@@ -139,8 +136,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-muted-foreground/50 cursor-help border-b border-dashed',
+              class: 'inline-block max-w-full truncate text-left cursor-help',
             },
             color,
           ),
@@ -324,7 +320,7 @@ export const columns = [
           h(
             'button',
             {
-              class: 'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+              class: ' min-w-0 cursor-help  ',
             },
             formatRelativeDate(val),
           ),
@@ -436,7 +432,7 @@ export const columns = [
                 onClick: () => info.table.options.meta?.onToggleStatus?.(product),
               },
               () => [
-                h(isActive ? XCircle : PlusCircle, {
+                h(isActive ? X : Check, {
                   class: ['h-4 w-4', isActive ? 'text-destructive' : 'text-emerald-500'],
                 }),
                 h('span', isActive ? 'Desactivar' : 'Activar'),

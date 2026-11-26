@@ -34,6 +34,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { columns, saleItemsPreview } from '@/components/sales/columns'
 import { features } from '@/components/common/tableFeatures'
+import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import SalesCardSkeleton from '@/components/sales/SalesCardSkeleton.vue'
 import { formatDateTimeLaPaz } from '@/utils/date'
 import { countReturnedUnits, formatReturnedUnitsCount } from '@/utils/returns'
@@ -87,6 +89,52 @@ watch(
 const hasSearch = computed(() => props.search.trim().length > 0)
 const isAtLimit = computed(() => props.sales.length >= 200)
 
+const sortOptions = [
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Total: menor primero', columnId: 'total_amount', desc: false },
+  { label: 'Total: mayor primero', columnId: 'total_amount', desc: true },
+]
+
+const filterableColumns = [
+  {
+    columnId: 'payment_method',
+    label: 'Pago',
+    getOptionLabel: (value) => formatPaymentMethod(value || null),
+    emptyLabel: 'Cambio',
+  },
+  {
+    columnId: 'return_status',
+    label: 'Devolución',
+    getOptionLabel: (value) => (value === 'with_returns' ? 'Con devoluciones' : 'Sin devoluciones'),
+  },
+  {
+    columnId: 'profile_name',
+    label: 'Usuario',
+    useOriginalCasing: true,
+    emptyLabel: 'Sin usuario',
+  },
+]
+
+const hasActiveFilters = computed(
+  () =>
+    filterableColumns.reduce((total, { columnId }) => {
+      const value = table.getColumn(columnId)?.getFilterValue()
+
+      return total + (Array.isArray(value) ? value.length : 0)
+    }, 0) > 0,
+)
+const hasQuery = computed(() => hasSearch.value || hasActiveFilters.value)
+
+function clearAll() {
+  table.resetColumnFilters()
+  table.setPageIndex(0)
+
+  if (hasSearch.value) {
+    emit('clear-search')
+  }
+}
+
 function sortIcon(column) {
   if (!column.getCanSort()) {
     return null
@@ -137,15 +185,15 @@ function handleClearSearch() {
             <Input
               ref="inputRef"
               :model-value="search"
-              placeholder="Buscar producto..."
-              class="h-8 pr-8 pl-8 text-[13px]! lg:text-xs!"
+              placeholder="Buscar producto, color o talla..."
+              class="h-8 pr-8 pl-8 text-[13px]! text-ellipsis lg:text-xs!"
               @update:model-value="emit('search-input', $event)"
             />
             <Button
               v-if="search"
               variant="ghost"
               size="icon"
-              class="absolute top-0.5 right-0.5 h-7 w-7 rounded-full"
+              class="absolute top-1 right-1 h-6 w-6 rounded-full"
               aria-label="Limpiar búsqueda"
               @click="handleClearSearch"
             >
@@ -182,6 +230,10 @@ function handleClearSearch() {
             </TooltipTrigger>
             <TooltipContent><p>Actualizar ventas</p></TooltipContent>
           </Tooltip>
+          <!-- Filters -->
+          <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
+          <!-- Sort (mobile) -->
+          <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- New sale (desktop) -->
           <Button
             v-if="isDesktop && showNewSale && can('sales:create')"
@@ -264,29 +316,29 @@ function handleClearSearch() {
               class="absolute inset-x-0 top-10 bottom-0 flex flex-col items-center justify-center px-6 text-center"
             >
               <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
-                <SearchX v-if="hasSearch" class="h-8 w-8" />
-                <ShoppingBag v-else class="h-9 w-9" />
+                <SearchX v-if="hasQuery" class="h-8 w-8" />
+                <ShoppingBag v-else class="h-8 w-8" />
               </div>
-              <h3 class="text-sm font-semibold">
+              <h3 class="text-xs font-semibold">
                 {{
-                  hasSearch ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas'
+                  hasQuery ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas'
                 }}
               </h3>
               <p class="text-muted-foreground max-w-xs text-xs">
                 {{
-                  hasSearch
-                    ? 'Intenta con otro producto o limpia la búsqueda.'
+                  hasQuery
+                    ? 'Ajusta los filtros o la búsqueda.'
                     : 'Las ventas registradas aparecerán aquí.'
                 }}
               </p>
               <Button
-                v-if="hasSearch"
+                v-if="hasQuery"
                 variant="outline"
                 size="sm"
                 class="mt-3 text-xs"
-                @click="handleClearSearch"
+                @click="clearAll"
               >
-                Limpiar búsqueda
+                {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
               </Button>
             </div>
           </div>
@@ -334,27 +386,27 @@ function handleClearSearch() {
             class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
           >
             <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
-              <SearchX v-if="hasSearch" class="h-9 w-9" />
+              <SearchX v-if="hasQuery" class="h-9 w-9" />
               <ShoppingBag v-else class="h-9 w-9" />
             </div>
             <h3 class="text-sm font-semibold">
-              {{ hasSearch ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas' }}
+              {{ hasQuery ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas' }}
             </h3>
             <p class="text-muted-foreground max-w-xs text-xs">
               {{
-                hasSearch
-                  ? 'Intenta con otro producto o limpia la búsqueda.'
+                hasQuery
+                  ? 'Ajusta los filtros o la búsqueda.'
                   : 'Las ventas registradas aparecerán aquí.'
               }}
             </p>
             <Button
-              v-if="hasSearch"
+              v-if="hasQuery"
               variant="outline"
               size="sm"
               class="mt-3 text-xs"
-              @click="handleClearSearch"
+              @click="clearAll"
             >
-              Limpiar búsqueda
+              {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
             </Button>
           </div>
         </div>

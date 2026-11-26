@@ -1,9 +1,11 @@
 import { h } from 'vue'
+import { filterFn_arrHas } from '@tanstack/vue-table'
 import { ChevronRight, Undo2 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { formatDateTimeLaPaz } from '@/utils/date'
 import { countReturnedUnits, formatReturnedMarker } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
+import { normalizeText } from '@/utils/text'
 
 const PAYMENT_STYLES = {
   cash: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -85,9 +87,10 @@ export const columns = [
   },
   {
     id: 'payment_method',
-    accessorFn: (row) => formatPaymentMethod(row.payment_method),
+    accessorFn: (row) => row.payment_method ?? '',
     header: 'Pago',
     enableGlobalFilter: false,
+    filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
       skeletonClass: 'mx-auto h-5 w-16 rounded-full',
@@ -103,6 +106,32 @@ export const columns = [
         () => formatPaymentMethod(method),
       )
     },
+  },
+  {
+    id: 'return_status',
+    accessorFn: (row) => (countReturnedUnits(row) > 0 ? 'with_returns' : 'without_returns'),
+    header: '',
+    enableSorting: false,
+    enableGlobalFilter: false,
+    filterFn: filterFn_arrHas,
+    meta: {
+      headerClass: 'hidden',
+      cellClass: 'hidden',
+    },
+    cell: () => null,
+  },
+  {
+    id: 'profile_name',
+    accessorFn: (row) => normalizeText(row.profile_name || ''),
+    header: '',
+    enableSorting: false,
+    enableGlobalFilter: false,
+    filterFn: filterFn_arrHas,
+    meta: {
+      headerClass: 'hidden',
+      cellClass: 'hidden',
+    },
+    cell: () => null,
   },
   {
     id: 'open',

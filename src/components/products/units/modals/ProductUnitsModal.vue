@@ -44,7 +44,7 @@ function handleSubmit(payload) {
   <Dialog v-if="isDesktop" v-model:open="openModel">
     <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-sm">
       <DialogHeader class="border-border/60 px-6 pt-6 gap-0.5">
-        <DialogTitle class="text-sm">Agregar unidades</DialogTitle>
+        <DialogTitle class="text-[13px]">Agregar unidades</DialogTitle>
         <DialogDescription v-if="productName" class="pb-4 text-xs">
           {{ productName }}
         </DialogDescription>
