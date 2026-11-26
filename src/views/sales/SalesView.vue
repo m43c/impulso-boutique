@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useDebounceFn, useMediaQuery } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
 import { useReturnsStore } from '@/stores/returns'
@@ -68,10 +69,10 @@ const returnedTabLabel = computed(() => {
   return count > 0 ? `Devoluciones (${count})` : 'Devoluciones'
 })
 
-const SEARCH_DEBOUNCE_MS = 400
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
-let searchTimer = null
 let requestId = 0
+let searchVersion = 0
 let returnedRequestId = 0
 let pendingReturnedLoad = null
 let returnedRefreshPending = false
@@ -131,27 +132,42 @@ async function loadSales(searchTerm = '') {
   }
 }
 
+const SEARCH_DEBOUNCE_DESKTOP_MS = 300
+const SEARCH_DEBOUNCE_MOBILE_MS = 400
+
+const searchDebounceMs = computed(() =>
+  isDesktop.value ? SEARCH_DEBOUNCE_DESKTOP_MS : SEARCH_DEBOUNCE_MOBILE_MS,
+)
+
+const debouncedLoadSales = useDebounceFn((value, version) => {
+  if (version !== searchVersion) {
+    return
+  }
+
+  loadSales(value)
+}, searchDebounceMs)
+
 function handleSearchInput(value) {
   search.value = value
-  clearTimeout(searchTimer)
 
   const term = value.trim()
 
   if (term.length === 1) {
+    searchVersion++
     return
   }
 
-  searchTimer = setTimeout(() => loadSales(value), SEARCH_DEBOUNCE_MS)
+  debouncedLoadSales(value, ++searchVersion)
 }
 
 function clearSearch() {
+  searchVersion++
   search.value = ''
-  clearTimeout(searchTimer)
   loadSales('')
 }
 
 function refresh() {
-  clearTimeout(searchTimer)
+  searchVersion++
   loadSales(search.value)
 }
 
@@ -358,8 +374,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  clearTimeout(searchTimer)
   requestId++
+  searchVersion++
   returnedRequestId++
   returnedRefreshPending = false
   unregisterReturnedListener?.()
