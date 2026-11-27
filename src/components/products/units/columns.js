@@ -55,8 +55,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed font-mono',
+              class: 'min-w-0 cursor-help font-mono',
             },
             id.slice(0, 8),
           ),

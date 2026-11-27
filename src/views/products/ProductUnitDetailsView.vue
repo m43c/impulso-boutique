@@ -352,9 +352,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Categoría:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.category || 'Sin categoría' }}
                           </button>
                         </TooltipTrigger>
@@ -368,9 +366,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Marca:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.brand || 'Sin marca' }}
                           </button>
                         </TooltipTrigger>
@@ -384,9 +380,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Color:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.color || 'Sin color' }}
                           </button>
                         </TooltipTrigger>
@@ -619,7 +613,7 @@ onUnmounted(() => {
                         <Tooltip>
                           <TooltipTrigger as-child>
                             <button
-                              class="lg:border-muted-foreground/50 inline-block max-w-full truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                              class="inline-block max-w-full truncate text-left lg:cursor-help"
                             >
                               {{ row.color }}
                             </button>

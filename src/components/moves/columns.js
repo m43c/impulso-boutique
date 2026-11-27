@@ -90,7 +90,7 @@ export const columns = [
               class: [
                 'block truncate text-left text-xs',
                 !isFallback
-                  ? 'cursor-pointer border-b border-dashed border-muted-foreground/50 hover:border-transparent hover:underline'
+                  ? 'cursor-pointer hover:underline'
                   : 'text-muted-foreground italic cursor-default',
               ],
               onClick: () => info.table.options.meta?.onViewProduct?.(productId),
@@ -129,7 +129,7 @@ export const columns = [
             'button',
             {
               class:
-                'block font-mono text-xs cursor-pointer mx-auto border-b border-dashed border-muted-foreground/50 hover:border-transparent hover:underline',
+                'block font-mono text-xs cursor-pointer mx-auto hover:underline',
               onClick: () => meta?.onViewUnit?.(unit),
             },
             unit.slice(0, 8),
@@ -141,7 +141,7 @@ export const columns = [
   },
   {
     id: 'type',
-    accessorFn: (row) => formatMoveType(row.type),
+    accessorFn: (row) => row.type,
     header: 'Tipo',
     filterFn: filterFn_arrHas,
     meta: {
@@ -161,8 +161,9 @@ export const columns = [
   },
   {
     id: 'reason',
-    accessorFn: (row) => (row.reason ? formatMoveReason(row.reason) : 'Sin razón'),
+    accessorFn: (row) => row.reason,
     header: 'Razón',
+    enableSorting: false,
     filterFn: filterFn_arrHas,
     meta: {
       headerClass: 'justify-center',
@@ -170,8 +171,13 @@ export const columns = [
       cellClass: 'text-center text-xs',
     },
     cell: (info) => {
-      const isFallback = !info.row.original.reason
-      return h('span', { class: isFallback ? 'text-muted-foreground italic' : '' }, info.getValue())
+      const reason = info.row.original.reason
+
+      return h(
+        'span',
+        { class: reason ? '' : 'text-muted-foreground italic' },
+        reason ? formatMoveReason(reason) : 'Sin razón',
+      )
     },
   },
   {
@@ -216,9 +222,7 @@ export const columns = [
             {
               class: [
                 'mx-auto flex max-w-full items-center justify-center truncate',
-                next
-                  ? 'cursor-help border-b border-dashed border-muted-foreground/50'
-                  : 'cursor-default',
+                next ? 'cursor-help ' : 'cursor-default',
               ],
             },
             [renderContent()],
@@ -237,14 +241,14 @@ export const columns = [
     },
   },
   {
-    id: 'profile_name',
-    accessorFn: (row) => shortName(row.profile_name) || 'Usuario inactivo',
+    id: 'profile_id',
+    accessorFn: (row) => row.profile_id,
     header: 'Usuario',
     filterFn: filterFn_arrHas,
     meta: { skeletonClass: 'h-4 w-18', cellClass: 'max-w-[120px] text-xs' },
     cell: (info) => {
       const fullName = info.row.original.profile_name
-      const displayName = info.getValue()
+      const displayName = shortName(fullName) || 'Usuario inactivo'
 
       return h(Tooltip, () => [
         h(TooltipTrigger, { asChild: true }, () =>
@@ -252,7 +256,7 @@ export const columns = [
             'button',
             {
               class: [
-                'truncate block cursor-help border-b border-dashed border-muted-foreground/50',
+                'truncate block cursor-help ',
                 !fullName ? 'text-muted-foreground italic' : '',
               ],
             },
@@ -280,9 +284,7 @@ export const columns = [
             {
               class: [
                 'truncate max-w-[150px] inline-block text-left cursor-help',
-                !isEmpty
-                  ? 'border-b border-dashed border-muted-foreground/50'
-                  : 'text-muted-foreground italic',
+                isEmpty ? 'text-muted-foreground italic' : '',
               ],
             },
             text,

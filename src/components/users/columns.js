@@ -94,11 +94,7 @@ export const columns = [
 
       return h(Tooltip, () => [
         h(TooltipTrigger, { asChild: true }, () =>
-          h(
-            'button',
-            { class: 'cursor-help border-muted-foreground/50 border-b border-dashed min-w-p' },
-            formatRelativeDate(val),
-          ),
+          h('button', { class: 'cursor-help min-w-0' }, formatRelativeDate(val)),
         ),
         h(TooltipContent, () => h('p', formatDateTime(val))),
       ])

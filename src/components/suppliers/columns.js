@@ -30,8 +30,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-b border-dashed border-muted-foreground/50 cursor-help',
+              class: 'inline-block max-w-full truncate text-left cursor-help',
             },
             name,
           ),
@@ -71,8 +70,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-b border-dashed border-muted-foreground/50 cursor-help',
+              class: 'inline-block max-w-full truncate text-left cursor-help',
             },
             country,
           ),
@@ -102,8 +100,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-b border-dashed border-muted-foreground/50 cursor-help',
+              class: 'inline-block max-w-full truncate text-left cursor-help',
             },
             city,
           ),
@@ -168,7 +165,7 @@ export const columns = [
           h(
             'button',
             {
-              class: 'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+              class: 'min-w-0 cursor-help',
             },
             formatRelativeDate(val),
           ),

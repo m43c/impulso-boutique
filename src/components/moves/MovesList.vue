@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -13,6 +13,8 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  SearchX,
+  X,
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Button } from '@/components/ui/button'
@@ -36,17 +38,50 @@ import { columns } from '@/components/moves/columns'
 import { features } from '@/components/common/tableFeatures'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import DateRangeFilter from '@/components/common/DateRangeFilter.vue'
 import MovesCardSkeleton from '@/components/moves/MovesCardSkeleton.vue'
 
 const props = defineProps({
-  movements: { type: Array, default: () => [] },
+  rows: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
   error: { type: String, default: null },
+  search: { type: String, default: '' },
+  dateRange: {
+    type: Object,
+    default: () => ({ preset: 'all', from: null, to: null }),
+  },
+  facets: { type: Object, default: null },
+  sorting: { type: Array, default: () => [] },
+  columnFilters: { type: Array, default: () => [] },
+  pageIndex: { type: Number, default: 0 },
+  pageSize: { type: Number, default: 10 },
+  pageCount: { type: Number, default: 0 },
 })
 
-const emit = defineEmits(['refresh', 'retry', 'view-product', 'view-unit'])
+const emit = defineEmits([
+  'search-input',
+  'clear-search',
+  'refresh',
+  'retry',
+  'view-product',
+  'view-unit',
+  'sorting-change',
+  'column-filters-change',
+  'pagination-change',
+  'date-range-change',
+])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+
+const inputRef = ref(null)
+
+const movesPresets = [
+  { value: 'all', label: 'Todo el historial' },
+  { value: '7d', label: 'Últimos 7 días' },
+  { value: '30d', label: 'Últimos 30 días' },
+  { value: 'today', label: 'Hoy' },
+  { value: 'yesterday', label: 'Ayer' },
+]
 
 const TYPE_STYLES = {
   entry: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -57,44 +92,109 @@ const TYPE_STYLES = {
 const sortOptions = [
   { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
   { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Producto: A-Z', columnId: 'product_name', desc: false },
+  { label: 'Producto: Z-A', columnId: 'product_name', desc: true, separator: true },
   { label: 'Tipo: A-Z', columnId: 'type', desc: false },
   { label: 'Tipo: Z-A', columnId: 'type', desc: true, separator: true },
-  { label: 'Usuario: A-Z', columnId: 'profile_name', desc: false },
-  { label: 'Usuario: Z-A', columnId: 'profile_name', desc: true },
+  { label: 'Usuario: A-Z', columnId: 'profile_id', desc: false },
+  { label: 'Usuario: Z-A', columnId: 'profile_id', desc: true },
 ]
 
 const filterableColumns = [
   { columnId: 'type', label: 'Tipo' },
   { columnId: 'reason', label: 'Razón' },
-  { columnId: 'profile_name', label: 'Usuario' },
+  { columnId: 'profile_id', label: 'Usuario' },
 ]
+
+const serverFacetGroups = computed(() => {
+  if (!props.facets) {
+    return null
+  }
+
+  return [
+    { columnId: 'type', options: props.facets.type ?? [] },
+    { columnId: 'reason', options: props.facets.reason ?? [] },
+    { columnId: 'profile_id', options: props.facets.profile ?? [] },
+  ]
+})
+
+const tableState = computed(() => ({
+  sorting: props.sorting,
+  columnFilters: props.columnFilters,
+  pagination: {
+    pageIndex: props.pageIndex,
+    pageSize: props.pageSize,
+  },
+}))
 
 const table = useTable({
   features,
   get data() {
-    return props.movements
+    return props.rows
   },
   columns,
   enableMultiSort: false,
-  globalFilterFn: 'includesStringNormalized',
   initialState: {
-    pagination: { pageIndex: 0, pageSize: isDesktop.value ? 15 : 5 },
+    sorting: [{ id: 'created_at', desc: true }],
   },
+  state: tableState,
+  manualPagination: true,
+  manualSorting: true,
+  manualFiltering: true,
+  pageCount: computed(() => props.pageCount),
+  onSortingChange: (updater) => emit('sorting-change', updater),
+  onColumnFiltersChange: (updater) => emit('column-filters-change', updater),
+  onPaginationChange: (updater) => emit('pagination-change', updater),
   meta: {
     onViewProduct: (productId) => emit('view-product', productId),
     onViewUnit: (unitId) => emit('view-unit', unitId),
   },
 })
 
-const search = computed({
-  get: () => table.atoms.globalFilter.get() ?? '',
-  set: (value) => {
-    table.setGlobalFilter(value)
-    table.setPageIndex(0)
-  },
+const hasSearch = computed(() => props.search.trim().length > 0)
+
+const hasActiveFilters = computed(
+  () =>
+    filterableColumns.reduce((total, { columnId }) => {
+      const value = table.getColumn(columnId)?.getFilterValue()
+
+      return total + (Array.isArray(value) ? value.length : 0)
+    }, 0) > 0,
+)
+const hasQuery = computed(() => hasSearch.value || hasActiveFilters.value)
+const isAllDateRange = computed(() => (props.dateRange?.preset ?? 'all') === 'all')
+const emptyTitle = computed(() => {
+  if (hasQuery.value) {
+    return 'No se encontraron movimientos'
+  }
+
+  return isAllDateRange.value
+    ? 'Aún no hay movimientos'
+    : 'No hay movimientos en el rango seleccionado'
+})
+const emptyDescription = computed(() => {
+  if (hasQuery.value) {
+    return 'Ajusta los filtros o la búsqueda.'
+  }
+
+  return isAllDateRange.value
+    ? 'Los registros de entradas, salidas y ajustes aparecerán aquí.'
+    : 'Prueba con otro rango de fechas.'
 })
 
-const isAtLimit = computed(() => props.movements.length >= 500)
+function clearAll() {
+  table.resetColumnFilters()
+  table.setPageIndex(0)
+
+  if (hasSearch.value) {
+    emit('clear-search')
+  }
+}
+
+function handleClearSearch() {
+  emit('clear-search')
+  nextTick(() => inputRef.value?.$el?.focus?.())
+}
 
 function sortIcon(column) {
   if (!column.getCanSort()) {
@@ -111,21 +211,6 @@ function sortIcon(column) {
   }
 
   return ArrowUpDown
-}
-
-function stateChangeText(row) {
-  const prev = row.previous_status ? formatUnitStatus(row.previous_status) : null
-  const next = row.new_status ? formatUnitStatus(row.new_status) : null
-
-  if (!next) {
-    return 'Sin cambio'
-  }
-
-  if (!prev) {
-    return `→ ${next}`
-  }
-
-  return `${prev} → ${next}`
 }
 
 function referenceText(row) {
@@ -164,17 +249,34 @@ function referenceText(row) {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex shrink-0 items-center justify-between gap-2">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-2.5 lg:flex-nowrap">
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
             <Input
-              v-model="search"
-              placeholder="Buscar movimiento..."
-              class="h-8 pl-8 text-[13px]! lg:text-xs!"
-              :disabled="isLoading"
+              ref="inputRef"
+              :model-value="search"
+              placeholder="Buscar producto, usuario o unidad..."
+              class="h-8 pr-8 pl-8 text-[13px]! text-ellipsis lg:text-xs!"
+              @update:model-value="emit('search-input', $event)"
             />
+            <Button
+              v-if="search"
+              variant="ghost"
+              size="icon"
+              class="absolute top-1 right-1 h-6 w-6 rounded-full"
+              aria-label="Limpiar búsqueda"
+              @click="handleClearSearch"
+            >
+              <X class="h-3.5 w-3.5" />
+            </Button>
           </div>
+          <!-- Date range -->
+          <DateRangeFilter
+            :model-value="dateRange"
+            :presets="movesPresets"
+            @update:model-value="emit('date-range-change', $event)"
+          />
           <!-- Refresh -->
           <Tooltip>
             <TooltipTrigger as-child>
@@ -192,7 +294,11 @@ function referenceText(row) {
             <TooltipContent><p>Actualizar movimientos</p></TooltipContent>
           </Tooltip>
           <!-- Filters -->
-          <TableFacetedFilters :table="table" :filterable-columns="filterableColumns" />
+          <TableFacetedFilters
+            :table="table"
+            :filterable-columns="filterableColumns"
+            :facets="serverFacetGroups"
+          />
           <!-- Sort (mobile) -->
           <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
         </div>
@@ -232,7 +338,7 @@ function referenceText(row) {
               <TableBody>
                 <!-- Skeleton -->
                 <template v-if="isLoading">
-                  <TableRow v-for="row in 15" :key="`sk-${row}`">
+                  <TableRow v-for="row in pageSize" :key="`sk-${row}`">
                     <TableCell
                       v-for="col in columns"
                       :key="col.id || col.accessorKey"
@@ -262,12 +368,20 @@ function referenceText(row) {
               class="absolute inset-x-0 top-10 bottom-0 flex flex-col items-center justify-center px-6 text-center"
             >
               <div class="bg-muted text-muted-foreground mb-4 rounded-full p-3">
-                <History class="h-9 w-9" />
+                <SearchX v-if="hasQuery" class="h-9 w-9" />
+                <History v-else class="h-9 w-9" />
               </div>
-              <h3 class="text-sm font-semibold">Aún no hay movimientos</h3>
-              <p class="text-muted-foreground max-w-xs text-xs">
-                Los registros de entradas, salidas y ajustes aparecerán aquí
-              </p>
+              <h3 class="text-sm font-semibold">{{ emptyTitle }}</h3>
+              <p class="text-muted-foreground max-w-xs text-xs">{{ emptyDescription }}</p>
+              <Button
+                v-if="hasQuery"
+                variant="outline"
+                size="sm"
+                class="mt-3 text-xs"
+                @click="clearAll"
+              >
+                {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
+              </Button>
             </div>
           </div>
         </div>
@@ -275,7 +389,7 @@ function referenceText(row) {
         <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
-            <MovesCardSkeleton v-for="c in 5" :key="`sk-m-${c}`" />
+            <MovesCardSkeleton v-for="c in pageSize" :key="`sk-m-${c}`" />
           </template>
           <!-- Data -->
           <template v-else-if="table.getRowModel().rows?.length">
@@ -436,29 +550,38 @@ function referenceText(row) {
             class="flex flex-1 flex-col items-center justify-center px-6 text-center"
           >
             <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
-              <History class="h-9 w-9" />
+              <SearchX v-if="hasQuery" class="h-9 w-9" />
+              <History v-else class="h-9 w-9" />
             </div>
-            <h3 class="text-sm font-semibold">Aún no hay movimientos</h3>
-            <p class="text-muted-foreground max-w-xs text-xs">
-              Los registros de entradas, salidas y ajustes aparecerán aquí
-            </p>
+            <h3 class="text-sm font-semibold">{{ emptyTitle }}</h3>
+            <p class="text-muted-foreground max-w-xs text-xs">{{ emptyDescription }}</p>
+            <Button
+              v-if="hasQuery"
+              variant="outline"
+              size="sm"
+              class="mt-3 text-xs"
+              @click="clearAll"
+            >
+              {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
+            </Button>
           </div>
         </div>
         <!-- Pagination -->
-        <div class="flex shrink-0 items-center justify-between pb-4 lg:pb-0">
+        <div
+          v-if="!isLoading && rows.length && pageCount > 1"
+          class="flex shrink-0 items-center justify-between pb-4 lg:pb-0"
+        >
           <p class="text-muted-foreground text-xs">
-            Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
-            {{ Math.max(table.getPageCount(), 1) }}
-            <span v-if="isAtLimit" class="ml-1">· Últimos 500 movimientos</span>
+            Página {{ pageIndex + 1 }} de {{ Math.max(pageCount, 1) }}
           </p>
           <div class="flex items-center justify-center gap-2">
             <!-- Previous -->
             <Button
               variant="outline"
               size="sm"
-              :disabled="!table.getCanPreviousPage()"
+              :disabled="pageIndex <= 0"
               class="gap-0.5"
-              @click="table.previousPage()"
+              @click="emit('pagination-change', { pageIndex: pageIndex - 1, pageSize })"
             >
               <ChevronLeft class="mt-0.5 h-4 w-4" />
               <span class="pr-1 text-xs">Anterior</span>
@@ -467,9 +590,9 @@ function referenceText(row) {
             <Button
               variant="outline"
               size="sm"
-              :disabled="!table.getCanNextPage()"
+              :disabled="pageIndex >= pageCount - 1"
               class="gap-0.5"
-              @click="table.nextPage()"
+              @click="emit('pagination-change', { pageIndex: pageIndex + 1, pageSize })"
             >
               <span class="ml-1 text-xs">Siguiente</span>
               <ChevronRight class="mt-0.5 h-4 w-4" />

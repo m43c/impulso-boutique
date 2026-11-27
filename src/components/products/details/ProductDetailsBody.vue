@@ -72,7 +72,7 @@ const stockAlert = computed(() => {
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
+                  class="w-fit min-w-0 cursor-help truncate text-left"
                   :class="!product.category ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.category || 'Sin categoría' }}
@@ -89,7 +89,7 @@ const stockAlert = computed(() => {
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
+                  class="w-fit min-w-0 cursor-help truncate text-left"
                   :class="!product.brand ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.brand || 'Sin marca' }}
@@ -106,7 +106,7 @@ const stockAlert = computed(() => {
             <Tooltip>
               <TooltipTrigger as-child>
                 <button
-                  class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
+                  class="w-fit min-w-0 cursor-help truncate text-left"
                   :class="!product.color ? 'text-muted-foreground italic' : ''"
                 >
                   {{ product.color || 'Sin color' }}
@@ -227,7 +227,7 @@ const stockAlert = computed(() => {
           <Tooltip>
             <TooltipTrigger as-child>
               <button
-                class="border-muted-foreground/50 w-fit min-w-0 cursor-help truncate border-b border-dashed text-left"
+                class="w-fit min-w-0 cursor-help truncate text-left"
                 :class="
                   !product.supplier_name && !product.supplier?.name
                     ? 'text-muted-foreground italic'
