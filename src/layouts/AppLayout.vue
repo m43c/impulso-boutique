@@ -232,11 +232,7 @@ onUnmounted(() => {
                   </Badge>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                class="w-[calc(100vw-3rem)] max-w-sm p-0 text-sm lg:w-80"
-                :align="isDesktop ? 'end' : 'center'"
-                :collision-padding="24"
-              >
+              <PopoverContent class="p-0 text-xs" align="end">
                 <div class="border-b p-2.5 font-medium lg:text-xs">Alertas</div>
                 <!-- Alerts list -->
                 <div v-if="hasLowStockAlerts || hasReturnedAlerts" class="flex flex-col divide-y">
