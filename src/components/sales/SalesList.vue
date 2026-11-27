@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   ArrowDown,
@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
-  Clock,
   Loader2,
   Plus,
   RefreshCw,
@@ -19,7 +18,6 @@ import {
 } from '@lucide/vue'
 import { FlexRender, useTable } from '@tanstack/vue-table'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -34,16 +32,31 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { columns, saleItemsPreview } from '@/components/sales/columns'
 import { features } from '@/components/common/tableFeatures'
+import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
+import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import SalesCardSkeleton from '@/components/sales/SalesCardSkeleton.vue'
+import DateRangeFilter from '@/components/common/DateRangeFilter.vue'
 import { formatDateTimeLaPaz } from '@/utils/date'
+import { countReturnedUnits, formatReturnedUnitsCount } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
 import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
-  sales: { type: Array, default: () => [] },
+  rows: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
   error: { type: String, default: null },
   search: { type: String, default: '' },
+  dateRange: {
+    type: Object,
+    default: () => ({ preset: '24h', from: null, to: null }),
+  },
+  facets: { type: Object, default: null },
+  sorting: { type: Array, default: () => [] },
+  columnFilters: { type: Array, default: () => [] },
+  pageIndex: { type: Number, default: 0 },
+  pageSize: { type: Number, default: 15 },
+  pageCount: { type: Number, default: 0 },
+  showNewSale: { type: Boolean, default: true },
 })
 
 const emit = defineEmits([
@@ -53,6 +66,10 @@ const emit = defineEmits([
   'retry',
   'open-sale',
   'new-sale',
+  'sorting-change',
+  'column-filters-change',
+  'pagination-change',
+  'date-range-change',
 ])
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -60,30 +77,115 @@ const { can } = usePermissions()
 
 const inputRef = ref(null)
 
+const tableState = computed(() => ({
+  sorting: props.sorting,
+  columnFilters: props.columnFilters,
+  pagination: {
+    pageIndex: props.pageIndex,
+    pageSize: props.pageSize,
+  },
+}))
+
+const tablePageCount = computed(() => props.pageCount)
+
 const table = useTable({
   features,
   get data() {
-    return props.sales
+    return props.rows
   },
   columns,
   enableMultiSort: false,
   globalFilterFn: 'includesStringNormalized',
   initialState: {
     sorting: [{ id: 'created_at', desc: true }],
-    pagination: {
-      pageIndex: 0,
-      pageSize: isDesktop.value ? 15 : 6,
-    },
   },
+  state: tableState,
+  manualPagination: true,
+  manualSorting: true,
+  manualFiltering: true,
+  pageCount: tablePageCount,
+  onSortingChange: (updater) => emit('sorting-change', updater),
+  onColumnFiltersChange: (updater) => emit('column-filters-change', updater),
+  onPaginationChange: (updater) => emit('pagination-change', updater),
 })
 
-watch(
-  () => props.sales,
-  () => table.setPageIndex(0),
-)
-
 const hasSearch = computed(() => props.search.trim().length > 0)
-const isAtLimit = computed(() => props.sales.length >= 200)
+
+const sortOptions = [
+  { label: 'Fecha: más recientes', columnId: 'created_at', desc: true },
+  { label: 'Fecha: más antiguos', columnId: 'created_at', desc: false, separator: true },
+  { label: 'Total: menor primero', columnId: 'total_amount', desc: false },
+  { label: 'Total: mayor primero', columnId: 'total_amount', desc: true },
+]
+
+const filterableColumns = [
+  {
+    columnId: 'payment_method',
+    label: 'Pago',
+    getOptionLabel: (value) => formatPaymentMethod(value || null),
+    emptyLabel: 'Cambio',
+  },
+  {
+    columnId: 'return_status',
+    label: 'Devolución',
+    getOptionLabel: (value) => (value === 'with_returns' ? 'Con devoluciones' : 'Sin devoluciones'),
+  },
+  {
+    columnId: 'profile_id',
+    label: 'Usuario',
+    emptyLabel: 'Sin usuario',
+  },
+]
+
+const serverFacetGroups = computed(() => {
+  if (!props.facets) {
+    return null
+  }
+
+  return [
+    { columnId: 'payment_method', options: props.facets.payment_method ?? [] },
+    { columnId: 'return_status', options: props.facets.return_status ?? [] },
+    { columnId: 'profile_id', options: props.facets.profile ?? [] },
+  ]
+})
+
+const hasActiveFilters = computed(
+  () =>
+    filterableColumns.reduce((total, { columnId }) => {
+      const value = table.getColumn(columnId)?.getFilterValue()
+
+      return total + (Array.isArray(value) ? value.length : 0)
+    }, 0) > 0,
+)
+const hasQuery = computed(() => hasSearch.value || hasActiveFilters.value)
+const isDefaultDateRange = computed(() => (props.dateRange?.preset ?? '24h') === '24h')
+const emptyTitle = computed(() => {
+  if (hasQuery.value) {
+    return 'No se encontraron ventas'
+  }
+
+  return isDefaultDateRange.value
+    ? 'No hay ventas en las últimas 24 horas'
+    : 'No hay ventas en el rango seleccionado'
+})
+const emptyDescription = computed(() => {
+  if (hasQuery.value) {
+    return 'Ajusta los filtros o la búsqueda.'
+  }
+
+  return isDefaultDateRange.value
+    ? 'Las ventas registradas aparecerán aquí.'
+    : 'Prueba con otro rango de fechas.'
+})
+
+function clearAll() {
+  table.resetColumnFilters()
+  table.setPageIndex(0)
+
+  if (hasSearch.value) {
+    emit('clear-search')
+  }
+}
 
 function sortIcon(column) {
   if (!column.getCanSort()) {
@@ -112,7 +214,7 @@ function handleClearSearch() {
 <template>
   <TooltipProvider :delay-duration="200">
     <div
-      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-5rem)] lg:flex-none lg:overflow-hidden lg:pb-0"
+      class="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-6 lg:h-[calc(100dvh-8rem)] lg:flex-none lg:overflow-hidden lg:pb-0"
     >
       <!-- Error message -->
       <div v-if="error" class="flex flex-1 flex-col items-center justify-center text-center">
@@ -128,42 +230,33 @@ function handleClearSearch() {
       </div>
       <template v-else>
         <!-- Toolbar -->
-        <div class="flex shrink-0 items-center justify-between gap-2">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-2.5 lg:flex-nowrap">
           <!-- Search -->
           <div class="relative w-full">
             <Search class="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
             <Input
               ref="inputRef"
               :model-value="search"
-              placeholder="Buscar producto..."
-              class="h-8 pr-8 pl-8 text-[13px]! lg:text-xs!"
+              placeholder="Buscar producto, color o talla..."
+              class="h-8 pr-8 pl-8 text-[13px]! text-ellipsis lg:text-xs!"
               @update:model-value="emit('search-input', $event)"
             />
             <Button
               v-if="search"
               variant="ghost"
               size="icon"
-              class="absolute top-0.5 right-0.5 h-7 w-7 rounded-full"
+              class="absolute top-1 right-1 h-6 w-6 rounded-full"
               aria-label="Limpiar búsqueda"
               @click="handleClearSearch"
             >
               <X class="h-3.5 w-3.5" />
             </Button>
           </div>
-          <!-- Period badge -->
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Badge
-                variant="outline"
-                tabindex="0"
-                class="text-muted-foreground h-8 shrink-0 gap-2 rounded-md px-2.5 text-xs font-normal select-none"
-              >
-                <Clock class="h-3 w-3" />
-                24 h
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent><p>Ventas de las últimas 24 horas</p></TooltipContent>
-          </Tooltip>
+          <!-- Date range -->
+          <DateRangeFilter
+            :model-value="dateRange"
+            @update:model-value="emit('date-range-change', $event)"
+          />
           <!-- Refresh -->
           <Tooltip>
             <TooltipTrigger as-child>
@@ -180,9 +273,17 @@ function handleClearSearch() {
             </TooltipTrigger>
             <TooltipContent><p>Actualizar ventas</p></TooltipContent>
           </Tooltip>
+          <!-- Filters -->
+          <TableFacetedFilters
+            :table="table"
+            :filterable-columns="filterableColumns"
+            :facets="serverFacetGroups"
+          />
+          <!-- Sort (mobile) -->
+          <TableSortDropdown v-if="!isDesktop" :table="table" :options="sortOptions" />
           <!-- New sale (desktop) -->
           <Button
-            v-if="isDesktop && can('sales:create')"
+            v-if="isDesktop && showNewSale && can('sales:create')"
             size="sm"
             :disabled="isLoading"
             @click="emit('new-sale')"
@@ -227,7 +328,7 @@ function handleClearSearch() {
               <TableBody>
                 <!-- Skeleton -->
                 <template v-if="isLoading">
-                  <TableRow v-for="row in 15" :key="`sk-${row}`">
+                  <TableRow v-for="row in pageSize" :key="`sk-${row}`">
                     <TableCell
                       v-for="column in columns"
                       :key="column.id || column.accessorKey"
@@ -262,29 +363,19 @@ function handleClearSearch() {
               class="absolute inset-x-0 top-10 bottom-0 flex flex-col items-center justify-center px-6 text-center"
             >
               <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
-                <SearchX v-if="hasSearch" class="h-8 w-8" />
-                <ShoppingBag v-else class="h-9 w-9" />
+                <SearchX v-if="hasQuery" class="h-8 w-8" />
+                <ShoppingBag v-else class="h-8 w-8" />
               </div>
-              <h3 class="text-sm font-semibold">
-                {{
-                  hasSearch ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas'
-                }}
-              </h3>
-              <p class="text-muted-foreground max-w-xs text-xs">
-                {{
-                  hasSearch
-                    ? 'Intenta con otro producto o limpia la búsqueda.'
-                    : 'Las ventas registradas aparecerán aquí.'
-                }}
-              </p>
+              <h3 class="text-xs font-semibold">{{ emptyTitle }}</h3>
+              <p class="text-muted-foreground max-w-xs text-xs">{{ emptyDescription }}</p>
               <Button
-                v-if="hasSearch"
+                v-if="hasQuery"
                 variant="outline"
                 size="sm"
                 class="mt-3 text-xs"
-                @click="handleClearSearch"
+                @click="clearAll"
               >
-                Limpiar búsqueda
+                {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
               </Button>
             </div>
           </div>
@@ -293,7 +384,7 @@ function handleClearSearch() {
         <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
           <!-- Skeleton -->
           <template v-if="isLoading">
-            <SalesCardSkeleton v-for="card in 5" :key="`sk-card-${card}`" />
+            <SalesCardSkeleton v-for="card in pageSize" :key="`sk-card-${card}`" />
           </template>
           <!-- Data -->
           <template v-else-if="table.getRowModel().rows?.length">
@@ -317,6 +408,9 @@ function handleClearSearch() {
                   <span class="text-muted-foreground min-w-0 truncate text-xs">
                     {{ formatItemsCount(row.original.items_count) }} ·
                     {{ formatPaymentMethod(row.original.payment_method) }}
+                    <template v-if="countReturnedUnits(row.original)">
+                      · {{ formatReturnedUnitsCount(countReturnedUnits(row.original)) }}
+                    </template>
                   </span>
                   <ChevronRight class="text-muted-foreground h-4 w-4 shrink-0" />
                 </div>
@@ -329,48 +423,38 @@ function handleClearSearch() {
             class="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
           >
             <div class="bg-muted text-muted-foreground mb-2 rounded-full p-3">
-              <SearchX v-if="hasSearch" class="h-9 w-9" />
+              <SearchX v-if="hasQuery" class="h-9 w-9" />
               <ShoppingBag v-else class="h-9 w-9" />
             </div>
-            <h3 class="text-sm font-semibold">
-              {{ hasSearch ? 'No se encontraron ventas' : 'No hay ventas en las últimas 24 horas' }}
-            </h3>
-            <p class="text-muted-foreground max-w-xs text-xs">
-              {{
-                hasSearch
-                  ? 'Intenta con otro producto o limpia la búsqueda.'
-                  : 'Las ventas registradas aparecerán aquí.'
-              }}
-            </p>
+            <h3 class="text-sm font-semibold">{{ emptyTitle }}</h3>
+            <p class="text-muted-foreground max-w-xs text-xs">{{ emptyDescription }}</p>
             <Button
-              v-if="hasSearch"
+              v-if="hasQuery"
               variant="outline"
               size="sm"
               class="mt-3 text-xs"
-              @click="handleClearSearch"
+              @click="clearAll"
             >
-              Limpiar búsqueda
+              {{ hasSearch ? 'Limpiar búsqueda' : 'Limpiar filtros' }}
             </Button>
           </div>
         </div>
         <!-- Pagination -->
         <div
-          v-if="!isLoading && table.getRowModel().rows?.length && table.getPageCount() > 1"
+          v-if="!isLoading && rows.length && pageCount > 1"
           class="flex shrink-0 items-center justify-between"
         >
           <p class="text-muted-foreground text-xs">
-            Página {{ table.atoms.pagination.get().pageIndex + 1 }} de
-            {{ Math.max(table.getPageCount(), 1) }}
-            <span v-if="isAtLimit" class="ml-1">· Mostrando las últimas 200</span>
+            Página {{ pageIndex + 1 }} de {{ Math.max(pageCount, 1) }}
           </p>
           <div class="flex items-center justify-center gap-2">
             <!-- Previous -->
             <Button
               variant="outline"
               size="sm"
-              :disabled="!table.getCanPreviousPage()"
+              :disabled="pageIndex <= 0"
               class="gap-0.5"
-              @click="table.previousPage()"
+              @click="emit('pagination-change', { pageIndex: pageIndex - 1, pageSize })"
             >
               <ChevronLeft class="mt-0.5 h-4 w-4" />
               <span class="pr-1 text-xs">Anterior</span>
@@ -379,9 +463,9 @@ function handleClearSearch() {
             <Button
               variant="outline"
               size="sm"
-              :disabled="!table.getCanNextPage()"
+              :disabled="pageIndex >= pageCount - 1"
               class="gap-0.5"
-              @click="table.nextPage()"
+              @click="emit('pagination-change', { pageIndex: pageIndex + 1, pageSize })"
             >
               <span class="ml-1 text-xs">Siguiente</span>
               <ChevronRight class="mt-0.5 h-4 w-4" />

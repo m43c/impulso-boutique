@@ -42,6 +42,18 @@ const title = computed(() =>
   count.value === 1 ? '1 unidad registrada' : `${count.value} unidades registradas`,
 )
 
+const cols = computed(() => Math.min(Math.max(count.value, 1), 4))
+
+const dialogWidthClass = computed(
+  () =>
+    ({
+      1: 'sm:max-w-sm',
+      2: 'sm:max-w-md',
+      3: 'sm:max-w-lg',
+      4: 'sm:max-w-xl',
+    })[cols.value],
+)
+
 function handlePrint() {
   window.print()
 }
@@ -50,10 +62,10 @@ function handlePrint() {
 <template>
   <!-- Desktop view -->
   <Dialog v-if="isDesktop" v-model:open="openModel">
-    <DialogContent class="gap-0 overflow-hidden p-0 sm:max-w-xl">
+    <DialogContent :class="['gap-0 overflow-hidden p-0', dialogWidthClass]">
       <DialogHeader class="border-border/60 gap-0 border-b px-5 pt-4 pb-3">
         <!-- Title -->
-        <DialogTitle class="flex items-center gap-2 text-sm">
+        <DialogTitle class="flex items-center gap-2 text-[13px]">
           <CheckCircle2 class="h-4 w-4 shrink-0 text-emerald-400" />
           <span>{{ title }}</span>
         </DialogTitle>
@@ -65,14 +77,15 @@ function handlePrint() {
       <!-- QR codes -->
       <div class="flex flex-col gap-4 px-5">
         <p class="text-muted-foreground pt-2 text-xs">
-          Imprime las etiquetas y pégalas en cada prenda
+          Imprime las etiquetas y pégalas en cada unidad
         </p>
-        <div class="max-h-[55vh] overflow-y-auto pr-0 pb-4">
-          <div class="grid grid-cols-4 gap-3">
+        <div class="pr-0 pb-4" :class="count > 8 ? 'max-h-[55vh] overflow-y-auto' : ''">
+          <div class="flex flex-wrap gap-3" :class="count > 1 ? 'justify-start' : 'justify-center'">
             <div
               v-for="id in unitIds"
               :key="id"
-              class="border-border flex flex-col items-center rounded-lg border p-3 lg:rounded-md"
+              :style="{ width: `calc((100% - ${(cols - 1) * 0.75}rem) / ${cols})` }"
+              class="border-border flex max-w-44 flex-col items-center rounded-lg border p-3 lg:rounded-md"
             >
               <QrcodeVue
                 :value="buildUnitUrl(id)"
@@ -116,13 +129,16 @@ function handlePrint() {
       </DrawerHeader>
       <!-- QR codes -->
       <div class="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-3 pb-6">
-        <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada prenda</p>
+        <p class="text-muted-foreground text-xs">Imprime las etiquetas y pégalas en cada unidad</p>
         <div class="min-h-0 flex-1 overflow-y-auto">
-          <div class="grid grid-cols-2 gap-3">
+          <div
+            class="flex flex-wrap justify-center gap-3"
+            :class="count > 1 ? 'justify-start' : 'justify-center'"
+          >
             <div
               v-for="id in unitIds"
               :key="id"
-              class="border-border/60 flex flex-col items-center rounded-lg border p-3"
+              class="border-border/60 flex w-[calc((100%-0.75rem)/2)] flex-col items-center rounded-lg border p-3"
             >
               <QrcodeVue
                 :value="buildUnitUrl(id)"

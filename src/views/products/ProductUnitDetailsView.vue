@@ -6,19 +6,7 @@ import { useSaleStore } from '@/stores/sale'
 import { storeToRefs } from 'pinia'
 import { useMediaQuery } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import {
-  CheckCircle2,
-  Check,
-  Copy,
-  ExternalLink,
-  Loader2,
-  Minus,
-  PackageX,
-  RefreshCw,
-  RotateCcw,
-  ShoppingBag,
-  XCircle,
-} from '@lucide/vue'
+import { Check, Copy, Loader2, RefreshCw } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,7 +22,6 @@ import {
 import { IMAGE_SIZES } from '@/services/cloudinary'
 import { formatCurrency } from '@/utils/currency'
 import { formatDate } from '@/utils/date'
-import { formatUnitStatus } from '@/utils/productUnits'
 import { formatMoveReason } from '@/utils/inventoryMoves'
 import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 import ProductImage from '@/components/products/ProductImage.vue'
@@ -42,6 +29,7 @@ import ProductUnitDetailsSkeleton from '@/components/products/units/skeletons/Pr
 import { usePermissions } from '@/composables/usePermissions'
 import ProductUnitExitModal from '@/components/products/units/modals/ProductUnitExitModal.vue'
 import ProductUnitReactivateModal from '@/components/products/units/modals/ProductUnitReactivateModal.vue'
+import ProductUnitStatusBanner from '@/components/products/units/ProductUnitStatusBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -59,31 +47,14 @@ const copied = ref(false)
 const isExitModalOpen = ref(false)
 const isReactivateModalOpen = ref(false)
 
-const STATUS_SUFFIX = {
-  available: 'para la venta',
-  sold: 'a un cliente',
-  returned: 'por un cliente',
-  unavailable: 'para la venta',
-}
-
-const fullStatusText = computed(() => {
-  const status = scannedUnit.value?.status
-
-  if (!status) {
-    return ''
-  }
-
-  const mainText = formatUnitStatus(status)
-  const suffix = STATUS_SUFFIX[status] || ''
-
-  return `${mainText} ${suffix}`.trim()
-})
-
-const viewProductVariant = computed(() => {
-  return showExitButton.value || showReactivateButton.value || showSaleButton.value
+const viewProductVariant = computed(() =>
+  showExitButton.value ||
+  showReactivateButton.value ||
+  showSaleButton.value ||
+  showReturnButton.value
     ? 'outline'
-    : 'default'
-})
+    : 'default',
+)
 
 const showExitButton = computed(
   () => scannedUnit.value?.status === 'available' && can('inventory:register-exit'),
@@ -95,6 +66,12 @@ const showReactivateButton = computed(
 const showSaleButton = computed(() => {
   return can('sales:create') && scannedUnit.value?.status === 'available'
 })
+
+const canViewUnitSale = computed(() => can('sales:view-unit'))
+
+const showReturnButton = computed(
+  () => canViewUnitSale.value && scannedUnit.value?.status === 'sold' && can('returns:create'),
+)
 
 const isSaleButtonDisabled = computed(() => {
   if (!scannedUnit.value || !scannedProduct.value) {
@@ -170,21 +147,6 @@ async function handleCopyUnitId(unitId) {
     toast.error('No se pudo copiar el ID')
   }
 }
-
-const statusBannerClasses = computed(() => {
-  switch (scannedUnit.value?.status) {
-    case 'available':
-      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-    case 'sold':
-      return 'border-sky-500/30 bg-sky-500/10 text-sky-400'
-    case 'returned':
-      return 'border-amber-500/30 bg-amber-500/10 text-amber-400'
-    case 'unavailable':
-      return 'border-rose-500/30 bg-rose-500/10 text-rose-400'
-    default:
-      return 'border-muted bg-muted text-muted-foreground'
-  }
-})
 
 const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '2XL', '3XL']
 
@@ -268,6 +230,10 @@ async function handleReactivateSuccess() {
   await loadUnit(route.params.id)
 }
 
+async function handleReturnRegistered() {
+  await loadUnit(route.params.id)
+}
+
 function handleAddToSale() {
   if (!scannedUnit.value || !scannedProduct.value) {
     return
@@ -288,7 +254,7 @@ function handleAddToSale() {
   const result = saleStore.addUnit(payload)
 
   if (result.ok) {
-    toast.success('Prenda agregada a la venta', {
+    toast.success('Unidad agregada a la venta', {
       action: {
         label: 'Ir a la venta',
         onClick: () => router.push({ name: 'sale-new' }),
@@ -317,9 +283,7 @@ onUnmounted(() => {
   <TooltipProvider :delay-duration="200">
     <!-- Skeleton -->
     <div v-if="productsStore.isFetchingScannedUnit" class="w-full px-4 pb-6 lg:px-6 lg:pb-0">
-      <ProductUnitDetailsSkeleton
-        :show-actions="can('inventory:register-exit') || can('inventory:reactivate-unit')"
-      />
+      <ProductUnitDetailsSkeleton />
     </div>
     <!-- Not found -->
     <div
@@ -346,15 +310,13 @@ onUnmounted(() => {
       <div class="grid grid-cols-1 gap-6 lg:h-[calc(100vh-5rem)] lg:grid-cols-12">
         <!-- Left column -->
         <div class="flex min-w-0 flex-col gap-4 lg:col-span-5 lg:h-full lg:min-h-0">
-          <!-- Status banner -->
-          <div
-            class="flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-semibold tracking-wider lg:rounded-sm lg:text-xs"
-            :class="statusBannerClasses"
-          >
-            <CheckCircle2 v-if="scannedUnit.status === 'available'" class="h-4 w-4" />
-            <XCircle v-else class="h-4 w-4" />
-            {{ fullStatusText }}
-          </div>
+          <!-- Active sale -->
+          <ProductUnitStatusBanner
+            :unit-id="scannedUnit.id"
+            :unit-status="scannedUnit.status"
+            :product="scannedProduct"
+            @return-registered="handleReturnRegistered"
+          />
           <!-- Product -->
           <Card class="overflow-hidden p-0 shadow-sm lg:overflow-y-auto lg:rounded-md">
             <CardContent class="flex flex-col gap-4 p-4 lg:px-5 lg:py-4">
@@ -390,9 +352,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Categoría:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.category || 'Sin categoría' }}
                           </button>
                         </TooltipTrigger>
@@ -406,9 +366,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Marca:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.brand || 'Sin marca' }}
                           </button>
                         </TooltipTrigger>
@@ -422,9 +380,7 @@ onUnmounted(() => {
                       <span class="text-muted-foreground shrink-0">Color:</span>
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <button
-                            class="lg:border-muted-foreground/50 min-w-0 truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
-                          >
+                          <button class="min-w-0 truncate text-left lg:cursor-help">
                             {{ scannedProduct.color || 'Sin color' }}
                           </button>
                         </TooltipTrigger>
@@ -461,7 +417,7 @@ onUnmounted(() => {
                 </div>
               </div>
               <!-- Unit -->
-              <div class="flex flex-col gap-1.5 border-t pt-3 text-xs">
+              <div class="flex flex-col gap-1 border-t pt-3 text-xs">
                 <div class="flex flex-wrap justify-between gap-2">
                   <!-- Id -->
                   <div class="flex items-center gap-2">
@@ -527,18 +483,17 @@ onUnmounted(() => {
               </div>
               <!-- Action buttons -->
               <div
-                class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-evenly"
+                class="mt-1 flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-evenly"
               >
                 <!-- View full product -->
                 <Button
                   :variant="viewProductVariant"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="
                     router.push({ name: 'product-details', params: { id: scannedProduct.id } })
                   "
                 >
-                  <ExternalLink class="h-4 w-4" />
                   <span class="lg:text-xs">Ver producto</span>
                 </Button>
                 <!-- Register exit -->
@@ -546,32 +501,28 @@ onUnmounted(() => {
                   v-if="showExitButton"
                   variant="destructive"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="isExitModalOpen = true"
                 >
-                  <PackageX class="h-4 w-4" />
                   <span class="lg:text-xs">Dar de baja</span>
                 </Button>
                 <!-- Reactive unit -->
                 <Button
                   v-if="showReactivateButton"
                   :size="isDesktop ? 'sm' : ''"
-                  class="w-full shrink-0 sm:w-auto flex-1"
+                  class="w-full flex-1 shrink-0 sm:w-auto"
                   @click="isReactivateModalOpen = true"
                 >
-                  <RotateCcw class="h-4 w-4" />
                   <span class="lg:text-xs">Reactivar</span>
                 </Button>
                 <!-- Add to sale -->
-                <div v-if="showSaleButton" class="flex w-full shrink-0 flex-col sm:w-auto flex-1">
+                <div v-if="showSaleButton" class="flex w-full flex-1 shrink-0 flex-col sm:w-auto">
                   <Button
                     :variant="saleStore.hasUnit(scannedUnit.id) ? 'secondary' : 'default'"
                     :size="isDesktop ? 'sm' : ''"
                     :disabled="isSaleButtonDisabled"
                     @click="handleAddToSale"
                   >
-                    <Check v-if="saleStore.hasUnit(scannedUnit.id)" class="h-4 w-4" />
-                    <ShoppingBag v-else class="h-4 w-4" />
                     <span class="lg:text-xs">{{ saleButtonLabel }}</span>
                   </Button>
                 </div>
@@ -662,7 +613,7 @@ onUnmounted(() => {
                         <Tooltip>
                           <TooltipTrigger as-child>
                             <button
-                              class="lg:border-muted-foreground/50 inline-block max-w-full truncate text-left lg:cursor-help lg:border-b lg:border-dashed"
+                              class="inline-block max-w-full truncate text-left lg:cursor-help"
                             >
                               {{ row.color }}
                             </button>
@@ -696,9 +647,7 @@ onUnmounted(() => {
                         "
                       >
                         <!-- Empty cell -->
-                        <span v-if="!row.cells[size]" class="text-muted-foreground/40">
-                          <Minus class="mx-auto h-4 w-4 text-gray-400" />
-                        </span>
+                        <span v-if="!row.cells[size]" class="text-muted-foreground/40">—</span>
                         <!-- Cell with stock -->
                         <span v-else class="flex items-center justify-center gap-1">
                           <span
@@ -727,8 +676,7 @@ onUnmounted(() => {
                     = agotado
                   </div>
                   <div class="flex items-center">
-                    <Minus class="h-4 w-4 text-gray-400" />
-                    <span>= no existe</span>
+                    <span>— = no existe</span>
                   </div>
                 </div>
                 <div class="flex self-end">

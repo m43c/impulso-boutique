@@ -282,7 +282,6 @@ onBeforeUnmount(() => {
       </div>
       <!-- Right column (Units and history) -->
       <div class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-col">
-        <!-- headers -->
         <Tabs
           v-model="activeTab"
           class="flex min-h-0 flex-col gap-4 lg:min-h-0 lg:flex-1 lg:flex-col"

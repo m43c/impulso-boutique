@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import { filterFn_arrHas } from '@tanstack/vue-table'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime } from '@/utils/date'
 import { formatMoveType, formatMoveReason } from '@/utils/inventoryMoves'
 
@@ -37,8 +37,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed  block font-mono text-xs ',
+              class: 'min-w-0 cursor-help block font-mono text-xs ',
             },
             unit.slice(0, 8),
           ),
@@ -79,7 +78,7 @@ export const columns = [
   {
     id: 'profile_name',
     accessorFn: (row) => row.profile_name || 'Sin usuario',
-    header: 'Usuario',
+    header: 'Responsable',
     filterFn: filterFn_arrHas,
     meta: { skeletonClass: 'h-4 w-20', cellClass: 'text-xs max-w-[60px]' },
     cell: (info) => {
@@ -103,8 +102,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+              class: 'inline-block max-w-full truncate text-left min-w-0 cursor-help',
             },
             shortName,
           ),
@@ -148,8 +146,7 @@ export const columns = [
           h(
             'button',
             {
-              class:
-                'inline-block max-w-full truncate text-left border-muted-foreground/50 min-w-0 cursor-help border-b border-dashed',
+              class: 'inline-block max-w-full truncate text-left min-w-0 cursor-help',
             },
             text,
           ),

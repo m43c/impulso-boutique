@@ -149,7 +149,7 @@ import { Skeleton } from '@/components/ui/skeleton'
         </div>
         <!-- KPIs -->
         <div class="grid grid-cols-3 gap-1 pt-4">
-          <div v-for="i in 3" :key="i" class="flex flex-col items-center">
+          <div v-for="i in 4" :key="i" class="flex flex-col items-center">
             <Skeleton class="h-8 w-8 rounded-full" />
             <Skeleton class="mt-1.5 h-3 w-16 max-w-full" />
           </div>

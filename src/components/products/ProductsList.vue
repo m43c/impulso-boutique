@@ -76,8 +76,6 @@ const router = useRouter()
 const isDesktop = useMediaQuery('(min-width: 768px)')
 const { can } = usePermissions()
 
-const expandedCards = ref(new Set())
-
 const sortOptions = [
   { label: 'Nombre: A-Z', columnId: 'name', desc: false },
   { label: 'Nombre: Z-A', columnId: 'name', desc: true, separator: true },
@@ -156,14 +154,6 @@ function sortIcon(column) {
   }
 
   return ArrowUpDown
-}
-
-function toggleExpand(id) {
-  if (expandedCards.value.has(id)) {
-    expandedCards.value.delete(id)
-  } else {
-    expandedCards.value.add(id)
-  }
 }
 </script>
 

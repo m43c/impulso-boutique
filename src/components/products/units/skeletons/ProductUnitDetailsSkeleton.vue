@@ -1,10 +1,6 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
-
-defineProps({
-  showActions: { type: Boolean, default: false },
-})
 </script>
 
 <template>
@@ -93,8 +89,7 @@ defineProps({
           </div>
           <!-- Action buttons -->
           <div class="mt-2 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Skeleton class="h-9 w-full rounded-md sm:w-36" />
-            <Skeleton v-if="showActions" class="h-9 w-full rounded-md sm:w-24" />
+            <Skeleton class="h-9 w-full rounded-md" />
           </div>
         </CardContent>
       </Card>

@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
-import { Bell, Moon, ScanQrCode, Sun } from '@lucide/vue'
+import { Bell, CircleAlert, Moon, ScanQrCode, Sun, Undo2 } from '@lucide/vue'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -32,8 +32,42 @@ const { breadcrumbs } = useBreadcrumbs()
 const { can } = usePermissions()
 
 const isScannerOpen = ref(false)
+const isAlertsOpen = ref(false)
 
 const canViewLowStockAlerts = computed(() => can('dashboard:view-low-stock-alerts'))
+const canViewReturnedAlerts = computed(() => can('returns:review'))
+const canViewAlerts = computed(() => canViewLowStockAlerts.value || canViewReturnedAlerts.value)
+
+const alertsBadgeLabel = computed(() =>
+  alertsStore.alertsTotal > 99 ? '99+' : String(alertsStore.alertsTotal),
+)
+
+const hasLowStockAlerts = computed(
+  () => canViewLowStockAlerts.value && alertsStore.lowStockCount > 0,
+)
+const hasReturnedAlerts = computed(
+  () => canViewReturnedAlerts.value && (alertsStore.returnedCount ?? 0) > 0,
+)
+
+const isReturnedCountUnknown = computed(
+  () => canViewReturnedAlerts.value && alertsStore.returnedCount === null,
+)
+
+const isLoadingAlerts = computed(
+  () =>
+    (canViewLowStockAlerts.value && alertsStore.isLoading) ||
+    (isReturnedCountUnknown.value && alertsStore.isLoadingReturned),
+)
+
+const lowStockLabel = computed(() => {
+  const count = alertsStore.lowStockCount
+  return `${count} ${count === 1 ? 'producto con stock bajo' : 'productos con stock bajo'}`
+})
+
+const returnedUnitsLabel = computed(() => {
+  const count = alertsStore.returnedCount ?? 0
+  return `${count} ${count === 1 ? 'unidad espera revisión' : 'unidades esperan revisión'}`
+})
 
 function openScanner() {
   if (document.activeElement instanceof HTMLElement) {
@@ -51,13 +85,24 @@ function handleQrDetected(rawId) {
 let isSubscribedToAlerts = false
 
 watch(
-  canViewLowStockAlerts,
-  (canView) => {
-    if (canView && !isSubscribedToAlerts) {
-      alertsStore.fetchLowStockAlerts()
-      alertsStore.subscribeToStockChanges()
-      isSubscribedToAlerts = true
-    } else if (!canView && isSubscribedToAlerts) {
+  [canViewLowStockAlerts, canViewReturnedAlerts],
+  ([canViewLowStock, canViewReturned]) => {
+    alertsStore.setReturnedAlertsEnabled(canViewReturned)
+
+    if (canViewLowStock || canViewReturned) {
+      if (canViewLowStock) {
+        alertsStore.fetchLowStockAlerts()
+      }
+
+      if (canViewReturned) {
+        alertsStore.fetchReturnedCount()
+      }
+
+      if (!isSubscribedToAlerts) {
+        alertsStore.subscribeToStockChanges()
+        isSubscribedToAlerts = true
+      }
+    } else if (isSubscribedToAlerts) {
       alertsStore.unsubscribeFromStockChanges()
       isSubscribedToAlerts = false
     }
@@ -112,7 +157,7 @@ onUnmounted(() => {
                         </Tooltip>
                         <BreadcrumbPage v-else class="truncate">{{ item.title }}</BreadcrumbPage>
                       </template>
-                      <!-- Elements witn links -->
+                      <!-- Elements with links -->
                       <template v-else>
                         <Tooltip v-if="item.truncate">
                           <TooltipTrigger as-child>
@@ -175,58 +220,80 @@ onUnmounted(() => {
               </TooltipContent>
             </Tooltip>
             <!-- Notifications -->
-            <Popover v-if="canViewLowStockAlerts">
+            <Popover v-if="canViewAlerts" v-model:open="isAlertsOpen">
               <PopoverTrigger as-child>
                 <Button variant="ghost" size="icon" class="relative h-8 w-8 rounded-full">
                   <Bell class="size-4.5" />
                   <Badge
-                    v-if="alertsStore.lowStockCount > 0"
+                    v-if="alertsStore.alertsTotal > 0"
                     class="absolute top-0.5 right-0.5 z-10 flex h-3.5 min-w-3.5 items-center justify-center rounded-full p-0 text-[10px] leading-none"
                   >
-                    {{ alertsStore.lowStockCount }}
+                    {{ alertsBadgeLabel }}
                   </Badge>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                class="w-[calc(100vw-3rem)] max-w-sm p-0 text-sm lg:w-80"
-                :align="isDesktop ? 'end' : 'center'"
-                :collision-padding="24"
-              >
-                <div class="border-b p-2.5 font-medium lg:text-[13px]">Alertas de Stock</div>
-                <div
-                  v-if="alertsStore.lowStockCount === 0"
-                  class="text-muted-foreground p-4 text-center text-xs"
-                >
-                  Todo el inventario está en orden
-                </div>
-                <div v-else class="flex max-h-64 flex-col overflow-y-auto px-2 py-1">
+              <PopoverContent class="p-0 text-xs" align="end">
+                <div class="border-b p-2.5 font-medium lg:text-xs">Alertas</div>
+                <!-- Alerts list -->
+                <div v-if="hasLowStockAlerts || hasReturnedAlerts" class="flex flex-col divide-y">
+                  <!-- Low stock -->
                   <RouterLink
-                    v-for="item in alertsStore.lowStockProducts"
-                    :key="item.id"
+                    v-if="hasLowStockAlerts"
                     to="/products?stock=low"
-                    class="hover:bg-muted flex items-center justify-between rounded-md p-1 text-xs transition-colors"
+                    class="hover:bg-muted flex items-center justify-between gap-2 p-2 text-[11px] transition-colors"
+                    @click="isAlertsOpen = false"
                   >
-                    <span class="truncate pr-2">{{ item.product.name }}</span>
+                    <span class="flex min-w-0 items-center gap-2">
+                      <CircleAlert class="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <span class="truncate">{{ lowStockLabel }}</span>
+                    </span>
                     <Badge
                       variant="outline"
-                      class="shrink-0 text-[11px]"
-                      :class="
-                        item.stock_available === 0
-                          ? 'border-rose-500/30 text-rose-500'
-                          : 'border-amber-500/30 text-amber-500'
-                      "
+                      class="h-5 w-5 shrink-0 rounded-full border-amber-500/30 text-[11px] text-amber-500"
                     >
-                      {{ item.stock_available }} / mín. {{ item.product.min_stock }}
+                      {{ alertsStore.lowStockCount }}
+                    </Badge>
+                  </RouterLink>
+                  <!-- Returns/in review -->
+                  <RouterLink
+                    v-if="hasReturnedAlerts"
+                    to="/sales?tab=returns"
+                    class="hover:bg-muted flex items-center justify-between gap-2 p-2 text-[11px] transition-colors"
+                    @click="isAlertsOpen = false"
+                  >
+                    <span class="flex min-w-0 items-center gap-2">
+                      <Undo2 class="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <span class="truncate">{{ returnedUnitsLabel }}</span>
+                    </span>
+                    <Badge
+                      variant="outline"
+                      class="h-5 w-5 shrink-0 rounded-full border-amber-500/30 text-[11px] text-amber-500"
+                    >
+                      {{ alertsStore.returnedCount }}
                     </Badge>
                   </RouterLink>
                 </div>
-                <div v-if="alertsStore.lowStockCount > 0" class="border-t p-1.5">
-                  <Button variant="ghost" size="sm" class="bg-muted w-full text-xs" as-child>
-                    <RouterLink to="/products?stock=low">Ver todos los productos</RouterLink>
-                  </Button>
+                <!-- Loading -->
+                <div
+                  v-else-if="isLoadingAlerts"
+                  class="text-muted-foreground p-4 text-center text-[11px]"
+                >
+                  Cargando alertas...
+                </div>
+                <!-- Returned count failed -->
+                <div
+                  v-else-if="isReturnedCountUnknown"
+                  class="text-muted-foreground p-4 text-center text-[11px]"
+                >
+                  No se pudo cargar el conteo de devoluciones
+                </div>
+                <!-- Empty -->
+                <div v-else class="text-muted-foreground p-4 text-center text-[11px]">
+                  No hay alertas pendientes
                 </div>
               </PopoverContent>
             </Popover>
+            <!-- Theme -->
             <Tooltip>
               <TooltipTrigger as-child>
                 <Button

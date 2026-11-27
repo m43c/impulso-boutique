@@ -27,6 +27,10 @@ export const PERMISSIONS = {
   // sales
   'sales:view-recent': ['admin', 'cashier'],
   'sales:create': ['admin', 'cashier'],
+  'sales:view-unit': ['admin', 'cashier'],
+  // returns
+  'returns:create': ['admin', 'cashier'],
+  'returns:review': ['admin'],
 }
 
 export function hasPermission(role, permission) {

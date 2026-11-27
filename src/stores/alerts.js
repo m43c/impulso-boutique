@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { supabase } from '@/lib/supabase'
 
@@ -7,7 +7,16 @@ export const useAlertsStore = defineStore('alerts', () => {
   const lowStockProducts = ref([])
   const isLoading = ref(false)
 
+  const returnedCount = ref(null)
+  const isLoadingReturned = ref(false)
+  const isReturnedAlertsEnabled = ref(false)
+
+  const alertsTotal = computed(() => lowStockCount.value + (returnedCount.value ?? 0))
+
   let channel = null
+  let returnedRefreshPending = false
+  let returnedRequestId = 0
+  const returnedListListeners = new Set()
 
   async function fetchLowStockAlerts() {
     if (isLoading.value) {
@@ -60,6 +69,95 @@ export const useAlertsStore = defineStore('alerts', () => {
     }
   }
 
+  async function fetchReturnedCount({ queueIfLoading = false } = {}) {
+    if (!isReturnedAlertsEnabled.value) {
+      return
+    }
+
+    if (isLoadingReturned.value) {
+      if (queueIfLoading) {
+        returnedRefreshPending = true
+      }
+      return
+    }
+
+    const requestId = ++returnedRequestId
+    isLoadingReturned.value = true
+
+    try {
+      const { count, error } = await supabase
+        .from('product_units')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'returned')
+
+      if (error) {
+        throw error
+      }
+
+      if (typeof count !== 'number') {
+        throw new Error('No se pudo obtener el conteo de devoluciones')
+      }
+
+      if (requestId !== returnedRequestId || !isReturnedAlertsEnabled.value) {
+        return
+      }
+
+      returnedCount.value = count
+    } catch (error) {
+      console.error('Error al cargar devoluciones por revisar:', error)
+    } finally {
+      if (requestId === returnedRequestId) {
+        isLoadingReturned.value = false
+
+        if (returnedRefreshPending) {
+          returnedRefreshPending = false
+
+          if (isReturnedAlertsEnabled.value) {
+            fetchReturnedCount()
+          }
+        }
+      }
+    }
+  }
+
+  function setReturnedAlertsEnabled(enabled) {
+    if (!enabled) {
+      isReturnedAlertsEnabled.value = false
+      returnedCount.value = null
+      isLoadingReturned.value = false
+      returnedRefreshPending = false
+      returnedRequestId += 1
+      return
+    }
+
+    if (isReturnedAlertsEnabled.value) {
+      return
+    }
+
+    isReturnedAlertsEnabled.value = true
+    returnedRequestId += 1
+    returnedRefreshPending = false
+    isLoadingReturned.value = false
+  }
+
+  function subscribeToReturnedUnits(listener) {
+    if (typeof listener !== 'function') {
+      return () => {}
+    }
+
+    returnedListListeners.add(listener)
+
+    return () => {
+      returnedListListeners.delete(listener)
+    }
+  }
+
+  function notifyReturnedUnitsChanged() {
+    for (const listener of returnedListListeners) {
+      listener()
+    }
+  }
+
   function subscribeToStockChanges() {
     if (channel) {
       return
@@ -69,6 +167,11 @@ export const useAlertsStore = defineStore('alerts', () => {
       .channel('stock-alerts')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'product_units' }, () => {
         fetchLowStockAlerts()
+
+        if (isReturnedAlertsEnabled.value) {
+          fetchReturnedCount({ queueIfLoading: true })
+          notifyReturnedUnitsChanged()
+        }
       })
       .subscribe()
   }
@@ -83,6 +186,12 @@ export const useAlertsStore = defineStore('alerts', () => {
   function clear() {
     lowStockProducts.value = []
     lowStockCount.value = 0
+    returnedCount.value = null
+    isReturnedAlertsEnabled.value = false
+    isLoadingReturned.value = false
+    returnedRefreshPending = false
+    returnedRequestId += 1
+    returnedListListeners.clear()
     unsubscribeFromStockChanges()
   }
 
@@ -90,7 +199,13 @@ export const useAlertsStore = defineStore('alerts', () => {
     lowStockCount,
     lowStockProducts,
     isLoading,
+    returnedCount,
+    isLoadingReturned,
+    alertsTotal,
     fetchLowStockAlerts,
+    fetchReturnedCount,
+    setReturnedAlertsEnabled,
+    subscribeToReturnedUnits,
     subscribeToStockChanges,
     unsubscribeFromStockChanges,
     clear,
