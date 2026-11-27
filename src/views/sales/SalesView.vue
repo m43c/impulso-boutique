@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useDebounceFn, useMediaQuery } from '@vueuse/core'
+import { useMediaQuery } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
 import { useAlertsStore } from '@/stores/alerts'
 import { useReturnsStore } from '@/stores/returns'
@@ -15,6 +15,8 @@ import ReturnedUnitsList from '@/components/sales/returns/ReturnedUnitsList.vue'
 import ReturnReviewModal from '@/components/sales/returns/ReturnReviewModal.vue'
 import ProductUnitsLabelsModal from '@/components/products/units/modals/ProductUnitsLabelsModal.vue'
 import { usePermissions } from '@/composables/usePermissions'
+import { useServerTable } from '@/composables/useServerTable'
+import { resolveLaPazDateRange } from '@/utils/date'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,10 +24,6 @@ const alertsStore = useAlertsStore()
 const returnsStore = useReturnsStore()
 const { can } = usePermissions()
 
-const sales = ref([])
-const isLoading = ref(false)
-const error = ref(null)
-const search = ref('')
 const selectedSale = ref(null)
 const isDetailOpen = ref(false)
 
@@ -70,9 +68,9 @@ const returnedTabLabel = computed(() => {
 })
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
+const pageSize = computed(() => (isDesktop.value ? 15 : 10))
+const searchDebounceMs = computed(() => (isDesktop.value ? 300 : 400))
 
-let requestId = 0
-let searchVersion = 0
 let returnedRequestId = 0
 let pendingReturnedLoad = null
 let returnedRefreshPending = false
@@ -98,78 +96,92 @@ function replaceTabQuery(tab) {
   router.replace({ name: 'sales', query })
 }
 
-async function loadSales(searchTerm = '') {
-  const id = ++requestId
-  isLoading.value = true
-  error.value = null
+function buildSalesParams(state) {
+  const { from, to } = resolveLaPazDateRange(state.dateRange)
+  const filters = state.columnFilters ?? []
+  const filterValues = (columnId) => {
+    const filter = filters.find((item) => item.id === columnId)
 
-  try {
-    const { data, error: rpcError } = await supabase.rpc('get_recent_sales', {
-      p_search: searchTerm.trim() ? searchTerm.trim() : null,
-    })
+    return Array.isArray(filter?.value) ? filter.value : []
+  }
 
-    if (id !== requestId) {
-      return
-    }
+  const paymentMethods = filterValues('payment_method')
+  const returnStatuses = filterValues('return_status')
+  const profileIds = filterValues('profile_id')
+  const sort = state.sorting?.[0]
+  const sortBy = sort?.id === 'total_amount' ? 'total_amount' : 'created_at'
+  const sortDir = sort?.desc === false ? 'asc' : 'desc'
 
-    if (rpcError) {
-      throw rpcError
-    }
-
-    sales.value = data ?? []
-  } catch (e) {
-    if (id !== requestId) {
-      return
-    }
-
-    console.error('Error al cargar ventas:', e)
-    error.value = 'No se pudieron cargar las ventas'
-    sales.value = []
-  } finally {
-    if (id === requestId) {
-      isLoading.value = false
-    }
+  return {
+    p_search: state.search?.trim() || null,
+    p_from: from ? from.toISOString() : null,
+    p_to: to ? to.toISOString() : null,
+    p_payment_methods: paymentMethods.length ? paymentMethods : null,
+    p_return_statuses: returnStatuses.length ? returnStatuses : null,
+    p_profile_ids: profileIds.length ? profileIds : null,
+    p_sort_by: sortBy,
+    p_sort_dir: sortDir,
+    p_page_index: state.pageIndex,
+    p_page_size: state.pageSize,
   }
 }
 
-const SEARCH_DEBOUNCE_DESKTOP_MS = 300
-const SEARCH_DEBOUNCE_MOBILE_MS = 400
+async function fetchSalesPage(params) {
+  const [pageResult, facetsResult] = await Promise.all([
+    supabase.rpc('get_sales_page', params),
+    supabase.rpc('get_sales_facets', {
+      p_search: params.p_search,
+      p_from: params.p_from,
+      p_to: params.p_to,
+      p_payment_methods: params.p_payment_methods,
+      p_return_statuses: params.p_return_statuses,
+      p_profile_ids: params.p_profile_ids,
+    }),
+  ])
 
-const searchDebounceMs = computed(() =>
-  isDesktop.value ? SEARCH_DEBOUNCE_DESKTOP_MS : SEARCH_DEBOUNCE_MOBILE_MS,
-)
-
-const debouncedLoadSales = useDebounceFn((value, version) => {
-  if (version !== searchVersion) {
-    return
+  if (pageResult.error) {
+    throw pageResult.error
   }
 
-  loadSales(value)
-}, searchDebounceMs)
-
-function handleSearchInput(value) {
-  search.value = value
-
-  const term = value.trim()
-
-  if (term.length === 1) {
-    searchVersion++
-    return
+  if (facetsResult.error) {
+    throw facetsResult.error
   }
 
-  debouncedLoadSales(value, ++searchVersion)
+  const rows = pageResult.data ?? []
+
+  return {
+    rows,
+    totalCount: Number(rows[0]?.total_count ?? 0),
+    facets: facetsResult.data ?? null,
+  }
 }
 
-function clearSearch() {
-  searchVersion++
-  search.value = ''
-  loadSales('')
-}
-
-function refresh() {
-  searchVersion++
-  loadSales(search.value)
-}
+const {
+  rows: sales,
+  isLoading,
+  error,
+  search,
+  facets,
+  pageCount,
+  dateRange,
+  sorting,
+  columnFilters,
+  pageIndex,
+  load: loadSales,
+  refresh,
+  setSearch,
+  clearSearch,
+  setDateRange,
+  setSorting,
+  setColumnFilters,
+  setPagination,
+} = useServerTable({
+  fetcher: fetchSalesPage,
+  buildParams: buildSalesParams,
+  pageSize,
+  debounceMs: searchDebounceMs,
+  errorMessage: 'No se pudieron cargar las ventas',
+})
 
 function handleOpenSale(sale) {
   selectedSale.value = sale
@@ -181,7 +193,7 @@ function handleNewSale() {
 }
 
 async function handleReturnRegistered(payload) {
-  await loadSales(search.value)
+  await refresh()
 
   if (can('returns:review')) {
     alertsStore.fetchReturnedCount({ queueIfLoading: true })
@@ -365,7 +377,7 @@ watch(
 )
 
 onMounted(() => {
-  loadSales('')
+  loadSales()
   window.addEventListener('scroll', handleScroll, { passive: true })
 
   if (can('returns:review')) {
@@ -374,8 +386,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  requestId++
-  searchVersion++
   returnedRequestId++
   returnedRefreshPending = false
   unregisterReturnedListener?.()
@@ -411,15 +421,26 @@ onBeforeUnmount(() => {
         class="m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-0 focus-visible:outline-none"
       >
         <SalesList
-          :sales="sales"
+          :rows="sales"
           :is-loading="isLoading"
           :error="error"
           :search="search"
+          :date-range="dateRange"
+          :facets="facets"
+          :sorting="sorting"
+          :column-filters="columnFilters"
+          :page-index="pageIndex"
+          :page-size="pageSize"
+          :page-count="pageCount"
           :show-new-sale="isSalesTab"
-          @search-input="handleSearchInput"
+          @search-input="setSearch"
           @clear-search="clearSearch"
           @refresh="refresh"
           @retry="refresh"
+          @sorting-change="setSorting"
+          @column-filters-change="setColumnFilters"
+          @pagination-change="setPagination"
+          @date-range-change="setDateRange"
           @open-sale="handleOpenSale"
           @new-sale="handleNewSale"
         />

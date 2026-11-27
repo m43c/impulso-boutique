@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge'
 import { formatDateTimeLaPaz } from '@/utils/date'
 import { countReturnedUnits, formatReturnedMarker } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
-import { normalizeText } from '@/utils/text'
 
 const PAYMENT_STYLES = {
   cash: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
@@ -87,8 +86,9 @@ export const columns = [
   },
   {
     id: 'payment_method',
-    accessorFn: (row) => row.payment_method ?? '',
+    accessorFn: (row) => row.payment_method ?? 'exchange',
     header: 'Pago',
+    enableSorting: false,
     enableGlobalFilter: false,
     filterFn: filterFn_arrHas,
     meta: {
@@ -121,8 +121,8 @@ export const columns = [
     cell: () => null,
   },
   {
-    id: 'profile_name',
-    accessorFn: (row) => normalizeText(row.profile_name || ''),
+    id: 'profile_id',
+    accessorFn: (row) => row.profile_id,
     header: '',
     enableSorting: false,
     enableGlobalFilter: false,

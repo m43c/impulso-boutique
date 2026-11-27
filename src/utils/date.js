@@ -89,6 +89,61 @@ export function laPazDayBounds(input = new Date()) {
   }
 }
 
+export function laPazDateKey(input = new Date()) {
+  const date = input instanceof Date ? input : new Date(input)
+
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  const parts = laPazDateFormatter.formatToParts(date)
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+
+  return `${values.year}-${values.month}-${values.day}`
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function toDate(value) {
+  if (!value) {
+    return null
+  }
+
+  const date = value instanceof Date ? value : new Date(value)
+
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+export function resolveLaPazDateRange(dateRange, now = new Date()) {
+  const preset = dateRange?.preset ?? '24h'
+  const reference = toDate(now) ?? new Date()
+
+  if (preset === '7d') {
+    return { from: new Date(reference.getTime() - 7 * DAY_MS), to: reference }
+  }
+
+  if (preset === '30d') {
+    return { from: new Date(reference.getTime() - 30 * DAY_MS), to: reference }
+  }
+
+  if (preset === 'today') {
+    return laPazDayBounds(reference)
+  }
+
+  if (preset === 'yesterday') {
+    return laPazDayBounds(new Date(reference.getTime() - DAY_MS))
+  }
+
+  if (preset === 'custom') {
+    return {
+      from: toDate(dateRange?.from),
+      to: toDate(dateRange?.to),
+    }
+  }
+
+  return { from: null, to: null }
+}
+
 const relativeFormatter = new Intl.RelativeTimeFormat('es-BO', { numeric: 'auto' })
 
 export function formatRelativeDate(isoString, maxDaysForRelative = 7) {

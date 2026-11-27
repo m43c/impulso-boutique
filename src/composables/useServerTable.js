@@ -102,8 +102,8 @@ export function useServerTable({
 
       const pages = pageCount.value
 
-      if (pageIndex.value > 0 && pages > 0 && pageIndex.value >= pages) {
-        pageIndex.value = pages - 1
+      if (pageIndex.value > 0 && (pages === 0 || pageIndex.value >= pages)) {
+        pageIndex.value = Math.max(pages - 1, 0)
 
         return fetchPage()
       }
@@ -156,6 +156,7 @@ export function useServerTable({
       return
     }
 
+    pageIndex.value = 0
     debouncedSearch(++searchVersion)
   }
 
@@ -182,7 +183,8 @@ export function useServerTable({
   }
 
   function setSorting(updater) {
-    const next = resolveUpdater(updater, sorting.value)
+    const resolved = resolveUpdater(updater, sorting.value)
+    const next = Array.isArray(resolved) && resolved.length > 0 ? resolved : [...initialSorting]
 
     if (isSameState(next, sorting.value)) {
       return

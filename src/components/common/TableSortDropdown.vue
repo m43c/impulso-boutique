@@ -59,11 +59,11 @@ function isOptionActive(option) {
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-56">
-      <DropdownMenuLabel>{{ title }}</DropdownMenuLabel>
+      <DropdownMenuLabel class="text-xs">{{ title }}</DropdownMenuLabel>
       <DropdownMenuSeparator />
       <template v-for="(option, index) in options" :key="index">
         <DropdownMenuItem
-          class="cursor-pointer justify-between"
+          class="cursor-pointer justify-between text-xs"
           :class="{ 'text-primary font-semibold': isOptionActive(option) }"
           @click="applySort(option.columnId, option.desc)"
         >

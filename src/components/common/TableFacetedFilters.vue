@@ -142,13 +142,21 @@ function handleToggle(columnId, value) {
 }
 
 function handleClear() {
+  if (props.table.options?.manualFiltering) {
+    const columnIds = new Set(props.filterableColumns.map(({ columnId }) => columnId))
+
+    props.table.setColumnFilters((current) =>
+      (current ?? []).filter((filter) => !columnIds.has(filter.id)),
+    )
+
+    return
+  }
+
   props.filterableColumns.forEach(({ columnId }) => {
     props.table.getColumn(columnId)?.setFilterValue(undefined)
   })
 
-  if (!props.table.options?.manualFiltering) {
-    props.table.setPageIndex(0)
-  }
+  props.table.setPageIndex(0)
 }
 </script>
 
