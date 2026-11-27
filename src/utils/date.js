@@ -118,6 +118,10 @@ export function resolveLaPazDateRange(dateRange, now = new Date()) {
   const preset = dateRange?.preset ?? '24h'
   const reference = toDate(now) ?? new Date()
 
+  if (preset === 'all') {
+    return { from: null, to: null }
+  }
+
   if (preset === '7d') {
     return { from: new Date(reference.getTime() - 7 * DAY_MS), to: reference }
   }

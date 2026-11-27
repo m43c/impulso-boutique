@@ -35,7 +35,7 @@ import { features } from '@/components/common/tableFeatures'
 import TableFacetedFilters from '@/components/common/TableFacetedFilters.vue'
 import TableSortDropdown from '@/components/common/TableSortDropdown.vue'
 import SalesCardSkeleton from '@/components/sales/SalesCardSkeleton.vue'
-import SalesDateRangeFilter from '@/components/sales/SalesDateRangeFilter.vue'
+import DateRangeFilter from '@/components/common/DateRangeFilter.vue'
 import { formatDateTimeLaPaz } from '@/utils/date'
 import { countReturnedUnits, formatReturnedUnitsCount } from '@/utils/returns'
 import { formatItemsCount, formatPaymentMethod, formatSaleTotal } from '@/utils/sales'
@@ -253,7 +253,7 @@ function handleClearSearch() {
             </Button>
           </div>
           <!-- Date range -->
-          <SalesDateRangeFilter
+          <DateRangeFilter
             :model-value="dateRange"
             @update:model-value="emit('date-range-change', $event)"
           />

@@ -15,18 +15,20 @@ const props = defineProps({
     type: Object,
     default: () => ({ preset: '24h', from: null, to: null }),
   },
+  presets: {
+    type: Array,
+    default: () => [
+      { value: '24h', label: 'Últimas 24 horas' },
+      { value: '7d', label: 'Últimos 7 días' },
+      { value: '30d', label: 'Últimos 30 días' },
+      { value: 'today', label: 'Hoy' },
+      { value: 'yesterday', label: 'Ayer' },
+    ],
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
 const isDesktop = useMediaQuery('(min-width: 768px)')
-
-const presets = [
-  { value: '24h', label: 'Últimas 24 horas' },
-  { value: '7d', label: 'Últimos 7 días' },
-  { value: '30d', label: 'Últimos 30 días' },
-  { value: 'today', label: 'Hoy' },
-  { value: 'yesterday', label: 'Ayer' },
-]
 
 const isOpen = ref(false)
 const isCustomMode = ref(false)
@@ -99,7 +101,7 @@ const label = computed(() => {
     return formatLabelDate(today(LA_PAZ_TZ).subtract({ days: 1 }).toDate(LA_PAZ_TZ), true)
   }
 
-  return presets.find((p) => p.value === preset)?.label ?? 'Personalizado'
+  return props.presets.find((p) => p.value === preset)?.label ?? 'Personalizado'
 })
 
 const isCustomValid = computed(() => {
