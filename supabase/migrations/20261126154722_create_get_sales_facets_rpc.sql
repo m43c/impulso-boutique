@@ -58,7 +58,6 @@ begin
         )
     )
     select jsonb_build_object(
-      -- Pago: no aplica su propio filtro; sí devolución y usuario
       'payment_method', coalesce((
         select jsonb_agg(
           jsonb_build_object('value', value, 'label', label, 'count', uses)
@@ -92,8 +91,6 @@ begin
           group by value
         ) payment_options
       ), '[]'::jsonb),
-
-      -- Devolución: no aplica su propio filtro; sí pago y usuario
       'return_status', coalesce((
         select jsonb_agg(
           jsonb_build_object('value', value, 'label', label, 'count', uses)
@@ -124,8 +121,6 @@ begin
           group by value
         ) return_options
       ), '[]'::jsonb),
-
-      -- Usuario: no aplica su propio filtro; sí pago y devolución
       'profile', coalesce((
         select jsonb_agg(
           jsonb_build_object('value', value, 'label', label, 'count', uses)
